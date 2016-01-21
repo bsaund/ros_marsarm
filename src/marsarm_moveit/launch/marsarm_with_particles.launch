@@ -1,0 +1,10 @@
+<launch>
+
+  <include file="$(find marsarm_moveit_generated)/launch/demo.launch"/>
+
+  <node name="marsarm_basic_moveit" pkg="marsarm_moveit" type="marsarm_basic_moveit" respawn="false" output="screen">
+  </node>
+
+  <node pkg="using_markers" type="plotParticles" name="particlePlotter"/>
+
+</launch>

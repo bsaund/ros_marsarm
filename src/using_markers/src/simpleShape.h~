@@ -1,0 +1,8 @@
+#ifndef SIMPLESHAPE_H
+#define SIMPLESHAPE_H
+
+class cube{
+}
+
+
+#endif

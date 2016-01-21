@@ -49,13 +49,13 @@ void ShapePlotter::generateParticles()
     points.markers[i].ns = "points_and_lines";
     points.markers[i].action = visualization_msgs::Marker::ADD;
 
-    points.markers[i].pose.position.x = 0 + randn(gen)/10;
-    points.markers[i].pose.position.y = 0 + randn(gen)/10;
-    points.markers[i].pose.position.z = 1 + randn(gen)/10;
+    points.markers[i].pose.position.x = 0.7 + randn(gen)/50;
+    points.markers[i].pose.position.y = 0 + randn(gen)/50;
+    points.markers[i].pose.position.z = 0.5 + randn(gen)/50;
 
     // points.markers[i].pose.orientation.w = 1.0;
     points.markers[i].pose.orientation = 
-      tf::createQuaternionMsgFromRollPitchYaw(randn(gen)/10, randn(gen)/10, randn(gen)/10);
+      tf::createQuaternionMsgFromRollPitchYaw(randn(gen)/20, randn(gen)/20, randn(gen)/20);
 
     points.markers[i].id = i;
 
@@ -63,9 +63,9 @@ void ShapePlotter::generateParticles()
 
 
     // POINTS markers use x and y scale for width/height respectively
-    points.markers[i].scale.x = 2.0;
-    points.markers[i].scale.y = 1.0;
-    points.markers[i].scale.z = 1.0;
+    points.markers[i].scale.x = 0.2;
+    points.markers[i].scale.y = 0.1;
+    points.markers[i].scale.z = 0.1;
 
 
     // %Tag(COLOR)%
@@ -89,8 +89,16 @@ void ShapePlotter::plotParticles(){
   tf::transformStampedTFToMsg(tfstmp, trans);
 
   br.sendTransform(trans);
+  int numMarkers = 50;
 
-  ros::Duration(1.0).sleep();
+
+  for(int i=0; i<numMarkers; i++){
+
+    points.markers[i].header.stamp = ros::Time::now();
+
+  }
+
+ 
  
   marker_pub.publish(points);
 }
@@ -122,7 +130,7 @@ int main(int argc, char **argv)
     // transform.setRotation(q);
 
     // plt.plotShape(c, tf::StampedTransform(transform, ros::Time::now(), "my_frame", "newFrame1"));
-    ros::spinOnce();
+    // ros::spinOnce();
   }
   
   

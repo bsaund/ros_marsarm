@@ -21,7 +21,7 @@ namespace gazebo
     {
     }
 
-    bool static rayTrace(gazebo_ray_trace::RayTrace::Request &req,
+    bool rayTrace(gazebo_ray_trace::RayTrace::Request &req,
     	      gazebo_ray_trace::RayTrace::Response &resp)
     {
       resp.dist = sqrt(
@@ -57,9 +57,18 @@ namespace gazebo
     {
       std::string robot_namespace = "gazebo_simulation";
       this->rosnode_ = new ros::NodeHandle(robot_namespace);
-      this->srv_ = this->rosnode_->advertiseService("ray_trace", &RayTracer::rayTrace);
-
+      // this->srv_ = this->rosnode_->advertiseService("ray_trace", &RayTracer::rayTrace);
+      // this->srv_ = this->rosnode_->
+      // 	advertiseService("ray_trace", boost::bind(&RayTracer::rayTrace, this, _1, _2));
+      ros::AdvertiseServiceOptions ray_trace_srv = 
+      	ros::AdvertiseServiceOptions::create<gazebo_ray_trace::RayTrace>
+      	("ray_trace",
+      	 boost::bind(&RayTracer::rayTrace, this, _1, _2),
+      	 ros::VoidPtr(), NULL);
+      this->srv_ = this->rosnode_->advertiseService(ray_trace_srv);
     }
+
+
 
   };
   GZ_REGISTER_WORLD_PLUGIN(RayTracer);

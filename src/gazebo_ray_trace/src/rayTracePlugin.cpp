@@ -33,7 +33,7 @@ namespace gazebo
     		       pow(req.start.y - req.end.y, 2) + 
     		       pow(req.start.z - req.end.z, 2));
 
-      ROS_INFO("Sending Response From Within Gazebo: %ld", (long int)resp.dist);
+      ROS_INFO("Sending Response From Within Gazebo: %f", resp.dist);
       return true;
     }
 

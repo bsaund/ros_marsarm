@@ -2,6 +2,8 @@
 #include "gazebo_ray_trace/RayTrace.h"
 #include <math.h>
 #include <gazebo/common/Plugin.hh>
+#include "gazebo/physics/physics.hh"
+
 #include <boost/thread.hpp>
 
 
@@ -16,12 +18,14 @@ namespace gazebo
     ros::NodeHandle* rosnode_;
     ros::ServiceServer srv_;
 
+    gazebo::physics::RayShapePtr ray_;
+
   public:
     RayTracer() : WorldPlugin()
     {
     }
 
-    bool rayTrace(gazebo_ray_trace::RayTrace::Request &req,
+    bool dist(gazebo_ray_trace::RayTrace::Request &req,
     	      gazebo_ray_trace::RayTrace::Response &resp)
     {
       resp.dist = sqrt(
@@ -29,6 +33,31 @@ namespace gazebo
     		       pow(req.start.y - req.end.y, 2) + 
     		       pow(req.start.z - req.end.z, 2));
 
+      ROS_INFO("Sending Response From Within Gazebo: %ld", (long int)resp.dist);
+      return true;
+    }
+
+
+    bool rayTrace(gazebo_ray_trace::RayTrace::Request &req,
+    	      gazebo_ray_trace::RayTrace::Response &resp)
+    {
+      math::Vector3 start, end;
+      std::string entityName;
+
+      double dist;
+      start.x = req.start.x;
+      start.y = req.start.y;
+      start.z = req.start.z;
+
+      end.x = req.end.x;
+      end.y = req.end.y;
+      end.z = req.end.z;
+
+
+      ray_->SetPoints(start, end);
+      ray_->GetIntersection(dist, entityName);
+
+      resp.dist = dist;
       ROS_INFO("Sending Response From Within Gazebo: %ld", (long int)resp.dist);
       return true;
     }
@@ -47,13 +76,14 @@ namespace gazebo
       
       // this->deferred_load_thread_ = boost::thread(
       // 						  boost::bind(&RayTracer::LoadThread, this));
-      this->LoadThread();
+      this->initStructures(_world);
+      this->advertiseServices();
       
       ROS_INFO("Ready to ray trace");
 	  
     }
 
-    void LoadThread()
+    void advertiseServices()
     {
       std::string robot_namespace = "gazebo_simulation";
       this->rosnode_ = new ros::NodeHandle(robot_namespace);
@@ -66,6 +96,14 @@ namespace gazebo
       	 boost::bind(&RayTracer::rayTrace, this, _1, _2),
       	 ros::VoidPtr(), NULL);
       this->srv_ = this->rosnode_->advertiseService(ray_trace_srv);
+    }
+
+    void initStructures(physics::WorldPtr _world)
+    {
+      gazebo::physics::PhysicsEnginePtr engine = _world->GetPhysicsEngine(); 
+      ray_ = boost::dynamic_pointer_cast<gazebo::physics::RayShape>
+	(engine->CreateShape("ray", gazebo::physics::CollisionPtr()));
+
     }
 
 

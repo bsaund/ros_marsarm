@@ -9,7 +9,7 @@ int main(int argc, char **argv){
   }
 
   ros::NodeHandle n;
-  ros::ServiceClient client = n.serviceClient<gazebo_ray_trace::RayTrace>("ray_trace");
+  ros::ServiceClient client = n.serviceClient<gazebo_ray_trace::RayTrace>("/gazebo_simulation/ray_trace");
 
 
   gazebo_ray_trace::RayTrace srv;
@@ -20,6 +20,8 @@ int main(int argc, char **argv){
   srv.request.end.x = atoll(argv[4]);
   srv.request.end.y = atoll(argv[5]);
   srv.request.end.z = atoll(argv[6]);
+
+
 
   if(client.call(srv)){
     ROS_INFO("Distance  %ld", (long int)srv.response.dist);

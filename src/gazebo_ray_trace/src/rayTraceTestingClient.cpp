@@ -24,7 +24,7 @@ int main(int argc, char **argv){
 
 
   if(client.call(srv)){
-    ROS_INFO("Distance  %ld", (long int)srv.response.dist);
+    ROS_INFO("Distance  %f", srv.response.dist);
   }else{
     ROS_ERROR("Failed to call service");
     return 1;

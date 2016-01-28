@@ -44,14 +44,14 @@ void ShapePlotter::generateParticles()
 
   points.markers.resize(numMarkers);
   for(int i=0; i<numMarkers; i++){
-    points.markers[i].header.frame_id = "my_frame";
+    points.markers[i].header.frame_id = "particle_frame";
     points.markers[i].header.stamp = ros::Time::now();
     points.markers[i].ns = "points_and_lines";
     points.markers[i].action = visualization_msgs::Marker::ADD;
 
-    points.markers[i].pose.position.x = 0.3 + randn(gen)/50;
-    points.markers[i].pose.position.y = 0.5 + randn(gen)/50;
-    points.markers[i].pose.position.z = 0.7 + randn(gen)/50;
+    points.markers[i].pose.position.x = 0.0 + randn(gen)/50;
+    points.markers[i].pose.position.y = 0.0 + randn(gen)/50;
+    points.markers[i].pose.position.z = 0.0 + randn(gen)/50;
 
     // points.markers[i].pose.orientation.w = 1.0;
     points.markers[i].pose.orientation = 
@@ -82,11 +82,14 @@ void ShapePlotter::generateParticles()
 
 void ShapePlotter::plotParticles(){
   geometry_msgs::TransformStamped trans;
-  tf::StampedTransform tfstmp(transform, ros::Time::now(),"my_frame", "newFrame1");
+  tf::Transform unityTransform;
+  tf::Transform particleTransform;
+  particleTransform.setOrigin(tf::Vector3(1,2,3));
+  tf::StampedTransform tfstmp(particleTransform, ros::Time::now(),"my_frame", "particle_frame");
   tf::transformStampedTFToMsg(tfstmp, trans);
   
   br.sendTransform(trans);
-  tfstmp =   tf::StampedTransform(transform, ros::Time::now(),"base_plate", "my_frame");
+  tfstmp =   tf::StampedTransform(unityTransform, ros::Time::now(),"base_plate", "my_frame");
   tf::transformStampedTFToMsg(tfstmp, trans);
 
   br.sendTransform(trans);

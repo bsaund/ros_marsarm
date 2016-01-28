@@ -7,41 +7,30 @@
 
 #include "gazebo/gazebo.hh"
 #include "gazebo/common/common.hh"
-#include "gazebo/math/Vector3.hh"
-#include "gazebo/msgs/msgs.hh"
 #include "gazebo/physics/physics.hh"
-#include "gazebo/transport/transport.hh"
-#include "collision_map_request.pb.h"
 
 #include "ros/ros.h"
 #include "gazebo_ray_trace/RayTrace.h"
 
 namespace gazebo
 {
-  typedef const boost::shared_ptr<
-    const collision_map_creator_msgs::msgs::CollisionMapRequest>
-  CollisionMapRequestPtr;
+
 
   class CollisionMapCreator : public WorldPlugin
   {
-    transport::NodePtr node;
-    transport::PublisherPtr imagePub;
-    transport::SubscriberPtr commandSubscriber;
     physics::WorldPtr world;
-
+    // gazebo::physics::RayShapePtr ray_;
     ros::NodeHandle* rosnode_;
     ros::ServiceServer srv_;
 
-  public: void Load(physics::WorldPtr _parent, sdf::ElementPtr _sdf)
+  public: void Load(physics::WorldPtr _world, sdf::ElementPtr _sdf)
     {
-      // node = transport::NodePtr(new transport::Node());
-      world = _parent;
-      // Initialize the node with the world name
-      // node->Init(world->GetName());
-      // std::cout << "Subscribing to: " << "~/collision_map/command" << std::endl;
-      // commandSubscriber = node->Subscribe("~/collision_map/command",
-      // 					  &CollisionMapCreator::create, this);
-      // imagePub = node->Advertise<msgs::Image>("~/collision_map/image");
+      world = _world;
+      // gazebo::physics::PhysicsEnginePtr engine = _world->GetPhysicsEngine(); 
+      // engine->InitForThread();
+      // ROS_INFO("Using physics engine %s", engine->GetType().c_str());
+      // ray_ = boost::dynamic_pointer_cast<gazebo::physics::RayShape>
+      // 	(engine->CreateShape("ray", gazebo::physics::CollisionPtr()));
       advertiseServices();
     }
 
@@ -84,8 +73,8 @@ namespace gazebo
       gazebo::physics::PhysicsEnginePtr engine = world->GetPhysicsEngine();
       engine->InitForThread();
       gazebo::physics::RayShapePtr ray_ =
-	boost::dynamic_pointer_cast<gazebo::physics::RayShape>(
-							       engine->CreateShape("ray", gazebo::physics::CollisionPtr()));
+      	boost::dynamic_pointer_cast<gazebo::physics::RayShape>(
+      							       engine->CreateShape("ray", gazebo::physics::CollisionPtr()));
 
 
       ROS_INFO("Starting Ray Trace");

@@ -16,7 +16,7 @@
   <link name="base">
     <visual>
       <geometry>
-	<cylinder length="0.3" radius="0.1"/>
+	<cylinder length="0.3" radius="0.06"/>
       </geometry>
       <origin xyz="0 0 0.15"/>
       <material name="Gray">
@@ -28,7 +28,7 @@
   <link name="shoulder">
     <visual>
       <geometry>
-	<cylinder length="0.3" radius="0.07"/>
+	<cylinder length="0.15" radius="0.04"/>
       </geometry>
       <origin rpy="0 1.57075 0" xyz="0 0 0"/>
       <material name="Gray">
@@ -40,7 +40,7 @@
   <link name="main_arm">
     <visual>
       <geometry>
-	<cylinder length="0.3" radius="0.1"/>
+	<cylinder length="0.3" radius="0.06"/>
       </geometry>
       <origin xyz="0 0 0.15"/>
       <material name="Gray">
@@ -52,7 +52,7 @@
   <link name="elbow">
     <visual>
       <geometry>
-	<cylinder length="0.3" radius="0.07"/>
+	<cylinder length="0.15" radius="0.04"/>
       </geometry>
       <origin rpy="0 1.57075 0" xyz="0 0 0"/>
       <material name="Gray">
@@ -64,7 +64,7 @@
   <link name="forearm">
     <visual>
       <geometry>
-	<cylinder length="0.3" radius="0.1"/>
+	<cylinder length="0.3" radius="0.06"/>
       </geometry>
       <origin xyz="0 0 0.15"/>
       <material name="Gray">
@@ -77,7 +77,7 @@
   <link name="wrist">
     <visual>
       <geometry>
-	<cylinder length="0.3" radius="0.07"/>
+	<cylinder length="0.15" radius="0.04"/>
       </geometry>
       <origin rpy="0 1.57075 0" xyz="0 0 0"/>
       <material name="Gray">
@@ -89,7 +89,7 @@
   <link name="hand">
     <visual>
       <geometry>
-	<cylinder length="0.1" radius="0.1"/>
+	<cylinder length="0.1" radius="0.04"/>
       </geometry>
       <origin xyz="0 0 0.05"/>
       <material name="Gray">

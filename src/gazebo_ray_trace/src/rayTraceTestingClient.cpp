@@ -13,13 +13,13 @@ int main(int argc, char **argv){
 
 
   gazebo_ray_trace::RayTrace srv;
-  srv.request.start.x = atoll(argv[1]);
-  srv.request.start.y = atoll(argv[2]);
-  srv.request.start.z = atoll(argv[3]);
+  srv.request.start.x = atof(argv[1]);
+  srv.request.start.y = atof(argv[2]);
+  srv.request.start.z = atof(argv[3]);
 
-  srv.request.end.x = atoll(argv[4]);
-  srv.request.end.y = atoll(argv[5]);
-  srv.request.end.z = atoll(argv[6]);
+  srv.request.end.x = atof(argv[4]);
+  srv.request.end.y = atof(argv[5]);
+  srv.request.end.z = atof(argv[6]);
 
 
 

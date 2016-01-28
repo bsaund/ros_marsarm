@@ -43,6 +43,8 @@
 #include <moveit_msgs/AttachedCollisionObject.h>
 #include <moveit_msgs/CollisionObject.h>
 
+#include <tf/tf.h>
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "move_group_interface_tutorial");
@@ -87,13 +89,14 @@ int main(int argc, char **argv)
   // We can plan a motion for this group to a desired pose for the 
   // end-effector.
   geometry_msgs::Pose target_pose1;
-  target_pose1.orientation.x = 0;
-  target_pose1.orientation.y = .32;
-  target_pose1.orientation.z = 1.0;
-  target_pose1.orientation.w = .95;
+  // target_pose1.orientation.x = 0;
+  // target_pose1.orientation.y = .32;
+  // target_pose1.orientation.z = 1.0;
+  // target_pose1.orientation.w = .95;
+  target_pose1.orientation = tf::createQuaternionMsgFromRollPitchYaw(-1.5,0,0);
   target_pose1.position.x = .6;
-  target_pose1.position.y = .2;
-  target_pose1.position.z = 1.0;
+  target_pose1.position.y = .4;
+  target_pose1.position.z = .8;
   group.setPoseTarget(target_pose1);
 
 
@@ -115,15 +118,18 @@ int main(int argc, char **argv)
   // automatically.  But explicitly publishing plans is useful in cases that we
   // want to visualize a previously created plan.
   // if (1)
-  while(true)
-  {
-    ROS_INFO("Visualizing plan 1 (again)");    
-    display_trajectory.trajectory_start = my_plan.start_state_;
-    display_trajectory.trajectory.push_back(my_plan.trajectory_);
-    display_publisher.publish(display_trajectory);
-    /* Sleep to give Rviz time to visualize the plan. */
-    sleep(5.0);
-  }
+  // // while(true)
+  // {
+  //   ROS_INFO("Visualizing plan 1 (again)");    
+  //   display_trajectory.trajectory_start = my_plan.start_state_;
+  //   display_trajectory.trajectory.push_back(my_plan.trajectory_);
+  //   display_publisher.publish(display_trajectory);
+  //   /* Sleep to give Rviz time to visualize the plan. */
+  //   sleep(5.0);
+  // }
+  group.execute(my_plan);
+
+  ros::spin();
 
 //   // Moving to a pose goal
 //   // ^^^^^^^^^^^^^^^^^^^^^

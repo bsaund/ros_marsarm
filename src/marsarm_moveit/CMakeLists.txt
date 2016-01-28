@@ -4,7 +4,13 @@ project(marsarm_moveit)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS moveit_core moveit_ros_planning moveit_ros_planning_interface pluginlib cmake_modules)
+find_package(catkin REQUIRED COMPONENTS 
+  moveit_core 
+  moveit_ros_planning 
+  moveit_ros_planning_interface 
+  pluginlib 
+  cmake_modules 
+  tf)
 # find_package(catkin REQUIRED)
 find_package(Boost REQUIRED system filesystem date_time thread)
 

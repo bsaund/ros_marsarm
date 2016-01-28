@@ -19,7 +19,10 @@
 
         <collision name="mesh_collision">
           <geometry>
-    	    <mesh><uri>model://gazebo_ray_trace/worlds/boeing_part_binary.stl</uri></mesh>
+    	    <mesh>
+	      <uri>model://gazebo_ray_trace/worlds/boeing_part_binary.stl</uri>
+	      <scale>0.0254 0.0254 0.0254</scale>
+	    </mesh>
     	    <!-- <mesh><uri>model://gazebo_ray_trace/worlds/base.stl</uri></mesh> -->
             <!-- <box> -->
             <!--   <size>1 1 1</size> -->
@@ -31,7 +34,10 @@
 
         <visual name="mesh_visual">
           <geometry>
-    	    <mesh><uri>model://gazebo_ray_trace/worlds/boeing_part_binary.stl</uri></mesh>
+    	    <mesh>
+	      <uri>model://gazebo_ray_trace/worlds/boeing_part_binary.stl</uri>
+	      <scale>0.0254 0.0254 0.0254</scale>
+	    </mesh>
     	    <!-- <mesh><uri>model://gazebo_ray_trace/worlds/base.stl</uri></mesh> -->
           </geometry>
         </visual>

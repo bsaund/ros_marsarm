@@ -49,23 +49,24 @@ void ShapePlotter::generateParticles()
     points.markers[i].ns = "points_and_lines";
     points.markers[i].action = visualization_msgs::Marker::ADD;
 
-    points.markers[i].pose.position.x = 0.7 + randn(gen)/50;
-    points.markers[i].pose.position.y = 0 + randn(gen)/50;
-    points.markers[i].pose.position.z = 0.5 + randn(gen)/50;
+    points.markers[i].pose.position.x = 0.3 + randn(gen)/50;
+    points.markers[i].pose.position.y = 0.5 + randn(gen)/50;
+    points.markers[i].pose.position.z = 0.7 + randn(gen)/50;
 
     // points.markers[i].pose.orientation.w = 1.0;
     points.markers[i].pose.orientation = 
-      tf::createQuaternionMsgFromRollPitchYaw(randn(gen)/20, randn(gen)/20, randn(gen)/20);
+      tf::createQuaternionMsgFromRollPitchYaw(randn(gen)/50, randn(gen)/50, randn(gen)/50);
 
     points.markers[i].id = i;
 
-    points.markers[i].type = visualization_msgs::Marker::CUBE;
+    points.markers[i].type = visualization_msgs::Marker::MESH_RESOURCE;
+    points.markers[i].mesh_resource = "package://touch_optimization/sdf/boeing_part_binary.stl";
 
 
     // POINTS markers use x and y scale for width/height respectively
-    points.markers[i].scale.x = 0.2;
-    points.markers[i].scale.y = 0.1;
-    points.markers[i].scale.z = 0.1;
+    points.markers[i].scale.x = .0254;
+    points.markers[i].scale.y = .0254;
+    points.markers[i].scale.z = .0254;
 
 
     // %Tag(COLOR)%

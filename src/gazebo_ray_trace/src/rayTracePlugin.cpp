@@ -18,7 +18,8 @@ namespace gazebo
     ros::NodeHandle* rosnode_;
     ros::ServiceServer srv_;
 
-    gazebo::physics::RayShapePtr ray_;
+    // gazebo::physics::RayShapePtr ray_;
+    physics::WorldPtr world_;
 
 
   public:
@@ -44,6 +45,14 @@ namespace gazebo
       end.y = req.end.y;
       end.z = req.end.z;
 
+      gazebo::physics::RayShapePtr ray_;
+      gazebo::physics::PhysicsEnginePtr engine = world_->GetPhysicsEngine(); 
+      engine->InitForThread();
+      ROS_INFO("Using physics engine %s", engine->GetType().c_str());
+      ray_ = boost::dynamic_pointer_cast<gazebo::physics::RayShape>
+      	(engine->CreateShape("ray", gazebo::physics::CollisionPtr()));
+
+
       ROS_INFO("Starting Ray Trace");
       ray_->SetPoints(start, end);
       ROS_INFO("Set Ray as vector");
@@ -51,6 +60,8 @@ namespace gazebo
 
       double len = ray_->GetLength();
       ROS_INFO("Length is: %f", len);
+
+
       
       ray_->GetIntersection(dist, entityName);
       ROS_INFO("Got intersection");
@@ -102,11 +113,13 @@ namespace gazebo
      */
     void initStructures(physics::WorldPtr _world)
     {
+      world_ = _world;
       // ros::Duration(1.0).sleep();
-      gazebo::physics::PhysicsEnginePtr engine = _world->GetPhysicsEngine(); 
-      ROS_INFO("Using physics engine %s", engine->GetType().c_str());
-      ray_ = boost::dynamic_pointer_cast<gazebo::physics::RayShape>
-      	(engine->CreateShape("ray", gazebo::physics::CollisionPtr()));
+      // gazebo::physics::PhysicsEnginePtr engine = _world->GetPhysicsEngine(); 
+      // engine->InitForThread();
+      // ROS_INFO("Using physics engine %s", engine->GetType().c_str());
+      // ray_ = boost::dynamic_pointer_cast<gazebo::physics::RayShape>
+      // 	(engine->CreateShape("ray", gazebo::physics::CollisionPtr()));
       
 
     }

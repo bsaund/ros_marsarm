@@ -43,27 +43,29 @@ catkin_package(
 include_directories(${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS} ${GAZEBO_INCLUDE_DIRS})
 
 
-add_executable(gazebo_rayTrace_service src/rayTraceService.cpp)
+# add_executable(gazebo_rayTrace_service src/rayTraceService.cpp)
 add_executable(gazebo_rayTrace_test src/rayTraceTestingClient.cpp)
 
 
 # add_dependencies(gazebo_rayTrace_pluggin gazebo_ray_trace_gencpp)
 add_dependencies(gazebo_rayTrace_test gazebo_ray_trace_gencpp)
-add_dependencies(gazebo_rayTrace_service gazebo_ray_trace_gencpp)
+# add_dependencies(gazebo_rayTrace_service gazebo_ray_trace_gencpp)
 
 target_link_libraries(gazebo_rayTrace_test
   ${catkin_LIBRARIES}
 )
 
-target_link_libraries(gazebo_rayTrace_service
-  ${catkin_LIBRARIES}
-)
+# target_link_libraries(gazebo_rayTrace_service
+#   ${catkin_LIBRARIES}
+# )
 
 
 add_library(distance_ray_trace SHARED src/rayTracePlugin.cpp)
 target_link_libraries(distance_ray_trace
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
+  ${Boost_LIBRARIES}
+  ${SDF_LIBRARIES}
 )
 
 

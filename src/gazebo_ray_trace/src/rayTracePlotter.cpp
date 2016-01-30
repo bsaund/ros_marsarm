@@ -79,13 +79,15 @@ double getDistToPart(tf::Point start, tf::Point end, ros::NodeHandle n){
   gazebo_ray_trace::RayTrace srv;
   tf::pointTFToMsg(trans * start, srv.request.start);
   tf::pointTFToMsg(trans * end,   srv.request.end);
-
+  
+  ros::Time begin = ros::Time::now();
 
   if(client.call(srv)){
     ROS_INFO("Distance  %f", srv.response.dist);
   }else{
     ROS_ERROR("Ray Trace Failed");
   }
+  ROS_INFO("Time for ray trace: %f", (ros::Time::now() - begin).toSec());
   return srv.response.dist;
 }
 
@@ -133,7 +135,7 @@ int main(int argc, char **argv){
   ros::init(argc, argv, "ray_trace_test");
   ros::NodeHandle n;
   ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("ray_trace_markers", 10);
-  ros::Subscriber particle_sub = n.subscribe("transform_particles");
+
 
   //Start and end vectors of the ray
   tf::Point start(atof(argv[1]),
@@ -147,6 +149,7 @@ int main(int argc, char **argv){
 
   plotRay(start, end, marker_pub);
 
+  
   double dist = getDistToPart(start, end, n);
  
 

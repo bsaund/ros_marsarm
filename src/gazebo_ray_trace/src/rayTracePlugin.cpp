@@ -62,8 +62,8 @@ namespace gazebo
       ROS_INFO("Length is: %f", len);
 
 
-      
       ray_->GetIntersection(dist, entityName);
+
       ROS_INFO("Got intersection");
       resp.dist = dist;
       ROS_INFO("Traced ray");

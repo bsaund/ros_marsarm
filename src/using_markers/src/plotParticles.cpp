@@ -74,7 +74,7 @@ void ShapePlotter::updateMarkers()
   for(int i=0; i<particles_.poses.size(); i++){
     points.markers[i].header.frame_id = "particle_frame";
     points.markers[i].header.stamp = ros::Time::now();
-    points.markers[i].ns = "points_and_lines";
+    points.markers[i].ns = "particles";
     points.markers[i].action = visualization_msgs::Marker::ADD;
 
     points.markers[i].pose = particles_.poses[i];

@@ -12,6 +12,9 @@ int main(int argc, char **argv){
   ros::ServiceClient client = n.serviceClient<gazebo_ray_trace::RayTrace>("/gazebo_simulation/ray_trace");
 
 
+
+
+
   gazebo_ray_trace::RayTrace srv;
   srv.request.start.x = atof(argv[1]);
   srv.request.start.y = atof(argv[2]);

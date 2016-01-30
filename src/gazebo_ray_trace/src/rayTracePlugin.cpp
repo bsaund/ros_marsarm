@@ -18,7 +18,7 @@ namespace gazebo
     ros::NodeHandle* rosnode_;
     ros::ServiceServer srv_;
 
-    // gazebo::physics::RayShapePtr ray_;
+
     physics::WorldPtr world_;
 
 
@@ -94,7 +94,8 @@ namespace gazebo
     {
       std::string robot_namespace = "gazebo_simulation";
       this->rosnode_ = new ros::NodeHandle(robot_namespace);
-
+      
+      this->rosnode_->setParam("/use_sim_time", false);
       //This is how static services can be advertised
       // this->srv_ = this->rosnode_->advertiseService("ray_trace", &RayTracer::rayTrace);
 

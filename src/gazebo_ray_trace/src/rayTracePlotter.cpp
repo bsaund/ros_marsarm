@@ -2,7 +2,8 @@
 #include "gazebo_ray_trace/RayTrace.h"
 #include <visualization_msgs/MarkerArray.h>
 
-visualization_msgs::Marker createMarker()
+visualization_msgs::Marker createMarker(double x1, double y1, double z1, 
+					double x2, double y2, double z2)
 {
   visualization_msgs::Marker marker;
   marker.header.frame_id = "/my_frame";
@@ -41,16 +42,16 @@ visualization_msgs::Marker createMarker()
   // marker.points.push_back(p);
 
   marker.points.resize(2);
-  marker.points[0].x = 0;
-  marker.points[0].y = 0;
-  marker.points[0].z = 0;
-  marker.points[1].x = 1;
-  marker.points[1].y = 1;
-  marker.points[1].z = 2;
+  marker.points[0].x = x1;
+  marker.points[0].y = y1;
+  marker.points[0].z = z1;
+  marker.points[1].x = x2;
+  marker.points[1].y = y2;
+  marker.points[1].z = z2;
  
   ROS_INFO("Set points");
 
-  marker.scale.x = 0.05;
+  marker.scale.x = 0.001;
   marker.scale.y = 0.1;
   // marker.scale.z = 1.0;
  
@@ -58,7 +59,7 @@ visualization_msgs::Marker createMarker()
   marker.color.r = 0.0f;
   marker.color.g = 1.0f;
   marker.color.b = 0.0f;
-  marker.color.a = 1.0;
+  marker.color.a = 0.6;
  
   marker.lifetime = ros::Duration();
 
@@ -68,23 +69,32 @@ visualization_msgs::Marker createMarker()
 
 
 int main(int argc, char **argv){
-  ros::init(argc, argv, "ray_trace_test");
-  // if (argc != 7){
-  //   ROS_INFO("usage: currently, adds the norm of two vectors x y z x y z");
-  //   return 1;
-  // }
+  if (argc != 7){
+    ROS_INFO("usage: x y z x y z");
+    return 1;
+  }
 
+  double x1 = atof(argv[1]);
+  double y1 = atof(argv[2]);
+  double z1 = atof(argv[3]);
+  double x2 = atof(argv[4]);
+  double y2 = atof(argv[5]);
+  double z2 = atof(argv[6]);
+
+  ros::init(argc, argv, "ray_trace_test");
 
   ros::NodeHandle n;
   ros::ServiceClient client = n.serviceClient<gazebo_ray_trace::RayTrace>("/gazebo_simulation/ray_trace");
   ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("ray_trace_markers", 10);
 
-  visualization_msgs::Marker marker = createMarker();
+  visualization_msgs::Marker marker = createMarker(x1, y1, z1, x2, y2, z2);
 
   //wait until subscribed
   ros::Rate poll_rate(100);
-  while(marker_pub.getNumSubscribers() == 0){
+  int i = 0;
+  while(marker_pub.getNumSubscribers() == 0 && i < 100){
     poll_rate.sleep();
+    i++;
   }
 
 

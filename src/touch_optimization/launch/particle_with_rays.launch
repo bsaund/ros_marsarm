@@ -1,0 +1,8 @@
+<launch>
+
+  <include file="$(find using_markers)/launch/particles.launch"/>
+  <include file="$(find gazebo_ray_trace)/launch/headless_ray_tracing_service.launch"/>
+  <!-- <include file="$(find gazebo_ray_trace)/launch/test_ray_tracing.launch"/> -->
+
+
+</launch>

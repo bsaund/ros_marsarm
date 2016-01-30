@@ -52,25 +52,34 @@ Visualization Manager:
       Reference Frame: <Fixed Frame>
       Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: visualization_marker
       Name: Marker
       Namespaces:
-        {}
+        points_and_lines: true
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/TF
       Enabled: true
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        base_plate:
+          Value: true
+        my_frame:
+          Value: true
+        particle_frame:
+          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        {}
+        base_plate:
+          my_frame:
+            particle_frame:
+              {}
       Update Interval: 0
       Value: true
     - Class: rviz/Marker
@@ -78,7 +87,7 @@ Visualization Manager:
       Marker Topic: ray_trace_markers
       Name: Marker
       Namespaces:
-        {}
+        ray: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -105,22 +114,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 0.900314
+      Distance: 5.36147
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
+        X: 1.30754
+        Y: -0.71097
+        Z: 1.02331
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.455398
+      Pitch: 0.595398
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.2054
+      Yaw: 1.7654
     Saved: ~
 Window Geometry:
   Displays:

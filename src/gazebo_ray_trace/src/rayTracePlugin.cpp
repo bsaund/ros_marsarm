@@ -77,12 +77,12 @@ namespace gazebo
       if(!ros::isInitialized()){
       	ROS_FATAL_STREAM("A ROS node for Gazebo has not been initialized, unable to load plugin");
       }
-      
+
       ROS_INFO("Setting up ray tracing");
+      world_ = _world;      
       
-      this->initStructures(_world);
       this->advertiseServices();
-      // ros::Duration(0.01).sleep();
+
       ROS_INFO("Ready to ray trace");
 	  
     }
@@ -112,18 +112,6 @@ namespace gazebo
     /** 
      *  Creates a ray using the world's physics engine.
      */
-    void initStructures(physics::WorldPtr _world)
-    {
-      world_ = _world;
-      // ros::Duration(1.0).sleep();
-      // gazebo::physics::PhysicsEnginePtr engine = _world->GetPhysicsEngine(); 
-      // engine->InitForThread();
-      // ROS_INFO("Using physics engine %s", engine->GetType().c_str());
-      // ray_ = boost::dynamic_pointer_cast<gazebo::physics::RayShape>
-      // 	(engine->CreateShape("ray", gazebo::physics::CollisionPtr()));
-      
-
-    }
 
   };
   GZ_REGISTER_WORLD_PLUGIN(RayTracer);

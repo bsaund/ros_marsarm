@@ -1,5 +1,6 @@
 #include "ros/ros.h"
 #include "gazebo_ray_trace/RayTrace.h"
+#include "gazebo_ray_trace/RayTraceEachParticle.h"
 #include <math.h>
 #include <gazebo/common/Plugin.hh>
 #include "gazebo/physics/physics.hh"
@@ -30,9 +31,11 @@ namespace gazebo
     {
     }
 
-    void updateParticles(const geometry_msgs::PoseArray p){
+    void updateParticles(const geometry_msgs::PoseArray p)
+    {
       particles_ = p;
     }
+
     
     /**
      *  Performs ray tracing of a ros request in the loaded world.
@@ -41,9 +44,8 @@ namespace gazebo
     	      gazebo_ray_trace::RayTrace::Response &resp)
     {
       math::Vector3 start, end;
-      std::string entityName;
+      resp.dist.
 
-      double dist;
       start.x = req.start.x;
       start.y = req.start.y;
       start.z = req.start.z;
@@ -55,28 +57,56 @@ namespace gazebo
       gazebo::physics::RayShapePtr ray_;
       gazebo::physics::PhysicsEnginePtr engine = world_->GetPhysicsEngine(); 
       engine->InitForThread();
-      ROS_INFO("Using physics engine %s", engine->GetType().c_str());
+
       ray_ = boost::dynamic_pointer_cast<gazebo::physics::RayShape>
       	(engine->CreateShape("ray", gazebo::physics::CollisionPtr()));
 
+      resp.dist.push_back(rayTrace(start, end, ray_));
 
-      ROS_INFO("Starting Ray Trace");
-      ray_->SetPoints(start, end);
-      ROS_INFO("Set Ray as vector");
-      ray_->Update();
-
-      double len = ray_->GetLength();
-      ROS_INFO("Length is: %f", len);
-
-
-      ray_->GetIntersection(dist, entityName);
-
-      ROS_INFO("Got intersection");
-      resp.dist = dist;
-      ROS_INFO("Traced ray");
       ROS_INFO("Traced ray and responded with distance: %f", resp.dist);
-      ROS_INFO("Intersected with %s", entityName.c_str());
       return true;
+    }
+
+    /**
+     *  Ray traces each particles
+     */
+    bool rayTraceEachParticles(gazebo_ray_trace::RayTraceEachParticle::Request &req,
+    	      gazebo_ray_trace::RayTraceEachParticle::Response &resp)
+    {
+      math::Vector3 start, end;
+
+      start.x = req.start.x;
+      start.y = req.start.y;
+      start.z = req.start.z;
+
+      end.x = req.end.x;
+      end.y = req.end.y;
+      end.z = req.end.z;
+
+      tf::Transform trans;
+
+      gazebo::physics::RayShapePtr ray_;
+      gazebo::physics::PhysicsEnginePtr engine = world_->GetPhysicsEngine(); 
+      engine->InitForThread();
+
+      ray_ = boost::dynamic_pointer_cast<gazebo::physics::RayShape>
+      	(engine->CreateShape("ray", gazebo::physics::CollisionPtr()));
+
+      resp.dist = rayTrace(start, end, ray_);
+
+      ROS_INFO("Traced ray and responded with distance: %f", resp.dist);
+      return true;
+    }
+
+    /**
+     *  Performs ray tracing on the loaded world, returning the distace to intersection
+     */
+    double rayTrace(math::Vector3 start, math::Vector3 end, gazebo::physics::RayShapePtr ray_){
+      double dist;
+      std::string entityName;
+      ray_->SetPoints(start, end);
+      ray_->GetIntersection(dist, entityName);
+      return dist;
     }
 
     void Load(physics::WorldPtr _world, sdf::ElementPtr _sdf){

@@ -19,6 +19,7 @@ link_directories(${GAZEBO_LIBRARY_DIRS})
 add_service_files(
   FILES
   RayTrace.srv
+  RayTraceEachParticle.srv
 )
 
 generate_messages(

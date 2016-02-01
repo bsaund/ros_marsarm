@@ -3,7 +3,7 @@
 #include <math.h>
 #include <gazebo/common/Plugin.hh>
 #include "gazebo/physics/physics.hh"
-
+#include <geometry_msgs/PoseArray.h>
 #include <boost/thread.hpp>
 
 
@@ -18,6 +18,9 @@ namespace gazebo
     ros::NodeHandle* rosnode_;
     ros::ServiceServer srv_;
 
+    ros::Subscriber particle_sub;
+    geometry_msgs::PoseArray particles_;
+
 
     physics::WorldPtr world_;
 
@@ -27,6 +30,10 @@ namespace gazebo
     {
     }
 
+    void updateParticles(const geometry_msgs::PoseArray p){
+      particles_ = p;
+    }
+    
     /**
      *  Performs ray tracing of a ros request in the loaded world.
      */
@@ -82,6 +89,8 @@ namespace gazebo
       world_ = _world;      
       
       this->advertiseServices();
+      this->particle_sub = this->rosnode_->subscribe("transform_particles", 1000, 
+				   &RayTracer::updateParticles, this);
 
       ROS_INFO("Ready to ray trace");
 	  

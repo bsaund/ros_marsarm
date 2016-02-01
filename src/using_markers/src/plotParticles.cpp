@@ -121,6 +121,7 @@ void ShapePlotter::plotParticles(){
   }
   
   marker_pub.publish(points);
+  particle_pub.publish(particles_);
 }
 
 
@@ -139,6 +140,7 @@ int main(int argc, char **argv)
   while (ros::ok()) {
     waitForRViz.sleep();
     plt.plotParticles();
+
   }
   
   

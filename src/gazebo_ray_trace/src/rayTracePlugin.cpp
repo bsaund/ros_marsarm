@@ -70,7 +70,7 @@ namespace gazebo
     /**
      *  Ray traces each particles
      */
-    bool rayTraceEachParticles(gazebo_ray_trace::RayTraceEachParticle::Request &req,
+    bool rayTraceEachParticle(gazebo_ray_trace::RayTraceEachParticle::Request &req,
     	      gazebo_ray_trace::RayTraceEachParticle::Response &resp)
     {
       tf::Vector3 start, end;
@@ -102,7 +102,7 @@ namespace gazebo
 	trans.setRotation(q);
 	trans = trans.inverse();
 	
-	
+
 	resp.dist.push_back(rayTrace(
 				     vectorTFToGazebo(trans*start), 
 				     vectorTFToGazebo(trans*end), 
@@ -169,11 +169,16 @@ namespace gazebo
       	 ros::VoidPtr(), NULL);
 
       this->srv_ = this->rosnode_->advertiseService(ray_trace_srv);
-    }
 
-    /** 
-     *  Creates a ray using the world's physics engine.
-     */
+
+      ray_trace_srv = 
+      	ros::AdvertiseServiceOptions::create<gazebo_ray_trace::RayTraceEachParticle>
+      	("ray_trace_each_particle",
+      	 boost::bind(&RayTracer::rayTraceEachParticle, this, _1, _2),
+      	 ros::VoidPtr(), NULL);
+
+      this->srv_ = this->rosnode_->advertiseService(ray_trace_srv);
+    }
 
   };
   GZ_REGISTER_WORLD_PLUGIN(RayTracer);

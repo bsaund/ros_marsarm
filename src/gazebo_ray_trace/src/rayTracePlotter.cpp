@@ -4,6 +4,7 @@
 
 #include "ros/ros.h"
 #include "gazebo_ray_trace/RayTrace.h"
+#include "gazebo_ray_trace/RayTraceEachParticle.h"
 #include <visualization_msgs/MarkerArray.h>
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
@@ -91,8 +92,36 @@ double getDistToPart(tf::Point start, tf::Point end, ros::NodeHandle n){
   return srv.response.dist;
 }
 
+std::vector<double> getDistToParticles(tf::Point start, tf::Point end, ros::NodeHandle n){
 
-void plotIntersections(tf::Point intersection, ros::Publisher marker_pub){
+  ros::ServiceClient client = n.serviceClient<gazebo_ray_trace::RayTraceEachParticle>("/gazebo_simulation/ray_trace_each_particle");
+
+
+  //Do Ray Trace
+  tf::TransformListener tf_listener;
+  tf::StampedTransform trans;
+
+  tf_listener.waitForTransform("/my_frame", "/particle_frame", ros::Time(0), ros::Duration(10.0));
+  tf_listener.lookupTransform("/particle_frame", "/my_frame", ros::Time(0), trans);
+
+
+  gazebo_ray_trace::RayTraceEachParticle srv;
+  tf::pointTFToMsg(trans * start, srv.request.start);
+  tf::pointTFToMsg(trans * end,   srv.request.end);
+  
+  ros::Time begin = ros::Time::now();
+
+  if(client.call(srv)){
+    // ROS_INFO("Distance  %f", srv.response.dist[0]);
+  }else{
+    ROS_ERROR("Ray Trace Failed");
+  }
+  ROS_INFO("Time for ray trace: %f", (ros::Time::now() - begin).toSec());
+  return srv.response.dist;
+}
+
+
+void plotIntersections(tf::Point intersection, ros::Publisher marker_pub, int index){
   visualization_msgs::Marker marker;
   marker.header.frame_id = "/my_frame";
   marker.header.stamp = ros::Time::now();
@@ -100,7 +129,7 @@ void plotIntersections(tf::Point intersection, ros::Publisher marker_pub){
   // Set the namespace and id for this marker.  This serves to create a unique ID
   // Any marker sent with the same namespace and id will overwrite the old one
   marker.ns = "ray_intersection";
-  marker.id = 1;
+  marker.id = index;
  
   marker.type = visualization_msgs::Marker::SPHERE;
  
@@ -151,9 +180,12 @@ int main(int argc, char **argv){
 
   
   double dist = getDistToPart(start, end, n);
- 
+  plotIntersections(start + dist * (end-start)/(end-start).length(), marker_pub, 0);
 
-  plotIntersections(start + dist * (end-start)/(end-start).length(), marker_pub);
+  // std::vector<double> dist = getDistToParticles(start, end, n);
+  // for(int i = 1; i < dist.size(); i++){
+  //   plotIntersections(start + dist[i] * (end-start)/(end-start).length(), marker_pub, i);
+  // }
 
   return 0;
 }

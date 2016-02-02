@@ -35,7 +35,9 @@ namespace gazebo
 
     void updateParticles(const geometry_msgs::PoseArray p)
     {
+      // ROS_INFO("Particles updated");
       particles_ = p;
+
     }
 
     
@@ -74,6 +76,8 @@ namespace gazebo
     bool rayTraceEachParticle(gazebo_ray_trace::RayTraceEachParticle::Request &req,
     	      gazebo_ray_trace::RayTraceEachParticle::Response &resp)
     {
+      ROS_INFO("Starting ray trace each particle");
+      // ROS_INFO("Number of particle %d", particles_.poses.size());
       tf::Vector3 start, end;
 
       start.setX(req.start.x);
@@ -93,7 +97,11 @@ namespace gazebo
       ray_ = boost::dynamic_pointer_cast<gazebo::physics::RayShape>
       	(engine->CreateShape("ray", gazebo::physics::CollisionPtr()));
 
+	   
+
+      resp.dist.resize(particles_.poses.size());
       for(int i=0; i<particles_.poses.size(); i++){
+
 	tf::Vector3 v = tf::Vector3(particles_.poses[i].position.x,
 				    particles_.poses[i].position.y,
 				    particles_.poses[i].position.z);
@@ -103,15 +111,17 @@ namespace gazebo
 	trans.setRotation(q);
 	trans = trans.inverse();
 	
-	ROS_INFO("About to ray trace");
-	resp.dist.push_back(rayTrace(
+
+
+
+	resp.dist[i] = rayTrace(
 				     vectorTFToGazebo(trans*start), 
 				     vectorTFToGazebo(trans*end), 
-				     ray_));
-	ROS_INFO("Finished Ray Trace");
+				     ray_);
+	// ROS_INFO("Finished Ray Trace, distance of: %f", resp.dist[i]);
       }
 
-      ROS_INFO("Traced ray and responded with distance: %n", resp.dist.size());
+      ROS_INFO("Traced ray and responded with %d different distances", resp.dist.size());
       return true;
     }
 
@@ -121,6 +131,7 @@ namespace gazebo
       v.x = t.getX();
       v.y = t.getY();
       v.z = t.getZ();
+      return v;
     }
 
     /**
@@ -129,8 +140,12 @@ namespace gazebo
     double rayTrace(math::Vector3 start, math::Vector3 end, gazebo::physics::RayShapePtr ray_){
       double dist;
       std::string entityName;
+      // ROS_INFO("Ray is from %f,%f,%f to %f,%f,%f", start.x, start.y, start.z,
+      // 	       end.x, end.y, end.z);
+
       ray_->SetPoints(start, end);
       ray_->GetIntersection(dist, entityName);
+
       return dist;
     }
 
@@ -144,7 +159,7 @@ namespace gazebo
       world_ = _world;      
       
       this->advertiseServices();
-      this->particle_sub = this->rosnode_->subscribe("transform_particles", 1000, 
+      this->particle_sub = this->rosnode_->subscribe("/transform_particles", 1000, 
 				   &RayTracer::updateParticles, this);
 
       ROS_INFO("Ready to ray trace");

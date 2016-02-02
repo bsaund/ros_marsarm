@@ -179,13 +179,14 @@ int main(int argc, char **argv){
   plotRay(start, end, marker_pub);
 
   
-  double dist = getDistToPart(start, end, n);
-  plotIntersections(start + dist * (end-start)/(end-start).length(), marker_pub, 0);
+  // double dist = getDistToPart(start, end, n);
+  // plotIntersections(start + dist * (end-start)/(end-start).length(), marker_pub, 0);
 
-  // std::vector<double> dist = getDistToParticles(start, end, n);
-  // for(int i = 1; i < dist.size(); i++){
-  //   plotIntersections(start + dist[i] * (end-start)/(end-start).length(), marker_pub, i);
-  // }
+  std::vector<double> dist = getDistToParticles(start, end, n);
+  for(int i = 1; i < dist.size(); i++){
+    ROS_INFO("Dist is %f", dist[i]);
+    plotIntersections(start + dist[i] * (end-start)/(end-start).length(), marker_pub, i);
+  }
 
   return 0;
 }

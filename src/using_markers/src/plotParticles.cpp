@@ -35,7 +35,7 @@ class ShapePlotter
 ShapePlotter::ShapePlotter()
 {
   marker_pub = n.advertise<visualization_msgs::MarkerArray>("visualization_marker_array", 10);
-  particle_pub = n.advertise<geometry_msgs::PoseArray>("tranform_particles", 10);
+  particle_pub = n.advertise<geometry_msgs::PoseArray>("/transform_particles", 10);
 }
 
 /** 
@@ -48,7 +48,8 @@ void ShapePlotter::generateTransforms()
   std::normal_distribution<> randn(0, 1);
   
   particles_.poses.resize(numParticles);
-  for(int i=0; i<numParticles; i++){
+
+  for(int i=0; i<particles_.poses.size(); i++){
     geometry_msgs::Pose particleTransform;
     particleTransform.position.x = randn(gen)/50;
     particleTransform.position.y = randn(gen)/50;
@@ -61,7 +62,10 @@ void ShapePlotter::generateTransforms()
     // particles_.push_back(particleTransform);
     particles_.poses[i] = particleTransform;
   }
-  particle_pub.publish(particles_);
+  // particle_pub.publish(particles_);
+  // ROS_INFO("About to call particle size");
+  // ROS_INFO("Publishing particles of size %n", particles_.poses.size());
+  // ROS_INFO("Particle size correct");
 }
 
 
@@ -121,6 +125,7 @@ void ShapePlotter::plotParticles(){
   }
   
   marker_pub.publish(points);
+
   particle_pub.publish(particles_);
 }
 
@@ -140,6 +145,7 @@ int main(int argc, char **argv)
   while (ros::ok()) {
     waitForRViz.sleep();
     plt.plotParticles();
+    ROS_INFO("About to call particle size");
 
   }
   

@@ -5,6 +5,7 @@
 #include <gazebo/common/Plugin.hh>
 #include "gazebo/physics/physics.hh"
 #include <geometry_msgs/PoseArray.h>
+#include <tf/tf.h>
 #include <boost/thread.hpp>
 
 
@@ -44,7 +45,6 @@ namespace gazebo
     	      gazebo_ray_trace::RayTrace::Response &resp)
     {
       math::Vector3 start, end;
-      resp.dist.
 
       start.x = req.start.x;
       start.y = req.start.y;
@@ -53,37 +53,6 @@ namespace gazebo
       end.x = req.end.x;
       end.y = req.end.y;
       end.z = req.end.z;
-
-      gazebo::physics::RayShapePtr ray_;
-      gazebo::physics::PhysicsEnginePtr engine = world_->GetPhysicsEngine(); 
-      engine->InitForThread();
-
-      ray_ = boost::dynamic_pointer_cast<gazebo::physics::RayShape>
-      	(engine->CreateShape("ray", gazebo::physics::CollisionPtr()));
-
-      resp.dist.push_back(rayTrace(start, end, ray_));
-
-      ROS_INFO("Traced ray and responded with distance: %f", resp.dist);
-      return true;
-    }
-
-    /**
-     *  Ray traces each particles
-     */
-    bool rayTraceEachParticles(gazebo_ray_trace::RayTraceEachParticle::Request &req,
-    	      gazebo_ray_trace::RayTraceEachParticle::Response &resp)
-    {
-      math::Vector3 start, end;
-
-      start.x = req.start.x;
-      start.y = req.start.y;
-      start.z = req.start.z;
-
-      end.x = req.end.x;
-      end.y = req.end.y;
-      end.z = req.end.z;
-
-      tf::Transform trans;
 
       gazebo::physics::RayShapePtr ray_;
       gazebo::physics::PhysicsEnginePtr engine = world_->GetPhysicsEngine(); 
@@ -96,6 +65,60 @@ namespace gazebo
 
       ROS_INFO("Traced ray and responded with distance: %f", resp.dist);
       return true;
+    }
+
+    /**
+     *  Ray traces each particles
+     */
+    bool rayTraceEachParticles(gazebo_ray_trace::RayTraceEachParticle::Request &req,
+    	      gazebo_ray_trace::RayTraceEachParticle::Response &resp)
+    {
+      tf::Vector3 start, end;
+
+      start.setX(req.start.x);
+      start.setY(req.start.y);
+      start.setZ(req.start.z);
+
+      end.setX(req.end.x);
+      end.setY(req.end.y);
+      end.setZ(req.end.z);
+
+      tf::Transform trans;
+
+      gazebo::physics::RayShapePtr ray_;
+      gazebo::physics::PhysicsEnginePtr engine = world_->GetPhysicsEngine(); 
+      engine->InitForThread();
+
+      ray_ = boost::dynamic_pointer_cast<gazebo::physics::RayShape>
+      	(engine->CreateShape("ray", gazebo::physics::CollisionPtr()));
+
+      for(int i=0; i<particles_.poses.size(); i++){
+	tf::Vector3 v = tf::Vector3(particles_.poses[i].position.x,
+				    particles_.poses[i].position.y,
+				    particles_.poses[i].position.z);
+	trans.setOrigin(v);
+	tf::Quaternion q;
+	tf::quaternionMsgToTF(particles_.poses[i].orientation, q);
+	trans.setRotation(q);
+	trans = trans.inverse();
+	
+	
+	resp.dist.push_back(rayTrace(
+				     vectorTFToGazebo(trans*start), 
+				     vectorTFToGazebo(trans*end), 
+				     ray_));
+      }
+
+      ROS_INFO("Traced ray and responded with distance: %n", resp.dist.size());
+      return true;
+    }
+
+    math::Vector3 vectorTFToGazebo(const tf::Vector3 t)
+    {
+      math::Vector3 v;
+      v.x = t.getX();
+      v.y = t.getY();
+      v.z = t.getZ();
     }
 
     /**

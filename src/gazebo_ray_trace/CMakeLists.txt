@@ -7,7 +7,8 @@ find_package(catkin REQUIRED
   std_msgs
   geometry_msgs
   message_generation
-  gazebo_ros)
+  gazebo_ros
+  tf)
 
 find_package(gazebo REQUIRED)
 

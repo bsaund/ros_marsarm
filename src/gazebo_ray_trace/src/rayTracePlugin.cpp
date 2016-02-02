@@ -19,6 +19,7 @@ namespace gazebo
     boost::thread deferred_load_thread_;
     ros::NodeHandle* rosnode_;
     ros::ServiceServer srv_;
+    ros::ServiceServer srv_each_;
 
     ros::Subscriber particle_sub;
     geometry_msgs::PoseArray particles_;
@@ -102,11 +103,12 @@ namespace gazebo
 	trans.setRotation(q);
 	trans = trans.inverse();
 	
-
+	ROS_INFO("About to ray trace");
 	resp.dist.push_back(rayTrace(
 				     vectorTFToGazebo(trans*start), 
 				     vectorTFToGazebo(trans*end), 
 				     ray_));
+	ROS_INFO("Finished Ray Trace");
       }
 
       ROS_INFO("Traced ray and responded with distance: %n", resp.dist.size());
@@ -171,13 +173,13 @@ namespace gazebo
       this->srv_ = this->rosnode_->advertiseService(ray_trace_srv);
 
 
-      ray_trace_srv = 
+      ros::AdvertiseServiceOptions ray_trace_srv_2 = 
       	ros::AdvertiseServiceOptions::create<gazebo_ray_trace::RayTraceEachParticle>
       	("ray_trace_each_particle",
       	 boost::bind(&RayTracer::rayTraceEachParticle, this, _1, _2),
       	 ros::VoidPtr(), NULL);
 
-      this->srv_ = this->rosnode_->advertiseService(ray_trace_srv);
+      this->srv_each_ = this->rosnode_->advertiseService(ray_trace_srv_2);
     }
 
   };

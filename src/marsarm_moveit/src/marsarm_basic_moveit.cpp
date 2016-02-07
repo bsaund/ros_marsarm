@@ -71,7 +71,14 @@ ArmMover::ArmMover() : group("arm"){
 }
 
 void ArmMover::moveHnd(const marsarm_moveit::Joints j){
-  ROS_INFO("Joints are: %f", j.joints[0]);
+  ROS_INFO("Joints are: %f, %f, %f, %f, %f, %f, %f", 
+	   j.joints[0],
+	   j.joints[1],
+	   j.joints[2],
+	   j.joints[3],
+	   j.joints[4],
+	   j.joints[5],
+	   j.joints[6]);
   group.setJointValueTarget(j.joints);
   group.move();
 }
@@ -112,7 +119,7 @@ int main(int argc, char **argv)
   spinner.start();
 
   ArmMover arm;
-  arm.executeTestMove();
+  // arm.executeTestMove();
   ros::spin();
 
 

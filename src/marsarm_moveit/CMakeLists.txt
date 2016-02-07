@@ -48,11 +48,10 @@ find_package(Boost REQUIRED system filesystem date_time thread)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  Joints.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -69,10 +68,10 @@ find_package(Boost REQUIRED system filesystem date_time thread)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+  
+
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -138,6 +137,9 @@ link_directories(${catkin_LIBRARY_DIRS})
 ## Declare a C++ executable
 add_executable(marsarm_basic_moveit src/marsarm_basic_moveit.cpp)
 target_link_libraries(marsarm_basic_moveit ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(joint_testing_client src/joint_testing_client.cpp)
+target_link_libraries(joint_testing_client ${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above

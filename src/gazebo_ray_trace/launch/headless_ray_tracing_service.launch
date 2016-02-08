@@ -9,9 +9,14 @@
   <arg name="debug" default="false"/>
   <arg name="physics" default="ode"/>
   <arg name="verbose" default="false"/>
-  <arg name="world_name" default="$(find gazebo_ray_trace)/worlds/boeing_part.world"/> <!-- Note: the world_name is with respect to GAZEBO_RESOURCE_PATH environmental variable -->
 
+  <!-- Change this in two places: Here and plotParticles.cpp -->
+  <!-- <arg name="world_name" default="$(find gazebo_ray_trace)/worlds/boeing_part.world"/>  -->
+  <arg name="world_name" default="$(find gazebo_ray_trace)/worlds/flat_plate.world"/> 
+  <!-- Note: the world_name is with respect to GAZEBO_RESOURCE_PATH environmental variable -->
 
+  <!-- This does not appear to actually turn use_sim_time off. 
+       use_sim_time is also set to false within plugin -->
   <param name="/use_sim_time" value="false" />
 
   <!-- set command arguments -->

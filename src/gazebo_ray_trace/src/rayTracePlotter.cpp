@@ -9,6 +9,9 @@
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
 
+/**
+ * Creates and returns the ray marker
+ */
 visualization_msgs::Marker createMarker(tf::Point start, tf::Point end)
 {
   visualization_msgs::Marker marker;
@@ -20,14 +23,13 @@ visualization_msgs::Marker createMarker(tf::Point start, tf::Point end)
   marker.ns = "ray";
   marker.id = 0;
  
-  // Set the marker type.  Initially this is CUBE, and cycles between that and SPHERE, ARROW, anLINDER
+
   marker.type = visualization_msgs::Marker::ARROW;
  
-  // Set the marker action.  Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
+
   marker.action = visualization_msgs::Marker::ADD;
  
   ROS_INFO("About to set points");
-
   
   marker.points.resize(2);
   tf::pointTFToMsg(start, marker.points[0]);
@@ -92,12 +94,17 @@ double getDistToPart(tf::Point start, tf::Point end, ros::NodeHandle n){
   return srv.response.dist;
 }
 
+/**
+ * Calls the ros service provided by ray_trace_pluggin.
+ *  This service accepts a ray and returns a list of points for where the ray 
+ *  intersected each obstacle
+ */
 std::vector<double> getDistToParticles(tf::Point start, tf::Point end, ros::NodeHandle n){
 
   ros::ServiceClient client = n.serviceClient<gazebo_ray_trace::RayTraceEachParticle>("/gazebo_simulation/ray_trace_each_particle");
 
 
-  //Do Ray Trace
+  //Transform the ray into the particle frame to pass correct ray to gazebo for ray casting
   tf::TransformListener tf_listener;
   tf::StampedTransform trans;
 
@@ -120,7 +127,9 @@ std::vector<double> getDistToParticles(tf::Point start, tf::Point end, ros::Node
   return srv.response.dist;
 }
 
-
+/**
+ *  Plots intersections of a ray with all particles as red dots
+ */
 void plotIntersections(tf::Point intersection, ros::Publisher marker_pub, int index){
   visualization_msgs::Marker marker;
   marker.header.frame_id = "/my_frame";

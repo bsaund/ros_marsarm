@@ -86,7 +86,10 @@ void ShapePlotter::updateMarkers()
     points.markers[i].id = i;
 
     points.markers[i].type = visualization_msgs::Marker::MESH_RESOURCE;
-    points.markers[i].mesh_resource = "package://touch_optimization/sdf/boeing_part_binary.stl";
+
+    //Change this in two locations: Here and gazebo
+    // points.markers[i].mesh_resource = "package://touch_optimization/sdf/boeing_part_binary.stl";
+    points.markers[i].mesh_resource = "package://touch_optimization/sdf/flat_plate.stl";
 
 
     // POINTS markers use x and y scale for width/height respectively
@@ -106,6 +109,10 @@ void ShapePlotter::updateMarkers()
   }
 }
 
+
+/**
+ * Publishes both the marker points and particle transforms
+ */
 void ShapePlotter::plotParticles(){
   geometry_msgs::TransformStamped trans;
   tf::Transform unityTransform;
@@ -145,7 +152,7 @@ int main(int argc, char **argv)
   while (ros::ok()) {
     waitForRViz.sleep();
     plt.plotParticles();
-    ROS_INFO("About to call particle size");
+
 
   }
   

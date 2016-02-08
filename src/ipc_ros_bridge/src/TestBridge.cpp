@@ -42,9 +42,10 @@ static void forceSensorNoiseHnd (MSG_INSTANCE msg, void *callData,
     // ROS_INFO("size is %d", ccStatus->manipStatus.cur.position[0].data.size());
     for(int i=0; i<j.joints.size(); i++){
       
+      j.joints[i] = ccStatus->manipStatus.cur.position[0].data[i];
       //physical parallel joints are inverted compared to model
       if(i%2){
-	j.joints[i] = -ccStatus->manipStatus.cur.position[0].data[i];
+	j.joints[i] = -j.joints[i];
       }
       //Joint 1 has a physical offset not present in model
       if(i==1){

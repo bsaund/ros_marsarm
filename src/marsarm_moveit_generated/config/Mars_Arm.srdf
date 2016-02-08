@@ -37,6 +37,7 @@
     <disable_collisions link1="base" link2="probe_tip" reason="Never" />
     <disable_collisions link1="base" link2="shoulder" reason="Adjacent" />
     <disable_collisions link1="base" link2="wrist" reason="Never" />
+    <disable_collisions link1="base" link2="main_arm" reason="Never" />
     <disable_collisions link1="base_plate" link2="elbow" reason="Never" />
     <disable_collisions link1="base_plate" link2="forearm" reason="Never" />
     <disable_collisions link1="base_plate" link2="hand" reason="Never" />

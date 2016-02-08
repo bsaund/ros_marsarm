@@ -7,6 +7,7 @@
 #include <iostream>
 #include "ros/ros.h"
 #include "marsarm_moveit/Joints.h"
+#include "sensor_msgs/JointState.h"
 
 // struct Status
 // {
@@ -37,21 +38,33 @@ static void forceSensorNoiseHnd (MSG_INSTANCE msg, void *callData,
   //   status.jointAngles = ccStatus->manipStatus.cur.position[0];
     // std::cout <<"Joint 0" << status.jointAngles.data[0] << std::endl;
     // std::cout <<"Joint 0: " << ccStatus->manipStatus.cur.position[0].data[0] << std::endl;
-    marsarm_moveit::Joints j;
-    j.joints.resize(7);
+    sensor_msgs::JointState j;
+    int n = 7;
+    j.name.resize(n);
+    j.name[0] = "base_plate_to_base";
+    j.name[1] = "base_to_shoulder";
+    j.name[2] = "shoulder_to_main_arm";
+    j.name[3] = "main_arm_to_elbow";
+    j.name[4] = "elbow_to_forearm";
+    j.name[5] = "forearm_to_wrist";
+    j.name[6] = "wrist_to_hand";
+
+    j.position.resize(n);
+
+
     // ROS_INFO("size is %d", ccStatus->manipStatus.cur.position[0].data.size());
-    for(int i=0; i<j.joints.size(); i++){
+    for(int i=0; i<j.position.size(); i++){
       
-      j.joints[i] = ccStatus->manipStatus.cur.position[0].data[i];
+      j.position[i] = ccStatus->manipStatus.cur.position[0].data[i];
       //physical parallel joints are inverted compared to model
       if(i%2){
-	j.joints[i] = -j.joints[i];
+	j.position[i] = -j.position[i];
       }
       //Joint 1 has a physical offset not present in model
       if(i==1){
-	j.joints[i] = j.joints[i] - 3.1415/2;
+	j.position[i] = j.position[i] - 3.1415/2;
       }
-      ROS_INFO("Joint %d is %f", i, j.joints[i]);
+      ROS_INFO("Joint %d is %f", i, j.position[i]);
     }
     pub.publish(j);
   }
@@ -75,7 +88,7 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "ipc_bridge");
   ros::NodeHandle n;
-  pub = n.advertise<marsarm_moveit::Joints>("/actual_joints",10);
+  pub = n.advertise<sensor_msgs::JointState>("/joints_from_marsarm",10);
   ipcInit();
 
   // ros::Duration d(10);

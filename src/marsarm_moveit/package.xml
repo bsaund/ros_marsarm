@@ -41,9 +41,11 @@
   <!--   <test_depend>gtest</test_depend> -->
   <build_depend>moveit_core</build_depend>
   <build_depend>moveit_ros_planning_interface</build_depend>
+  <build_depend>message_generation</build_depend>
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <run_depend>message_runtime</run_depend>
   <run_depend>moveit_core</run_depend>
   <run_depend>moveit_ros_planning_interface</run_depend>
   <!-- The export tag contains other, unspecified, tags -->

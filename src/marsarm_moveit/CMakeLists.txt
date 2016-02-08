@@ -10,7 +10,9 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_ros_planning_interface 
   pluginlib 
   cmake_modules 
-  tf)
+  tf
+  sensor_msgs
+  message_generation)
 # find_package(catkin REQUIRED)
 find_package(Boost REQUIRED system filesystem date_time thread)
 
@@ -69,7 +71,8 @@ add_message_files(
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
-  
+  DEPENDENCIES
+  sensor_msgs
 
 )
 

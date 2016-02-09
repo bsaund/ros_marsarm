@@ -13,7 +13,7 @@
 /**
  * Creates and returns the ray marker
  */
-visualization_msgs::Marker createMarker(tf::Point start, tf::Point end)
+visualization_msgs::Marker createRayMarker(tf::Point start, tf::Point end)
 {
   visualization_msgs::Marker marker;
   marker.header.frame_id = "/my_frame";
@@ -23,11 +23,9 @@ visualization_msgs::Marker createMarker(tf::Point start, tf::Point end)
   // Any marker sent with the same namespace and id will overwrite the old one
   marker.ns = "ray";
   marker.id = 0;
- 
 
   marker.type = visualization_msgs::Marker::ARROW;
  
-
   marker.action = visualization_msgs::Marker::ADD;
  
   ROS_INFO("About to set points");
@@ -56,8 +54,7 @@ visualization_msgs::Marker createMarker(tf::Point start, tf::Point end)
 
 void plotRay(tf::Point start, tf::Point end, ros::Publisher marker_pub){
 
-
-  visualization_msgs::Marker marker = createMarker(start, end);
+  visualization_msgs::Marker marker = createRayMarker(start, end);
 
   //wait until subscribed
   ros::Rate poll_rate(100);
@@ -104,7 +101,6 @@ std::vector<double> getDistToParticles(tf::Point start, tf::Point end, ros::Node
 
   ros::ServiceClient client = n.serviceClient<gazebo_ray_trace::RayTraceEachParticle>("/gazebo_simulation/ray_trace_each_particle");
 
-
   //Transform the ray into the particle frame to pass correct ray to gazebo for ray casting
   tf::TransformListener tf_listener;
   tf::StampedTransform trans;
@@ -119,19 +115,19 @@ std::vector<double> getDistToParticles(tf::Point start, tf::Point end, ros::Node
   
   ros::Time begin = ros::Time::now();
 
-  if(client.call(srv)){
-    // ROS_INFO("Distance  %f", srv.response.dist[0]);
-  }else{
+  if(!client.call(srv)){
     ROS_ERROR("Ray Trace Failed");
   }
+
   ROS_INFO("Time for ray trace: %f", (ros::Time::now() - begin).toSec());
   return srv.response.dist;
 }
 
-/**
- *  Plots intersections of a ray with all particles as red dots
- */
-void plotIntersections(tf::Point intersection, ros::Publisher marker_pub, int index){
+
+
+
+
+void plotIntersection(tf::Point intersection, ros::Publisher marker_pub, int index){
   visualization_msgs::Marker marker;
   marker.header.frame_id = "/my_frame";
   marker.header.stamp = ros::Time::now();
@@ -162,7 +158,18 @@ void plotIntersections(tf::Point intersection, ros::Publisher marker_pub, int in
   marker_pub.publish(marker);
 }
 
-
+/**
+ *  Plots intersections of a ray with all particles as red dots
+ */
+void plotIntersections(std::vector<double> dist, tf::Point rayStart, tf::Point rayEnd, 
+		       ros::Publisher marker_pub)
+{
+  for(int i = 1; i < dist.size(); i++){
+    ROS_INFO("Dist is %f", dist[i]);
+    plotIntersection(rayStart + dist[i] * (rayEnd-rayStart)/(rayEnd-rayStart).length(), 
+		      marker_pub, i);
+  }
+}
 
 
 
@@ -188,15 +195,12 @@ int main(int argc, char **argv){
 
   plotRay(start, end, marker_pub);
 
-  
-  // double dist = getDistToPart(start, end, n);
-  // plotIntersections(start + dist * (end-start)/(end-start).length(), marker_pub, 0);
-
   std::vector<double> dist = getDistToParticles(start, end, n);
-  for(int i = 1; i < dist.size(); i++){
-    ROS_INFO("Dist is %f", dist[i]);
-    plotIntersections(start + dist[i] * (end-start)/(end-start).length(), marker_pub, i);
-  }
+  // for(int i = 1; i < dist.size(); i++){
+  //   ROS_INFO("Dist is %f", dist[i]);
+  //   plotIntersections(start + dist[i] * (end-start)/(end-start).length(), marker_pub, i);
+  // }
+  plotIntersections(dist, start, end, marker_pub);
 
   ROS_INFO("Entropy is %f", CalcEntropy::calcEntropy(dist));
 

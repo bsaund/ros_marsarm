@@ -57,7 +57,20 @@ target_link_libraries(plot_ray_utils
 )
 
 add_executable(gazebo_rayTrace_test src/rayTraceTestingClient.cpp)
+
 add_executable(gazebo_rayTrace_plot src/rayTracePlotter.cpp)
+target_link_libraries(gazebo_rayTrace_plot
+  ${catkin_LIBRARIES}
+  calc_entropy
+  plot_ray_utils
+)
+
+add_executable(gazebo_rayTrace_grid src/gridOfRays.cpp)
+target_link_libraries(gazebo_rayTrace_grid
+  ${catkin_LIBRARIES}
+  calc_entropy
+  plot_ray_utils
+)
 
 
 
@@ -70,11 +83,6 @@ target_link_libraries(gazebo_rayTrace_test
   ${catkin_LIBRARIES}
 )
 
-target_link_libraries(gazebo_rayTrace_plot
-  ${catkin_LIBRARIES}
-  calc_entropy
-  plot_ray_utils
-)
 
 
 

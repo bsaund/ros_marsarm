@@ -7,7 +7,7 @@
 PlotRayUtils::PlotRayUtils()
 {
   marker_pub_ = 
-    n_.advertise<visualization_msgs::Marker>("ray_trace_markers", 10);
+    n_.advertise<visualization_msgs::Marker>("ray_trace_markers", 1000);
   client_ray_trace_ = 
     n_.serviceClient<gazebo_ray_trace::RayTrace>("/gazebo_simulation/ray_trace");
   client_ray_trace_particles_ = 
@@ -61,7 +61,7 @@ void PlotRayUtils::plotIntersections(std::vector<double> dist,
 {
 
   if(!overwrite){
-    // intersect_index_ += dist.size();
+    intersect_index_ += dist.size();
   }
 
   int point_id = intersect_index_;

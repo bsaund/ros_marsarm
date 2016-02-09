@@ -1,5 +1,5 @@
 #include "plotRayUtils.h"
-#include <tf/transform_listener.h>
+
 #include "gazebo_ray_trace/RayTrace.h"
 #include "gazebo_ray_trace/RayTraceEachParticle.h"
 
@@ -8,6 +8,12 @@ PlotRayUtils::PlotRayUtils()
 {
   marker_pub_ = 
     n_.advertise<visualization_msgs::Marker>("ray_trace_markers", 10);
+  client_ray_trace_ = 
+    n_.serviceClient<gazebo_ray_trace::RayTrace>("/gazebo_simulation/ray_trace");
+  client_ray_trace_particles_ = 
+    n_.serviceClient<gazebo_ray_trace::RayTraceEachParticle>
+    ("/gazebo_simulation/ray_trace_each_particle");
+
 }
 
 /** 
@@ -55,6 +61,11 @@ void PlotRayUtils::plotIntersections(std::vector<double> dist,
     plotIntersection(rayStart + dist[i] * (rayEnd-rayStart)/(rayEnd-rayStart).length(), 
 		     i);
   }
+}
+
+void PlotRayUtils::plotIntersections(tf::Point rayStart, tf::Point rayEnd)
+{
+  plotIntersections(getDistToParticles(rayStart, rayEnd), rayStart, rayEnd);
 }
 
 
@@ -126,14 +137,13 @@ void PlotRayUtils::plotRay(tf::Point start, tf::Point end)
  */
 double PlotRayUtils::getDistToPart(tf::Point start, tf::Point end)
 {
-  ros::ServiceClient client = n_.serviceClient<gazebo_ray_trace::RayTrace>("/gazebo_simulation/ray_trace");
+  // ros::ServiceClient client = n_.serviceClient<gazebo_ray_trace::RayTrace>("/gazebo_simulation/ray_trace");
 
   //Do Ray Trace
-  tf::TransformListener tf_listener;
   tf::StampedTransform trans;
 
-  tf_listener.waitForTransform("/my_frame", "/particle_frame", ros::Time(0), ros::Duration(10.0));
-  tf_listener.lookupTransform("/particle_frame", "/my_frame", ros::Time(0), trans);
+  tf_listener_.waitForTransform("/my_frame", "/particle_frame", ros::Time(0), ros::Duration(10.0));
+  tf_listener_.lookupTransform("/particle_frame", "/my_frame", ros::Time(0), trans);
 
 
   gazebo_ray_trace::RayTrace srv;
@@ -142,7 +152,7 @@ double PlotRayUtils::getDistToPart(tf::Point start, tf::Point end)
   
   ros::Time begin = ros::Time::now();
 
-  if(client.call(srv)){
+  if(client_ray_trace_.call(srv)){
     ROS_INFO("Distance  %f", srv.response.dist);
   }else{
     ROS_ERROR("Ray Trace Failed");
@@ -160,14 +170,14 @@ double PlotRayUtils::getDistToPart(tf::Point start, tf::Point end)
  */
 std::vector<double> PlotRayUtils::getDistToParticles(tf::Point start, tf::Point end){
 
-  ros::ServiceClient client = n_.serviceClient<gazebo_ray_trace::RayTraceEachParticle>("/gazebo_simulation/ray_trace_each_particle");
+  // ros::ServiceClient client = n_.serviceClient<gazebo_ray_trace::RayTraceEachParticle>("/gazebo_simulation/ray_trace_each_particle");
 
   //Transform the ray into the particle frame to pass correct ray to gazebo for ray casting
-  tf::TransformListener tf_listener;
+
   tf::StampedTransform trans;
 
-  tf_listener.waitForTransform("/my_frame", "/particle_frame", ros::Time(0), ros::Duration(10.0));
-  tf_listener.lookupTransform("/particle_frame", "/my_frame", ros::Time(0), trans);
+  tf_listener_.waitForTransform("/my_frame", "/particle_frame", ros::Time(0), ros::Duration(10.0));
+  tf_listener_.lookupTransform("/particle_frame", "/my_frame", ros::Time(0), trans);
 
 
   gazebo_ray_trace::RayTraceEachParticle srv;
@@ -176,7 +186,7 @@ std::vector<double> PlotRayUtils::getDistToParticles(tf::Point start, tf::Point 
   
   ros::Time begin = ros::Time::now();
 
-  if(!client.call(srv)){
+  if(!client_ray_trace_particles_.call(srv)){
     ROS_ERROR("Ray Trace Failed");
   }
 

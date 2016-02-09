@@ -25,9 +25,6 @@ int main(int argc, char **argv){
     return 1;
   }
   ros::init(argc, argv, "ray_trace_test");
-  // ros::NodeHandle n;
-
-
 
 
   //Start and end vectors of the ray
@@ -44,7 +41,7 @@ int main(int argc, char **argv){
   plt.plotRay(start, end);
   std::vector<double> dist = plt.getDistToParticles(start, end);
 
-  plt.plotIntersections(dist, start, end);
+  plt.plotIntersections(start, end);
 
   ROS_INFO("Entropy is %f", CalcEntropy::calcEntropy(dist));
 

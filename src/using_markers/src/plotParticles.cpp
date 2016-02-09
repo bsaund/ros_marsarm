@@ -1,3 +1,9 @@
+/*  
+ *  Generates particles in SE(3) for the configuration of an object
+ *  Plots these particles by sending markers to RViz
+ *  Published the particles so other ros nodes have access
+ */
+
 #include <ros/ros.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <cmath>
@@ -51,9 +57,12 @@ void ShapePlotter::generateTransforms()
 
   for(int i=0; i<particles_.poses.size(); i++){
     geometry_msgs::Pose particleTransform;
-    particleTransform.position.x = randn(gen)/50;
-    particleTransform.position.y = randn(gen)/50;
-    particleTransform.position.z = randn(gen)/50;
+    // particleTransform.position.x = randn(gen)/50;
+    // particleTransform.position.y = randn(gen)/50;
+    // particleTransform.position.z = randn(gen)/50;
+    particleTransform.position.x = 0;
+    particleTransform.position.y = 0;
+    particleTransform.position.z = 0;
 
     particleTransform.orientation = 
       tf::createQuaternionMsgFromRollPitchYaw(randn(gen)/50, randn(gen)/50, randn(gen)/50);

@@ -1,12 +1,14 @@
 #include "ros/ros.h"
 #include "gazebo_ray_trace/RayTrace.h"
 #include "gazebo_ray_trace/RayTraceEachParticle.h"
+#include "gazebo_ray_trace/RayTraceEntropy.h"
 #include <math.h>
 #include <gazebo/common/Plugin.hh>
 #include "gazebo/physics/physics.hh"
 #include <geometry_msgs/PoseArray.h>
 #include <tf/tf.h>
 #include <boost/thread.hpp>
+#include "calcEntropy.h"
 
 
 
@@ -20,6 +22,7 @@ namespace gazebo
     ros::NodeHandle* rosnode_;
     ros::ServiceServer srv_;
     ros::ServiceServer srv_each_;
+    ros::ServiceServer srv_entropy_;
 
     ros::Subscriber particle_sub;
     geometry_msgs::PoseArray particles_;
@@ -71,22 +74,44 @@ namespace gazebo
     }
 
     /**
+     *  Ray traces each particle and return the entropy of the distribution
+     */
+    bool rayTraceEntropy(gazebo_ray_trace::RayTraceEntropy::Request &req,
+		    gazebo_ray_trace::RayTraceEntropy::Response &resp)
+    {
+      std::vector<double> dist = rayTraceAllParticles(req.start, req.end);
+
+      resp.entropy = CalcEntropy::calcEntropy(dist);
+      return true;
+    }
+    
+
+    /**
      *  Ray traces each particles
      */
     bool rayTraceEachParticle(gazebo_ray_trace::RayTraceEachParticle::Request &req,
     	      gazebo_ray_trace::RayTraceEachParticle::Response &resp)
     {
+      resp.dist = rayTraceAllParticles(req.start, req.end);
+      ROS_INFO("Traced ray and responded with %d different distances", resp.dist.size());
+      return true;
+    }
+
+    std::vector<double> rayTraceAllParticles(geometry_msgs::Point startm, 
+					     geometry_msgs::Point endm)
+    {
+
       ROS_INFO("Starting ray trace each particle");
       // ROS_INFO("Number of particle %d", particles_.poses.size());
       tf::Vector3 start, end;
 
-      start.setX(req.start.x);
-      start.setY(req.start.y);
-      start.setZ(req.start.z);
+      start.setX(startm.x);
+      start.setY(startm.y);
+      start.setZ(startm.z);
 
-      end.setX(req.end.x);
-      end.setY(req.end.y);
-      end.setZ(req.end.z);
+      end.setX(endm.x);
+      end.setY(endm.y);
+      end.setZ(endm.z);
 
       tf::Transform trans;
 
@@ -98,8 +123,8 @@ namespace gazebo
       	(engine->CreateShape("ray", gazebo::physics::CollisionPtr()));
 
 	   
-
-      resp.dist.resize(particles_.poses.size());
+      std::vector<double> dist;
+      dist.resize(particles_.poses.size());
       for(int i=0; i<particles_.poses.size(); i++){
 
 	tf::Vector3 v = tf::Vector3(particles_.poses[i].position.x,
@@ -114,15 +139,15 @@ namespace gazebo
 
 
 
-	resp.dist[i] = rayTrace(
+	dist[i] = rayTrace(
 				     vectorTFToGazebo(trans*start), 
 				     vectorTFToGazebo(trans*end), 
 				     ray_);
 	// ROS_INFO("Finished Ray Trace, distance of: %f", resp.dist[i]);
       }
 
-      ROS_INFO("Traced ray and responded with %d different distances", resp.dist.size());
-      return true;
+
+      return dist;
     }
 
     math::Vector3 vectorTFToGazebo(const tf::Vector3 t)
@@ -195,6 +220,15 @@ namespace gazebo
       	 ros::VoidPtr(), NULL);
 
       this->srv_each_ = this->rosnode_->advertiseService(ray_trace_srv_2);
+
+      ros::AdvertiseServiceOptions ray_trace_entropy = 
+      	ros::AdvertiseServiceOptions::create<gazebo_ray_trace::RayTraceEntropy>
+      	("ray_trace_entropy",
+      	 boost::bind(&RayTracer::rayTraceEntropy, this, _1, _2),
+      	 ros::VoidPtr(), NULL);
+
+      this->srv_entropy_ = this->rosnode_->advertiseService(ray_trace_entropy);
+
     }
 
   };

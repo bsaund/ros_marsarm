@@ -21,6 +21,7 @@ add_service_files(
   FILES
   RayTrace.srv
   RayTraceEachParticle.srv
+  RayTraceEntropy.srv
 )
 
 generate_messages(
@@ -42,12 +43,17 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS} ${GAZEBO_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIR} 
+  ${catkin_INCLUDE_DIRS} 
+  ${GAZEBO_INCLUDE_DIRS}
+  hpp)
 
 
+add_library(calc_entropy src/calcEntropy.cpp)
 # add_executable(gazebo_rayTrace_service src/rayTraceService.cpp)
 add_executable(gazebo_rayTrace_test src/rayTraceTestingClient.cpp)
 add_executable(gazebo_rayTrace_plot src/rayTracePlotter.cpp)
+
 
 
 # add_dependencies(gazebo_rayTrace_pluggin gazebo_ray_trace_gencpp)
@@ -61,6 +67,7 @@ target_link_libraries(gazebo_rayTrace_test
 
 target_link_libraries(gazebo_rayTrace_plot
   ${catkin_LIBRARIES}
+  calc_entropy
 )
 
 # target_link_libraries(gazebo_rayTrace_service
@@ -75,5 +82,7 @@ target_link_libraries(distance_ray_trace
   ${Boost_LIBRARIES}
   ${SDF_LIBRARIES}
 )
+
+
 
 

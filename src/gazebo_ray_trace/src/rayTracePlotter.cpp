@@ -8,6 +8,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
+#include "calcEntropy.h"
 
 /**
  * Creates and returns the ray marker
@@ -196,6 +197,8 @@ int main(int argc, char **argv){
     ROS_INFO("Dist is %f", dist[i]);
     plotIntersections(start + dist[i] * (end-start)/(end-start).length(), marker_pub, i);
   }
+
+  ROS_INFO("Entropy is %f", CalcEntropy::calcEntropy(dist));
 
   return 0;
 }

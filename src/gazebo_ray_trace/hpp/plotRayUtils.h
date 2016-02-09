@@ -15,19 +15,30 @@ class PlotRayUtils{
   ros::ServiceClient client_ray_trace_particles_;
   tf::TransformListener tf_listener_;
 
+  int intersect_index_;
+  int ray_index_;
+
  public:
   PlotRayUtils();
-  void plotIntersections(tf::Point rayStart, tf::Point rayEnd);
-  void plotIntersections(std::vector<double> dist, tf::Point rayStart, tf::Point rayEnd);
+  void plotIntersections(tf::Point rayStart, tf::Point rayEnd, bool overwrite = true);
+  void plotIntersections(std::vector<double> dist, tf::Point rayStart, tf::Point rayEnd,
+			 bool overwrite = true);
   void plotIntersection(tf::Point intersection, int index);
 			
 
-  visualization_msgs::Marker createRayMarker(tf::Point start, tf::Point end);
+  visualization_msgs::Marker createRayMarker(tf::Point start, tf::Point end, int index);
   
-  void plotRay(tf::Point start, tf::Point end);
+  void plotRay(tf::Point start, tf::Point end, bool overwrite = true);
+  void labelRay(tf::Point start, std::string text);
 
   double getDistToPart(tf::Point start, tf::Point end);
   std::vector<double> getDistToParticles(tf::Point start, tf::Point end);
+
+  void listDistances(std::vector<double> dist){
+    for(int i=0; i < dist.size(); i++){
+      ROS_INFO("Dist is %f", dist[i]);
+    }
+  };
 
 };
 

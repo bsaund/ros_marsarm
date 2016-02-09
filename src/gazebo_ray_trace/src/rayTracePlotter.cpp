@@ -3,19 +3,10 @@
  */
 
 #include "ros/ros.h"
-#include "gazebo_ray_trace/RayTrace.h"
-#include "gazebo_ray_trace/RayTraceEachParticle.h"
-#include <visualization_msgs/MarkerArray.h>
-#include <tf/tf.h>
-#include <tf/transform_listener.h>
+
 #include "calcEntropy.h"
 #include "plotRayUtils.h"
-
-
-
-
-
-
+#include <sstream>
 
 
 
@@ -39,11 +30,17 @@ int main(int argc, char **argv){
   PlotRayUtils plt;
 
   plt.plotRay(start, end);
+
+ 
   std::vector<double> dist = plt.getDistToParticles(start, end);
 
   plt.plotIntersections(start, end);
 
-  ROS_INFO("Entropy is %f", CalcEntropy::calcEntropy(dist));
+  double entropy = CalcEntropy::calcEntropy(dist);
+  ROS_INFO("Entropy is %f", entropy);
+  std::stringstream s;
+  s << entropy;
+  plt.labelRay(start, s.str());
 
   return 0;
 }

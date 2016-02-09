@@ -14,6 +14,8 @@ PlotRayUtils::PlotRayUtils()
     n_.serviceClient<gazebo_ray_trace::RayTraceEachParticle>
     ("/gazebo_simulation/ray_trace_each_particle");
 
+  intersect_index_ = 0;
+  ray_index_ = 0;
 }
 
 /** 
@@ -54,18 +56,25 @@ void PlotRayUtils::plotIntersection(tf::Point intersection, int index){
  *  Plots intersections of a ray with all particles as red dots
  */
 void PlotRayUtils::plotIntersections(std::vector<double> dist, 
-				     tf::Point rayStart, tf::Point rayEnd)
+				     tf::Point rayStart, tf::Point rayEnd,
+				     bool overwrite)
 {
-  for(int i = 1; i < dist.size(); i++){
-    ROS_INFO("Dist is %f", dist[i]);
+
+  if(!overwrite){
+    // intersect_index_ += dist.size();
+  }
+
+  int point_id = intersect_index_;
+  for(int i = 0; i < dist.size(); i++){
     plotIntersection(rayStart + dist[i] * (rayEnd-rayStart)/(rayEnd-rayStart).length(), 
-		     i);
+		     point_id);
+    point_id++;
   }
 }
 
-void PlotRayUtils::plotIntersections(tf::Point rayStart, tf::Point rayEnd)
+void PlotRayUtils::plotIntersections(tf::Point rayStart, tf::Point rayEnd, bool overwrite)
 {
-  plotIntersections(getDistToParticles(rayStart, rayEnd), rayStart, rayEnd);
+  plotIntersections(getDistToParticles(rayStart, rayEnd), rayStart, rayEnd, overwrite);
 }
 
 
@@ -73,7 +82,8 @@ void PlotRayUtils::plotIntersections(tf::Point rayStart, tf::Point rayEnd)
 /**
  * Creates and returns the ray marker
  */
-visualization_msgs::Marker PlotRayUtils::createRayMarker(tf::Point start, tf::Point end)
+visualization_msgs::Marker PlotRayUtils::createRayMarker(tf::Point start, tf::Point end, 
+							 int index)
 {
   visualization_msgs::Marker marker;
   marker.header.frame_id = "/my_frame";
@@ -82,7 +92,7 @@ visualization_msgs::Marker PlotRayUtils::createRayMarker(tf::Point start, tf::Po
   // Set the namespace and id for this marker.  This serves to create a unique ID
   // Any marker sent with the same namespace and id will overwrite the old one
   marker.ns = "ray";
-  marker.id = 0;
+  marker.id = index;
 
   marker.type = visualization_msgs::Marker::ARROW;
  
@@ -96,7 +106,7 @@ visualization_msgs::Marker PlotRayUtils::createRayMarker(tf::Point start, tf::Po
  
   ROS_INFO("Set points");
 
-  marker.scale.x = 0.001;
+  marker.scale.x = 0.005;
   marker.scale.y = 0.1;
   // marker.scale.z = 1.0;
  
@@ -112,10 +122,16 @@ visualization_msgs::Marker PlotRayUtils::createRayMarker(tf::Point start, tf::Po
 }
 
 
-void PlotRayUtils::plotRay(tf::Point start, tf::Point end)
+/*
+ * publishes a message with the ray.
+ *  By default overwrites the previous array
+ */
+void PlotRayUtils::plotRay(tf::Point start, tf::Point end, bool overwrite)
 {
-
-  visualization_msgs::Marker marker = createRayMarker(start, end);
+  if(!overwrite){
+    ray_index_++;
+  }
+  visualization_msgs::Marker marker = createRayMarker(start, end, ray_index_);
 
   //wait until subscribed
   ros::Rate poll_rate(100);
@@ -127,7 +143,42 @@ void PlotRayUtils::plotRay(tf::Point start, tf::Point end)
   marker_pub_.publish(marker);
 }
 
+void PlotRayUtils::labelRay(tf::Point start, std::string text){
+ visualization_msgs::Marker marker;
+  marker.header.frame_id = "/my_frame";
+  marker.header.stamp = ros::Time::now();
+ 
+  // Set the namespace and id for this marker.  This serves to create a unique ID
+  // Any marker sent with the same namespace and id will overwrite the old one
+  marker.ns = "ray_label";
+  marker.id = ray_index_;
 
+  marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+ 
+  marker.action = visualization_msgs::Marker::ADD;
+ 
+  ROS_INFO("About to set label");
+  
+    
+  tf::pointTFToMsg(start, marker.pose.position);
+ 
+  ROS_INFO("Set points");
+
+
+  marker.scale.z = 0.05;
+ 
+  // Set the color -- be sure to set alpha to something non-zero!
+  marker.color.r = 0.0f;
+  marker.color.g = 1.0f;
+  marker.color.b = 0.0f;
+  marker.color.a = 0.6;
+
+  marker.text = text;
+ 
+  marker.lifetime = ros::Duration();
+
+  marker_pub_.publish(marker);
+}
 
 
 /**

@@ -1,5 +1,5 @@
 #include "ros/ros.h"
-#include "marsarm_moveit/Joints.h"
+// #include "marsarm_moveit/Joints.h"
 #include "sensor_msgs/JointState.h"
 
 int main(int argc, char **argv){

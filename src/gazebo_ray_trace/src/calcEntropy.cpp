@@ -58,11 +58,6 @@ namespace CalcEntropy{
       // std::cout << hist[i] << std::endl;
     }
 
-   
-
-
-
-
     return entropy;
   }
 

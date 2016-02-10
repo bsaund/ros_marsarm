@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>gazebo_ray_trace</name>
+  <name>particle_filter</name>
   <version>0.0.0</version>
-  <description>The gazebo_ray_trace package</description>
+  <description>The particle_filter package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/gazebo_ray_trace</url> -->
+  <!-- <url type="website">http://wiki.ros.org/particle_filter</url> -->
 
 
   <!-- Author tags are optional, mutiple are allowed, one per tag -->
@@ -32,31 +32,23 @@
   <!-- Dependencies can be catkin packages or system dependencies -->
   <!-- Examples: -->
   <!-- Use build_depend for packages you need at compile time: -->
-    <build_depend>roscpp</build_depend>
-    <build_depend>gazebo_ros</build_depend>
-    <build_depend>tf</build_depend>
-    <build_depend>message_generation</build_depend>
+  <!--   <build_depend>message_generation</build_depend> -->
   <!-- Use buildtool_depend for build tool packages: -->
   <!--   <buildtool_depend>catkin</buildtool_depend> -->
   <!-- Use run_depend for packages you need at runtime: -->
-    <run_depend>roscpp</run_depend>
-    <run_depend>gazebo_ros</run_depend>
-    <run_depend>tf</run_depend>
-    <run_depend>message_runtime</run_depend>
+  <!--   <run_depend>message_runtime</run_depend> -->
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>gazebo_ray_trace</build_depend>
+  <build_depend>roscpp</build_depend>
+  <run_depend>gazebo_ray_trace</run_depend>
+  <run_depend>roscpp</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->
-    <gazebo_ros 
-	plugin_path="${prefix}/lib" 
-	gazebo_media_path="${prefix}" 
-	gazebo_model_path="${prefix}/.."/>
-
-    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lcalc_entropy"/>
 
   </export>
 </package>

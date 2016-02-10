@@ -30,9 +30,9 @@ generate_messages(
   geometry_msgs
 )
 catkin_package(
- DEPENDS 
- roscpp
- gazebo_ros
+ DEPENDS roscpp gazebo_ros
+ INCLUDE_DIRS include
+ LIBRARIES calc_entropy
 )
 
 
@@ -46,10 +46,12 @@ catkin_package(
 include_directories(${Boost_INCLUDE_DIR} 
   ${catkin_INCLUDE_DIRS} 
   ${GAZEBO_INCLUDE_DIRS}
-  hpp)
+  include/${PROJECT_NAME})
 
 
 add_library(calc_entropy src/calcEntropy.cpp)
+target_link_libraries(calc_entropy ${catkin_LIBRARIES})
+
 add_library(plot_ray_utils src/plotRayUtils.cpp)
 target_link_libraries(plot_ray_utils
   ${catkin_LIBRARIES}
@@ -102,5 +104,13 @@ target_link_libraries(distance_ray_trace
 )
 
 
+install(TARGETS calc_entropy
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
 
 
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h")

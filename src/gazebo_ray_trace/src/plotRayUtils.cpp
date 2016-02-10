@@ -2,7 +2,7 @@
 
 #include "gazebo_ray_trace/RayTrace.h"
 #include "gazebo_ray_trace/RayTraceEachParticle.h"
-
+#include "calcEntropy.h"
 
 PlotRayUtils::PlotRayUtils()
 {
@@ -171,13 +171,27 @@ void PlotRayUtils::labelRay(tf::Point start, std::string text){
   marker.color.r = 0.0f;
   marker.color.g = 1.0f;
   marker.color.b = 0.0f;
-  marker.color.a = 0.6;
+  marker.color.a = 1.0;
 
   marker.text = text;
  
   marker.lifetime = ros::Duration();
 
   marker_pub_.publish(marker);
+}
+
+
+
+/**
+ *  Plots ray, intersections, and entropy (text)
+ */
+void PlotRayUtils::plotEntropyRay(tf::Point start, tf::Point end, bool overwrite)
+{
+  plotRay(start, end, overwrite);
+  plotIntersections(start, end, overwrite);
+  std::stringstream s;
+  s << CalcEntropy::calcEntropy(getDistToParticles(start,end));
+  labelRay(start, s.str());
 }
 
 

@@ -30,6 +30,7 @@ class PlotRayUtils{
   
   void plotRay(tf::Point start, tf::Point end, bool overwrite = true);
   void labelRay(tf::Point start, std::string text);
+  void plotEntropyRay(tf::Point start, tf::Point end, bool overwrite);
 
   double getDistToPart(tf::Point start, tf::Point end);
   std::vector<double> getDistToParticles(tf::Point start, tf::Point end);

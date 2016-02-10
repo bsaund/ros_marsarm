@@ -32,7 +32,7 @@ generate_messages(
 catkin_package(
  DEPENDS roscpp gazebo_ros
  INCLUDE_DIRS include
- LIBRARIES calc_entropy
+ LIBRARIES calc_entropy plot_ray_utils
 )
 
 
@@ -104,7 +104,7 @@ target_link_libraries(distance_ray_trace
 )
 
 
-install(TARGETS calc_entropy
+install(TARGETS calc_entropy plot_ray_utils
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})

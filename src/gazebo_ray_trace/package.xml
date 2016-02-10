@@ -56,7 +56,7 @@
 	gazebo_media_path="${prefix}" 
 	gazebo_model_path="${prefix}/.."/>
 
-    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lcalc_entropy"/>
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lcalc_entropy -lplot_ray_utils"/>
 
   </export>
 </package>

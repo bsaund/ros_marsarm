@@ -106,7 +106,7 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(${catkin_INCLUDE_DIRS}, /home/bsaund/boeing/software/src)
+include_directories(${catkin_INCLUDE_DIRS}, /home/bsaund/boeing/software/src)
 
 add_executable(ipc_ros_bridge_test src/TestBridge.cpp)
 

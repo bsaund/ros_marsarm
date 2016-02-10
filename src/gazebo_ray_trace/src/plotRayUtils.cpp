@@ -98,14 +98,11 @@ visualization_msgs::Marker PlotRayUtils::createRayMarker(tf::Point start, tf::Po
  
   marker.action = visualization_msgs::Marker::ADD;
  
-  ROS_INFO("About to set points");
   
   marker.points.resize(2);
   tf::pointTFToMsg(start, marker.points[0]);
   tf::pointTFToMsg(end, marker.points[1]);
  
-  ROS_INFO("Set points");
-
   marker.scale.x = 0.005;
   marker.scale.y = 0.1;
   // marker.scale.z = 1.0;
@@ -152,19 +149,11 @@ void PlotRayUtils::labelRay(tf::Point start, std::string text){
   // Any marker sent with the same namespace and id will overwrite the old one
   marker.ns = "ray_label";
   marker.id = ray_index_;
-
   marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
- 
   marker.action = visualization_msgs::Marker::ADD;
  
-  ROS_INFO("About to set label");
-  
-    
   tf::pointTFToMsg(start, marker.pose.position);
  
-  ROS_INFO("Set points");
-
-
   marker.scale.z = 0.05;
  
   // Set the color -- be sure to set alpha to something non-zero!
@@ -188,9 +177,12 @@ void PlotRayUtils::labelRay(tf::Point start, std::string text){
 void PlotRayUtils::plotEntropyRay(tf::Point start, tf::Point end, bool overwrite)
 {
   plotRay(start, end, overwrite);
-  plotIntersections(start, end, overwrite);
+  std::vector<double> dist = getDistToParticles(start, end);
+  plotIntersections(dist, start, end, overwrite);
   std::stringstream s;
-  s << CalcEntropy::calcEntropy(getDistToParticles(start,end));
+
+  s << CalcEntropy::calcEntropy(dist);
+
   labelRay(start, s.str());
 }
 
@@ -202,7 +194,6 @@ void PlotRayUtils::plotEntropyRay(tf::Point start, tf::Point end, bool overwrite
  */
 double PlotRayUtils::getDistToPart(tf::Point start, tf::Point end)
 {
-  // ros::ServiceClient client = n_.serviceClient<gazebo_ray_trace::RayTrace>("/gazebo_simulation/ray_trace");
 
   //Do Ray Trace
   tf::StampedTransform trans;
@@ -215,14 +206,14 @@ double PlotRayUtils::getDistToPart(tf::Point start, tf::Point end)
   tf::pointTFToMsg(trans * start, srv.request.start);
   tf::pointTFToMsg(trans * end,   srv.request.end);
   
-  ros::Time begin = ros::Time::now();
+
 
   if(client_ray_trace_.call(srv)){
     ROS_INFO("Distance  %f", srv.response.dist);
   }else{
     ROS_ERROR("Ray Trace Failed");
   }
-  ROS_INFO("Time for ray trace: %f", (ros::Time::now() - begin).toSec());
+
   return srv.response.dist;
 }
 
@@ -234,8 +225,6 @@ double PlotRayUtils::getDistToPart(tf::Point start, tf::Point end)
  *  intersected each obstacle
  */
 std::vector<double> PlotRayUtils::getDistToParticles(tf::Point start, tf::Point end){
-
-  // ros::ServiceClient client = n_.serviceClient<gazebo_ray_trace::RayTraceEachParticle>("/gazebo_simulation/ray_trace_each_particle");
 
   //Transform the ray into the particle frame to pass correct ray to gazebo for ray casting
 
@@ -249,12 +238,10 @@ std::vector<double> PlotRayUtils::getDistToParticles(tf::Point start, tf::Point 
   tf::pointTFToMsg(trans * start, srv.request.start);
   tf::pointTFToMsg(trans * end,   srv.request.end);
   
-  ros::Time begin = ros::Time::now();
-
   if(!client_ray_trace_particles_.call(srv)){
     ROS_ERROR("Ray Trace Failed");
   }
 
-  ROS_INFO("Time for ray trace: %f", (ros::Time::now() - begin).toSec());
+
   return srv.response.dist;
 }

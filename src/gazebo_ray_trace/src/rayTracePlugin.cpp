@@ -1,3 +1,7 @@
+/*
+ *  Plugin for gazebo for performing ray tracing in the world
+ *   via a ros service
+ */
 #include "ros/ros.h"
 #include "gazebo_ray_trace/RayTrace.h"
 #include "gazebo_ray_trace/RayTraceEachParticle.h"

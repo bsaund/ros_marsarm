@@ -50,21 +50,22 @@ static void forceSensorNoiseHnd (MSG_INSTANCE msg, void *callData,
     j.name[6] = "wrist_to_hand";
 
     j.position.resize(n);
-
+    j.velocity.resize(n);
 
     // ROS_INFO("size is %d", ccStatus->manipStatus.cur.position[0].data.size());
     for(int i=0; i<j.position.size(); i++){
-      
+      j.velocity[i] = ccStatus->manipStatus.cur.velocity[0].data[i];
       j.position[i] = ccStatus->manipStatus.cur.position[0].data[i];
       //physical parallel joints are inverted compared to model
       if(i%2){
 	j.position[i] = -j.position[i];
+	j.velocity[i] = -j.velocity[i];
       }
       //Joint 1 has a physical offset not present in model
       if(i==1){
 	j.position[i] = j.position[i] - 3.1415/2;
       }
-      ROS_INFO("Joint %d is %f", i, j.position[i]);
+      ROS_INFO("Joint %d is p %f, v %f", i, j.position[i], j.velocity[i]);
     }
     pub.publish(j);
   }

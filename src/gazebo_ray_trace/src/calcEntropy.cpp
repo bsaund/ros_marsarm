@@ -23,6 +23,7 @@ static std::vector<double> histogram(std::vector<double> dist, int nbins, double
 
   int i = 0;
   while(i < dist.size()){
+    // std::cout << dist[i] << std::endl;
     if(dist[i] < binValue){
       hist[binNum]++;
       i++;
@@ -42,6 +43,8 @@ namespace CalcEntropy{
    *  of the discrete elements
    */
   double calcEntropy(std::vector<double> dist){
+    // std::cout << "Calculating Entropy" << std::endl;
+    // std::cout << "size is " << dist.size() << std::endl;
     std::sort(dist.begin(), dist.end());
     double binSize;
     std::vector<double> hist = histogram(dist, dist.size()/5, &binSize);

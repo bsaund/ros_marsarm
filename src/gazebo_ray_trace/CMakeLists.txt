@@ -101,6 +101,8 @@ target_link_libraries(distance_ray_trace
   ${GAZEBO_LIBRARIES}
   ${Boost_LIBRARIES}
   ${SDF_LIBRARIES}
+  calc_entropy
+  plot_ray_utils
 )
 
 

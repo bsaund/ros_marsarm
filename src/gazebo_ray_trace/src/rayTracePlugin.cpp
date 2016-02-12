@@ -13,6 +13,7 @@
 #include <tf/tf.h>
 #include <boost/thread.hpp>
 #include "calcEntropy.h"
+// #include "plotRayUtils.h"
 
 
 
@@ -31,8 +32,14 @@ namespace gazebo
     ros::Subscriber particle_sub;
     geometry_msgs::PoseArray particles_;
 
+    // PlotRayUtils plt;
 
     physics::WorldPtr world_;
+
+    struct ConfigDist {
+      double dist;
+      int id;
+    };
 
 
   public:
@@ -47,9 +54,72 @@ namespace gazebo
 
     }
 
+    /**
+     *  
+     */
+    std::vector<ConfigDist> rayTraceCylinder(geometry_msgs::Point start_msg, 
+					     geometry_msgs::Point end_msg, 
+					     double err)
+    {
+      tf::Vector3 start(start_msg.x, start_msg.y, start_msg.z);
+      tf::Vector3 end(end_msg.x, end_msg.y, end_msg.z);
+      tf::Vector3 ray = end-start;
+      std::vector<tf::Vector3> ray_orthog = getOrthogonalBasis(ray);
+
+      int n = 6;
+      for(int i = 0; i < n; i ++){
+	double theta = 2*3.1415 * i / n;
+	tf::Vector3 offset = err * (ray_orthog[0]*sin(theta) + ray_orthog[1]*cos(theta));
+
+	// plt.plotRay(start + ray_orthog[0]*sin(theta) + ray_orthog[1]*cos(theta), 
+	// 	    end   + ray_orthog[0]*sin(theta) + ray_orthog[1]*cos(theta), false);
+	// ros::Duration(0.2).sleep();
+      }
+      
+      std::vector<ConfigDist> c;
+      return c;
+    }
+
+    /**
+     *  Return vector of two Vector3s that form a basis for the space orthogonal to the ray
+     */
+    std::vector<tf::Vector3> getOrthogonalBasis(tf::Vector3 ray)
+    {
+      ROS_INFO("Orthogonal Parts of %f, %f, %f", ray.getX(), ray.getY(), ray.getZ());
+      ray.normalize();
+      std::vector<tf::Vector3> v;
+
+      //Initialize vector on the most orthogonal axis
+      switch(ray.closestAxis()){
+      case 0:
+	v.push_back(tf::Vector3(0,0,1));
+	v.push_back(tf::Vector3(0,1,0));
+	break;
+      case 1:
+	v.push_back(tf::Vector3(0,0,1));
+	v.push_back(tf::Vector3(1,0,0));
+	break;
+      case 2:
+      default:
+	v.push_back(tf::Vector3(0,1,0));
+	v.push_back(tf::Vector3(1,0,0));
+	break;
+      }
+
+      //Recover the pure orthogonal parts
+      for(int i = 0; i < 2; i++){
+	v[i] = (v[i] - ray * ray.dot(v[i])).normalize();
+	ROS_INFO("%f, %f, %f", v[i].getX(), v[i].getY(), v[i].getZ());
+      }
+
+
+      return v;
+    }
+
+
     
     /**
-     *  Performs ray tracing of a ros request in the loaded world.
+     *  Service for Ray tracing in the loaded world.
      */
     bool rayTrace(gazebo_ray_trace::RayTrace::Request &req,
     	      gazebo_ray_trace::RayTrace::Response &resp)
@@ -78,20 +148,26 @@ namespace gazebo
     }
 
     /**
-     *  Ray traces each particle and return the entropy of the distribution
+     *  Service for Ray tracing each particle and 
+     *   return the entropy of the distribution
      */
     bool rayTraceEntropy(gazebo_ray_trace::RayTraceEntropy::Request &req,
 		    gazebo_ray_trace::RayTraceEntropy::Response &resp)
     {
+      ROS_INFO("Starting ray trace ent");
       std::vector<double> dist = rayTraceAllParticles(req.start, req.end);
+      
+      rayTraceCylinder(req.start, req.end, 1.0);
 
+      ROS_INFO("Finished Ray Trace ent");
+      
       resp.entropy = CalcEntropy::calcEntropy(dist);
+      ROS_INFO("Calculated Entropy");
       return true;
     }
-    
 
     /**
-     *  Ray traces each particles
+     *  Service for Ray traces each particles
      */
     bool rayTraceEachParticle(gazebo_ray_trace::RayTraceEachParticle::Request &req,
     	      gazebo_ray_trace::RayTraceEachParticle::Response &resp)
@@ -101,12 +177,20 @@ namespace gazebo
       return true;
     }
 
+
+    /**
+     *  Ray Traces a cylinder
+     */
+    
+
+    /** 
+     *  Ray traces each particle.
+     *   Distances are returned as an array.
+     *   Order of distances in the array is the same as the order of the particles
+     */
     std::vector<double> rayTraceAllParticles(geometry_msgs::Point startm, 
 					     geometry_msgs::Point endm)
     {
-
-      ROS_INFO("Starting ray trace each particle");
-      // ROS_INFO("Number of particle %d", particles_.poses.size());
       tf::Vector3 start, end;
 
       start.setX(startm.x);
@@ -116,6 +200,11 @@ namespace gazebo
       end.setX(endm.x);
       end.setY(endm.y);
       end.setZ(endm.z);
+      return rayTraceAllParticles(start, end);
+    }
+    std::vector<double> rayTraceAllParticles(tf::Point start, 
+					     tf::Point end)
+    {
 
       tf::Transform trans;
 
@@ -141,15 +230,10 @@ namespace gazebo
 	trans = trans.inverse();
 	
 
-
-
-	dist[i] = rayTrace(
-				     vectorTFToGazebo(trans*start), 
-				     vectorTFToGazebo(trans*end), 
-				     ray_);
-	// ROS_INFO("Finished Ray Trace, distance of: %f", resp.dist[i]);
+	dist[i] = rayTrace(vectorTFToGazebo(trans*start), 
+			   vectorTFToGazebo(trans*end), 
+			   ray_);
       }
-
 
       return dist;
     }
@@ -169,8 +253,6 @@ namespace gazebo
     double rayTrace(math::Vector3 start, math::Vector3 end, gazebo::physics::RayShapePtr ray_){
       double dist;
       std::string entityName;
-      // ROS_INFO("Ray is from %f,%f,%f to %f,%f,%f", start.x, start.y, start.z,
-      // 	       end.x, end.y, end.z);
 
       ray_->SetPoints(start, end);
       ray_->GetIntersection(dist, entityName);
@@ -179,7 +261,6 @@ namespace gazebo
     }
 
     void Load(physics::WorldPtr _world, sdf::ElementPtr _sdf){
-
       if(!ros::isInitialized()){
       	ROS_FATAL_STREAM("A ROS node for Gazebo has not been initialized, unable to load plugin");
       }

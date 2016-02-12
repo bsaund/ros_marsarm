@@ -13,6 +13,7 @@ class PlotRayUtils{
   ros::Publisher marker_pub_;
   ros::ServiceClient client_ray_trace_;
   ros::ServiceClient client_ray_trace_particles_;
+  ros::ServiceClient client_ray_trace_IG_;
   tf::TransformListener tf_listener_;
 
   int intersect_index_;
@@ -34,6 +35,7 @@ class PlotRayUtils{
 
   double getDistToPart(tf::Point start, tf::Point end);
   std::vector<double> getDistToParticles(tf::Point start, tf::Point end);
+  double getEntropy(tf::Point start, tf::Point end);
 
   void listDistances(std::vector<double> dist){
     for(int i=0; i < dist.size(); i++){

@@ -13,12 +13,20 @@
 int main(int argc, char **argv){
   ros::init(argc, argv, "ray_trace_test");
   PlotRayUtils plt;
+  ROS_INFO("Hello");
 
+  // tf::Vector3 v(0,0,-1);
+
+  // ROS_INFO("FurthestAxis: %d", v.closestAxis());
 
 
   //Start and end vectors of the ray
-  // tf::Point start(1.5, 2, 3.5);
-  // tf::Point end(1.5, 2, 2.5);
+  tf::Point start(1.5, 2, 3.5);
+  tf::Point end(1.5, 3, 2.5);
+
+  plt.getEntropy(start, end);
+
+  // plt.plotRay(start, end);
 
   // //This was a quick script for casting rays in a circle
   // for(int i = 0; i < 3; i++){
@@ -36,12 +44,12 @@ int main(int argc, char **argv){
   // }
 
 
-  plt.plotEntropyRay(tf::Point(1.5, 2, 3.5),
-		     tf::Point(1.5, 2, 2.5),
-		     false);
-  plt.plotEntropyRay(tf::Point(1.5, 3, 3.5),
-		     tf::Point(1.5, 1, 2.5),
-		     false);
+  // plt.plotEntropyRay(tf::Point(1.5, 2, 3.5),
+  // 		     tf::Point(1.5, 2, 2.5),
+  // 		     false);
+  // plt.plotEntropyRay(tf::Point(1.5, 3, 3.5),
+  // 		     tf::Point(1.5, 1, 2.5),
+  // 		     false);
 
 
   

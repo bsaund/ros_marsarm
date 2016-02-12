@@ -2,6 +2,7 @@
 
 #include "gazebo_ray_trace/RayTrace.h"
 #include "gazebo_ray_trace/RayTraceEachParticle.h"
+#include "gazebo_ray_trace/RayTraceEntropy.h"
 #include "calcEntropy.h"
 
 PlotRayUtils::PlotRayUtils()
@@ -9,10 +10,14 @@ PlotRayUtils::PlotRayUtils()
   marker_pub_ = 
     n_.advertise<visualization_msgs::Marker>("ray_trace_markers", 1000);
   client_ray_trace_ = 
-    n_.serviceClient<gazebo_ray_trace::RayTrace>("/gazebo_simulation/ray_trace");
+    n_.serviceClient<gazebo_ray_trace::RayTrace>
+    ("/gazebo_simulation/ray_trace");
   client_ray_trace_particles_ = 
     n_.serviceClient<gazebo_ray_trace::RayTraceEachParticle>
     ("/gazebo_simulation/ray_trace_each_particle");
+  client_ray_trace_IG_ = 
+    n_.serviceClient<gazebo_ray_trace::RayTraceEntropy>
+    ("/gazebo_simulation/ray_trace_entropy");
 
   intersect_index_ = 0;
   ray_index_ = 0;
@@ -245,3 +250,22 @@ std::vector<double> PlotRayUtils::getDistToParticles(tf::Point start, tf::Point 
 
   return srv.response.dist;
 }
+
+double PlotRayUtils::getEntropy(tf::Point start, tf::Point end){
+  tf::StampedTransform trans;
+
+  tf_listener_.waitForTransform("/my_frame", "/particle_frame", ros::Time(0), ros::Duration(10.0));
+  tf_listener_.lookupTransform("/particle_frame", "/my_frame", ros::Time(0), trans);
+
+
+  gazebo_ray_trace::RayTraceEntropy srv;
+  tf::pointTFToMsg(trans * start, srv.request.start);
+  tf::pointTFToMsg(trans * end,   srv.request.end);
+  
+  if(!client_ray_trace_IG_.call(srv)){
+    ROS_ERROR("Ray Trace Failed");
+  }
+
+
+  return srv.response.entropy;
+}  

@@ -55,27 +55,34 @@ namespace gazebo
     {
     }
 
+    
     void updateParticles(const geometry_msgs::PoseArray p)
     {
       // ROS_INFO("Particles updated");
       particles_ = p;
 
     }
+
+    /**
+     *  Service for casting many rays in a cylinder to the world
+     */
     bool rayTraceCylinder(gazebo_ray_trace::RayTraceCylinder::Request &req,
 		    gazebo_ray_trace::RayTraceCylinder::Response &resp)
     {
       std::vector<RayIntersection> rays = rayTraceCylinderHelper(req.start, req.end, req.error_radius);
+
       resp.rays.resize(rays.size());
       for(int i = 0; i < rays.size(); i++){
-	resp.rays[i].start = rays[i].start;
-	resp.rays[i].end = rays[i].end;
-	resp.rays[i].dist = rays[i].dist;
+      	resp.rays[i].start = rays[i].start;
+      	resp.rays[i].end = rays[i].end;
+      	resp.rays[i].dist = rays[i].dist;
       }
     }
 
 
     /**
-     *  
+     *  Casts many rays in a cylinder to the part and returns a list of the rays 
+     *   produced with all the intersections to particles
      */
     std::vector<RayIntersection> rayTraceCylinderHelper(geometry_msgs::Point start_msg, 
 					     geometry_msgs::Point end_msg, 
@@ -87,9 +94,9 @@ namespace gazebo
       std::vector<tf::Vector3> ray_orthog = getOrthogonalBasis(ray);
       std::vector<RayIntersection> rays;
       int n = 6;
-      rays.resize(n + 1);
+      rays.resize(n);
       
-      for(int i = 1; i < n+1; i ++){
+      for(int i = 0; i < n; i ++){
 	double theta = 2*3.1415 * i / n;
 	tf::Vector3 offset = err * (ray_orthog[0]*sin(theta) + ray_orthog[1]*cos(theta));
 	// tf::Vector3 start_tmp = start + offset;
@@ -99,14 +106,8 @@ namespace gazebo
 	tf::pointTFToMsg(end + offset, rays[i].end);
 	
 	rays[i].dist = rayTraceAllParticles(rays[i].start, rays[i].end);
-	
-	// plt.plotRay(start + ray_orthog[0]*sin(theta) + ray_orthog[1]*cos(theta), 
-	// 	    end   + ray_orthog[0]*sin(theta) + ray_orthog[1]*cos(theta), false);
-	// ros::Duration(0.2).sleep();
       }
       
-      // std::vector<ConfigDist> c;
-      // return c;
       return rays;
     }
 

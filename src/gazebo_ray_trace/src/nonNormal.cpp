@@ -22,9 +22,9 @@ int main(int argc, char **argv){
 
   //Start and end vectors of the ray
   tf::Point start(1.5, 2, 3.5);
-  tf::Point end(1.5, 3, 2.5);
+  tf::Point end(1.5, 2, 2.5);
 
-  plt.getEntropy(start, end);
+  plt.plotCylinder(start, end, 0.05);
 
   // plt.plotRay(start, end);
 

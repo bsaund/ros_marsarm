@@ -14,6 +14,7 @@ class PlotRayUtils{
   ros::ServiceClient client_ray_trace_;
   ros::ServiceClient client_ray_trace_particles_;
   ros::ServiceClient client_ray_trace_IG_;
+  ros::ServiceClient client_ray_trace_cylinder_;
   tf::TransformListener tf_listener_;
 
   int intersect_index_;
@@ -32,6 +33,7 @@ class PlotRayUtils{
   void plotRay(tf::Point start, tf::Point end, bool overwrite = true);
   void labelRay(tf::Point start, std::string text);
   void plotEntropyRay(tf::Point start, tf::Point end, bool overwrite);
+  void plotCylinder(tf::Point start, tf::Point end, double err);
 
   double getDistToPart(tf::Point start, tf::Point end);
   std::vector<double> getDistToParticles(tf::Point start, tf::Point end);

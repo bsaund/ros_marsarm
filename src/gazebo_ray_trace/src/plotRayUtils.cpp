@@ -3,6 +3,7 @@
 #include "gazebo_ray_trace/RayTrace.h"
 #include "gazebo_ray_trace/RayTraceEachParticle.h"
 #include "gazebo_ray_trace/RayTraceEntropy.h"
+#include "gazebo_ray_trace/RayTraceCylinder.h"
 #include "calcEntropy.h"
 
 PlotRayUtils::PlotRayUtils()
@@ -18,6 +19,9 @@ PlotRayUtils::PlotRayUtils()
   client_ray_trace_IG_ = 
     n_.serviceClient<gazebo_ray_trace::RayTraceEntropy>
     ("/gazebo_simulation/ray_trace_entropy");
+  client_ray_trace_cylinder_ = 
+    n_.serviceClient<gazebo_ray_trace::RayTraceCylinder>
+    ("/gazebo_simulation/ray_trace_cylinder");
 
   intersect_index_ = 0;
   ray_index_ = 0;
@@ -189,6 +193,44 @@ void PlotRayUtils::plotEntropyRay(tf::Point start, tf::Point end, bool overwrite
   s << CalcEntropy::calcEntropy(dist);
 
   labelRay(start, s.str());
+}
+
+void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double err)
+{
+  //transform to part
+  tf::StampedTransform trans;
+
+  tf_listener_.waitForTransform("/my_frame", "/particle_frame", ros::Time(0), ros::Duration(10.0));
+  tf_listener_.lookupTransform("/particle_frame", "/my_frame", ros::Time(0), trans);
+
+  gazebo_ray_trace::RayTraceCylinder srv;
+  tf::pointTFToMsg(trans * start, srv.request.start);
+  tf::pointTFToMsg(trans * end,   srv.request.end);
+  srv.request.error_radius = err;
+  
+
+
+  if(client_ray_trace_cylinder_.call(srv)){
+    ROS_INFO("ray traced cylinder");
+  }else{
+    ROS_ERROR("Ray Trace Failed");
+  }
+
+  // trans = trans.inverse();
+  tf::Point start_tmp;
+  tf::Point end_tmp;
+
+  for(int i=0; i<srv.response.rays.size(); i++){
+    tf::pointMsgToTF(srv.response.rays[i].start, start_tmp);
+    start_tmp = trans.inverse() * start_tmp;
+
+    tf::pointMsgToTF(srv.response.rays[i].end, end_tmp);
+    end_tmp = trans.inverse() * end_tmp;
+		     
+    plotRay(start_tmp, end_tmp, false);
+    plotIntersections(srv.response.rays[i].dist, start_tmp, end_tmp, false);
+    ros::Duration(0.2).sleep();
+  }
 }
 
 

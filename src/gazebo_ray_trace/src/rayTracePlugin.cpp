@@ -6,6 +6,7 @@
 #include "gazebo_ray_trace/RayTrace.h"
 #include "gazebo_ray_trace/RayTraceEachParticle.h"
 #include "gazebo_ray_trace/RayTraceEntropy.h"
+#include "gazebo_ray_trace/RayTraceCylinder.h"
 #include <math.h>
 #include <gazebo/common/Plugin.hh>
 #include "gazebo/physics/physics.hh"
@@ -27,7 +28,7 @@ namespace gazebo
     ros::NodeHandle* rosnode_;
     ros::ServiceServer srv_;
     ros::ServiceServer srv_each_;
-    ros::ServiceServer srv_entropy_;
+    ros::ServiceServer srv_cylinder_;
 
     ros::Subscriber particle_sub;
     geometry_msgs::PoseArray particles_;
@@ -41,6 +42,13 @@ namespace gazebo
       int id;
     };
 
+    struct RayIntersection {
+      geometry_msgs::Point start;
+      geometry_msgs::Point end;
+      std::vector<double> dist;
+    };
+      
+
 
   public:
     RayTracer() : WorldPlugin()
@@ -53,11 +61,23 @@ namespace gazebo
       particles_ = p;
 
     }
+    bool rayTraceCylinder(gazebo_ray_trace::RayTraceCylinder::Request &req,
+		    gazebo_ray_trace::RayTraceCylinder::Response &resp)
+    {
+      std::vector<RayIntersection> rays = rayTraceCylinderHelper(req.start, req.end, req.error_radius);
+      resp.rays.resize(rays.size());
+      for(int i = 0; i < rays.size(); i++){
+	resp.rays[i].start = rays[i].start;
+	resp.rays[i].end = rays[i].end;
+	resp.rays[i].dist = rays[i].dist;
+      }
+    }
+
 
     /**
      *  
      */
-    std::vector<ConfigDist> rayTraceCylinder(geometry_msgs::Point start_msg, 
+    std::vector<RayIntersection> rayTraceCylinderHelper(geometry_msgs::Point start_msg, 
 					     geometry_msgs::Point end_msg, 
 					     double err)
     {
@@ -65,19 +85,29 @@ namespace gazebo
       tf::Vector3 end(end_msg.x, end_msg.y, end_msg.z);
       tf::Vector3 ray = end-start;
       std::vector<tf::Vector3> ray_orthog = getOrthogonalBasis(ray);
-
+      std::vector<RayIntersection> rays;
       int n = 6;
-      for(int i = 0; i < n; i ++){
+      rays.resize(n + 1);
+      
+      for(int i = 1; i < n+1; i ++){
 	double theta = 2*3.1415 * i / n;
 	tf::Vector3 offset = err * (ray_orthog[0]*sin(theta) + ray_orthog[1]*cos(theta));
-
+	// tf::Vector3 start_tmp = start + offset;
+	// tf::Vector3 end_tmp = end + offset;
+	
+	tf::pointTFToMsg(start + offset, rays[i].start);
+	tf::pointTFToMsg(end + offset, rays[i].end);
+	
+	rays[i].dist = rayTraceAllParticles(rays[i].start, rays[i].end);
+	
 	// plt.plotRay(start + ray_orthog[0]*sin(theta) + ray_orthog[1]*cos(theta), 
 	// 	    end   + ray_orthog[0]*sin(theta) + ray_orthog[1]*cos(theta), false);
 	// ros::Duration(0.2).sleep();
       }
       
-      std::vector<ConfigDist> c;
-      return c;
+      // std::vector<ConfigDist> c;
+      // return c;
+      return rays;
     }
 
     /**
@@ -157,7 +187,7 @@ namespace gazebo
       ROS_INFO("Starting ray trace ent");
       std::vector<double> dist = rayTraceAllParticles(req.start, req.end);
       
-      rayTraceCylinder(req.start, req.end, 1.0);
+      // rayTraceCylinder(req.start, req.end, 1.0);
 
       ROS_INFO("Finished Ray Trace ent");
       
@@ -306,13 +336,21 @@ namespace gazebo
 
       this->srv_each_ = this->rosnode_->advertiseService(ray_trace_srv_2);
 
-      ros::AdvertiseServiceOptions ray_trace_entropy = 
-      	ros::AdvertiseServiceOptions::create<gazebo_ray_trace::RayTraceEntropy>
-      	("ray_trace_entropy",
-      	 boost::bind(&RayTracer::rayTraceEntropy, this, _1, _2),
+      // ros::AdvertiseServiceOptions ray_trace_entropy = 
+      // 	ros::AdvertiseServiceOptions::create<gazebo_ray_trace::RayTraceEntropy>
+      // 	("ray_trace_entropy",
+      // 	 boost::bind(&RayTracer::rayTraceEntropy, this, _1, _2),
+      // 	 ros::VoidPtr(), NULL);
+
+      // this->srv_entropy_ = this->rosnode_->advertiseService(ray_trace_entropy);
+
+      ros::AdvertiseServiceOptions ray_trace_cylinder = 
+      	ros::AdvertiseServiceOptions::create<gazebo_ray_trace::RayTraceCylinder>
+      	("ray_trace_cylinder",
+      	 boost::bind(&RayTracer::rayTraceCylinder, this, _1, _2),
       	 ros::VoidPtr(), NULL);
 
-      this->srv_entropy_ = this->rosnode_->advertiseService(ray_trace_entropy);
+      this->srv_cylinder_ = this->rosnode_->advertiseService(ray_trace_cylinder);
 
     }
 

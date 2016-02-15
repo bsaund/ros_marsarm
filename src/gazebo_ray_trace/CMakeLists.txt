@@ -15,13 +15,17 @@ find_package(gazebo REQUIRED)
 link_directories(${GAZEBO_LIBRARY_DIRS})
 
 
-
+add_message_files(
+  FILES
+  RayIntersections.msg
+)
 
 add_service_files(
   FILES
   RayTrace.srv
   RayTraceEachParticle.srv
   RayTraceEntropy.srv
+  RayTraceCylinder.srv
 )
 
 generate_messages(

@@ -66,6 +66,7 @@ void ShapePlotter::generateTransforms()
 
     particleTransform.orientation = 
       tf::createQuaternionMsgFromRollPitchYaw(randn(gen)/50, randn(gen)/50, randn(gen)/50);
+      // tf::createQuaternionMsgFromRollPitchYaw(randn(gen)/20, 0, 0);
     
 
     // particles_.push_back(particleTransform);
@@ -108,12 +109,12 @@ void ShapePlotter::updateMarkers()
     points.markers[i].scale.z = .0254;
 
 
-    points.markers[i].color.r = 0.5f;
-    points.markers[i].color.g = 0.7f;
-    points.markers[i].color.b = 0.7f;
+    points.markers[i].color.r = 0.74f;
+    points.markers[i].color.g = 0.78f;
+    points.markers[i].color.b = 0.8f;
 
     //alpha to make the particles transparent
-    points.markers[i].color.a = 0.1;
+    points.markers[i].color.a = 0.07;
 
   }
 }

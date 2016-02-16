@@ -15,12 +15,12 @@ int main(int argc, char **argv){
   ros::init(argc, argv, "ray_trace_grid");
 
   PlotRayUtils plt;
-  for(int i = 0; i < 4; i++){
-    for(int j = 0; j < 4; j++){
-      double x = 1 + 0.2 * (i-1);
-      double y = 2 + 0.2 * (j-1);
-      tf::Point start(x, y, 4);
-      tf::Point end(x, y, 2);
+  for(int i = -2; i < 3; i++){
+    for(int j = -2; j < 3; j++){
+      double x = 1 + 0.2 * (i);
+      double y = 2 + 0.2 * (j);
+      tf::Point start(x, y, 3.3);
+      tf::Point end(x, y, 2.0);
 
 
 

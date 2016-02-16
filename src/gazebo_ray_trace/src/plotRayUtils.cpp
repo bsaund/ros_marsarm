@@ -174,8 +174,8 @@ void PlotRayUtils::labelRay(tf::Point start, std::string text){
  
   // Set the color -- be sure to set alpha to something non-zero!
   marker.color.r = 0.0f;
-  marker.color.g = 1.0f;
-  marker.color.b = 0.0f;
+  marker.color.g = 0.0f;
+  marker.color.b = 0.7f;
   marker.color.a = 1.0;
 
   marker.text = text;

@@ -244,7 +244,7 @@ void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double radial_er
   }
   plotRay(start, end, false);
   std::stringstream s;
-  s<<srv.response.IG;
+  s << (abs(srv.response.IG) < .0001 ? 0 : srv.response.IG);
   labelRay(start, s.str());
 }
 

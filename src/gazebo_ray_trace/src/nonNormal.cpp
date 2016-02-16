@@ -29,31 +29,54 @@ int main(int argc, char **argv){
 
   // plt.plotRay(start, end);
 
+
+  //---------------
+  // RADIAL SPOKES
+  //---------------
   // //This was a quick script for casting rays in a circle
-  // for(int i = 0; i < 3; i++){
-  //   double radius = .2 * i;
+  // for(int i = 0; i <= 3; i++){
+  //   double radius = .15 * i;
   //   for(int j = 0; j < 8; j++){
   //     double theta = (2*3.1415 * j)/8;
   //     double x = 1 + radius * cos(theta);
   //     double y = 2 + radius * sin(theta);
+  //     plt.plotCylinder(tf::Point(x,y, 3.5),
+  // 		       tf::Point(x,y, 2.5),
+  // 		   0.01, 0.001);
       
-  //     plt.plotEntropyRay(tf::Point(x,y, 3.5),
-  // 			 tf::Point(x,y, 2.5),
-  // 			 false);
-  //     ros::Duration(.2).sleep();
+
+  //     ros::Duration(.1).sleep();
   //   }
   // }
 
 
-  plt.plotCylinder(tf::Point(1.5, 2, 3.5),
-  		     tf::Point(1.5, 2, 2.5),
-		   0.01, 0.001);
-  plt.plotCylinder(tf::Point(1.5, 3, 3.5),
-  		     tf::Point(1.5, 1, 2.5),
-		   0.01, 0.001);
+  //--------------
+  // NON NORMAL
+  //-----------------
+  // plt.plotCylinder(tf::Point(1.5, 2, 3.5),
+  // 		     tf::Point(1.5, 2, 2.5),
+  // 		   0.01, 0.001);
+  // plt.plotCylinder(tf::Point(1.5, 3, 3.5),
+  // 		     tf::Point(1.5, 1, 2.5),
+  // 		   0.01, 0.001);
 
 
-  
+  //-------------
+  // OFF EDGE
+  //-------------
+  plt.plotCylinder(tf::Point(1.57, 1.7, 3.5),
+		   tf::Point(1.57, 1.7, 2.5),
+  		   0.01, 0.001);
+  plt.plotCylinder(tf::Point(1.58, 1.9, 3.5),
+		   tf::Point(1.58, 1.9, 2.5),
+  		   0.01, 0.001);
+  plt.plotCylinder(tf::Point(1.59, 2.1, 3.5),
+		   tf::Point(1.59, 2.1, 2.5),
+  		   0.01, 0.001);
+  plt.plotCylinder(tf::Point(1.6, 2.3, 3.5),
+		   tf::Point(1.6, 2.3, 2.5),
+  		   0.01, 0.001);
+
 
   return 0;
 }

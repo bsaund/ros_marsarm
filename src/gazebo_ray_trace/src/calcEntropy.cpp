@@ -93,6 +93,11 @@ static double calcEntropyOfBin(Bin bin){
       unique_id = bin.id[i];
     }
   }
+  if(unique_id_count > 0){
+    double p = (double)unique_id_count / numPointsInBin;
+    entropy -= p * log(p);
+  }
+
   
   return entropy;
 }

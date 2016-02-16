@@ -11,6 +11,7 @@ class PlotRayUtils{
  private:
   ros::NodeHandle n_;
   ros::Publisher marker_pub_;
+  ros::Publisher marker_pub_array_;
   ros::ServiceClient client_ray_trace_;
   ros::ServiceClient client_ray_trace_particles_;
   ros::ServiceClient client_ray_trace_IG_;
@@ -45,6 +46,9 @@ class PlotRayUtils{
       ROS_INFO("Dist is %f", dist[i]);
     }
   };
+
+ private:
+  visualization_msgs::Marker getIntersectionMarker(tf::Point intersection, int index);
 
 };
 

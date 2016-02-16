@@ -1,5 +1,6 @@
 /**
  *  Plots a ray and the intersections of that ray with obstacles 
+ *   I mostly use this for quick testing of plots
  */
 
 #include "ros/ros.h"

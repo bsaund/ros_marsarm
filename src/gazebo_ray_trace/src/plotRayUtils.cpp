@@ -10,15 +10,14 @@ PlotRayUtils::PlotRayUtils()
 {
   marker_pub_ = 
     n_.advertise<visualization_msgs::Marker>("ray_trace_markers", 1000);
+  marker_pub_array_ = 
+    n_.advertise<visualization_msgs::MarkerArray>("ray_trace_markers_array", 10);
   client_ray_trace_ = 
     n_.serviceClient<gazebo_ray_trace::RayTrace>
     ("/gazebo_simulation/ray_trace");
   client_ray_trace_particles_ = 
     n_.serviceClient<gazebo_ray_trace::RayTraceEachParticle>
     ("/gazebo_simulation/ray_trace_each_particle");
-  client_ray_trace_IG_ = 
-    n_.serviceClient<gazebo_ray_trace::RayTraceEntropy>
-    ("/gazebo_simulation/ray_trace_entropy");
   client_ray_trace_cylinder_ = 
     n_.serviceClient<gazebo_ray_trace::RayTraceCylinder>
     ("/gazebo_simulation/ray_trace_cylinder");
@@ -34,6 +33,10 @@ PlotRayUtils::PlotRayUtils()
  * Plots a point as a red dot
  */
 void PlotRayUtils::plotIntersection(tf::Point intersection, int index){
+  marker_pub_.publish(getIntersectionMarker(intersection, index));
+}
+
+visualization_msgs::Marker PlotRayUtils::getIntersectionMarker(tf::Point intersection, int index){
   visualization_msgs::Marker marker;
   marker.header.frame_id = "/my_frame";
   marker.header.stamp = ros::Time::now();
@@ -61,7 +64,7 @@ void PlotRayUtils::plotIntersection(tf::Point intersection, int index){
   marker.color.a = 1.0;
  
   marker.lifetime = ros::Duration();
-  marker_pub_.publish(marker);
+  return marker;
 }
 
 /**
@@ -71,17 +74,18 @@ void PlotRayUtils::plotIntersections(std::vector<double> dist,
 				     tf::Point rayStart, tf::Point rayEnd,
 				     bool overwrite)
 {
-
+  visualization_msgs::MarkerArray m;
   if(!overwrite){
     intersect_index_ += dist.size();
   }
 
   int point_id = intersect_index_;
   for(int i = 0; i < dist.size(); i++){
-    plotIntersection(rayStart + dist[i] * (rayEnd-rayStart)/(rayEnd-rayStart).length(), 
-		     point_id);
+    tf::Point intersection = rayStart + dist[i] * (rayEnd-rayStart).normalized();
+    m.markers.push_back(getIntersectionMarker(intersection, point_id));
     point_id++;
   }
+  marker_pub_array_.publish(m);
 }
 
 void PlotRayUtils::plotIntersections(tf::Point rayStart, tf::Point rayEnd, bool overwrite)
@@ -198,6 +202,11 @@ void PlotRayUtils::plotEntropyRay(tf::Point start, tf::Point end, bool overwrite
   labelRay(start, s.str());
 }
 
+/**
+ * Plots a cylinder of rays and labels with the information gain
+ *  radial_err determines the radius of the cylinder
+ *  dist_err determines the bin size for calculating the entropy for calculating Information Gain
+ */
 void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double radial_err, double dist_err)
 {
   //transform to part
@@ -218,7 +227,7 @@ void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double radial_er
     ROS_ERROR("Ray Trace Failed");
   }
 
-  // trans = trans.inverse();
+
   tf::Point start_tmp;
   tf::Point end_tmp;
 
@@ -231,7 +240,7 @@ void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double radial_er
 		     
     plotRay(start_tmp, end_tmp, false);
     plotIntersections(srv.response.rays[i].dist, start_tmp, end_tmp, false);
-    ros::Duration(0.1).sleep();
+    // ros::Duration(0.02).sleep();
   }
   plotRay(start, end, false);
   std::stringstream s;
@@ -298,22 +307,3 @@ std::vector<double> PlotRayUtils::getDistToParticles(tf::Point start, tf::Point 
 
   return srv.response.dist;
 }
-
-double PlotRayUtils::getEntropy(tf::Point start, tf::Point end){
-  tf::StampedTransform trans;
-
-  tf_listener_.waitForTransform("/my_frame", "/particle_frame", ros::Time(0), ros::Duration(10.0));
-  tf_listener_.lookupTransform("/particle_frame", "/my_frame", ros::Time(0), trans);
-
-
-  gazebo_ray_trace::RayTraceEntropy srv;
-  tf::pointTFToMsg(trans * start, srv.request.start);
-  tf::pointTFToMsg(trans * end,   srv.request.end);
-  
-  if(!client_ray_trace_IG_.call(srv)){
-    ROS_ERROR("Ray Trace Failed");
-  }
-
-
-  return srv.response.entropy;
-}  

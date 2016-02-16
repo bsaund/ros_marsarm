@@ -24,8 +24,8 @@ static std::vector<Bin> histogram(std::vector<CalcEntropy::ConfigDist> c, double
 
   hist.resize(nbins);
 
-  std::cout <<"Max: " << max << " Min: " << min << std::endl;
-  std::cout <<"c size " << c.size() << " hist size: " << hist.size() << std::endl;
+  // std::cout <<"Max: " << max << " Min: " << min << std::endl;
+  // std::cout <<"c size " << c.size() << " hist size: " << hist.size() << std::endl;
 
   int i=0;
   while(i < c.size()){
@@ -144,29 +144,21 @@ namespace CalcEntropy{
 
 
     for(int binId = 0; binId < hist.size(); binId++){
-      std::cout << "Bin " << binId << std::endl;
+      // std::cout << "Bin " << binId << std::endl;
       for(int j=0; j<hist[binId].id.size(); j++){
-	std::cout << hist[binId].id[j] << ", ";
+	// std::cout << hist[binId].id[j] << ", ";
       }
 
       Bin bin = hist[binId];
 
       double p_bin = bin.id.size()/totalPoints;
       entropy += p_bin * calcEntropyOfBin(bin);
-      std::cout << std::endl; 
-      std::cout << "Entropy: " << calcEntropyOfBin(bin);
-      std::cout << " Probability: " << p_bin << std::endl;
+      // std::cout << std::endl; 
+      // std::cout << "Entropy: " << calcEntropyOfBin(bin);
+      // std::cout << " Probability: " << p_bin << std::endl;
     }
 
-    // for(int i=0; i<hist.size(); i++){
-    //   std::cout << "Bin " << i << std::endl;
-    //   for(int j=0; j<hist[i].id.size(); j++){
-    // 	std::cout << hist[i].id[j] << ", ";
-    //   }
-    //   std::cout << std::endl;
-    // }
-
-    std::cout << "Entropy: " << entropy << std::endl;
+    // std::cout << "Entropy: " << entropy << std::endl;
     return entropy;
     
   }

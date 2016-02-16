@@ -14,7 +14,6 @@
 #include <tf/tf.h>
 #include <boost/thread.hpp>
 #include "calcEntropy.h"
-// #include "plotRayUtils.h"
 
 
 
@@ -34,7 +33,6 @@ namespace gazebo
     ros::Subscriber particle_sub;
     geometry_msgs::PoseArray particles_;
 
-    // PlotRayUtils plt;
 
     physics::WorldPtr world_;
 
@@ -55,9 +53,7 @@ namespace gazebo
     
     void updateParticles(const geometry_msgs::PoseArray p)
     {
-      // ROS_INFO("Particles updated");
       particles_ = p;
-
     }
 
     bool rayTraceCondDisEntropy(gazebo_ray_trace::RayTraceCylinder::Request &req,
@@ -123,8 +119,6 @@ namespace gazebo
       for(int i = 0; i < n; i ++){
 	double theta = 2*3.1415 * i / n;
 	tf::Vector3 offset = err * (ray_orthog[0]*sin(theta) + ray_orthog[1]*cos(theta));
-	// tf::Vector3 start_tmp = start + offset;
-	// tf::Vector3 end_tmp = end + offset;
 	
 	tf::pointTFToMsg(start + offset, rays[i].start);
 	tf::pointTFToMsg(end + offset, rays[i].end);
@@ -140,7 +134,7 @@ namespace gazebo
      */
     std::vector<tf::Vector3> getOrthogonalBasis(tf::Vector3 ray)
     {
-      ROS_INFO("Orthogonal Parts of %f, %f, %f", ray.getX(), ray.getY(), ray.getZ());
+      // ROS_INFO("Orthogonal Parts of %f, %f, %f", ray.getX(), ray.getY(), ray.getZ());
       ray.normalize();
       std::vector<tf::Vector3> v;
 
@@ -164,7 +158,7 @@ namespace gazebo
       //Recover the pure orthogonal parts
       for(int i = 0; i < 2; i++){
 	v[i] = (v[i] - ray * ray.dot(v[i])).normalize();
-	ROS_INFO("%f, %f, %f", v[i].getX(), v[i].getY(), v[i].getZ());
+	// ROS_INFO("%f, %f, %f", v[i].getX(), v[i].getY(), v[i].getZ());
       }
 
       return v;
@@ -208,15 +202,13 @@ namespace gazebo
     bool rayTraceEntropy(gazebo_ray_trace::RayTraceEntropy::Request &req,
 		    gazebo_ray_trace::RayTraceEntropy::Response &resp)
     {
-      ROS_INFO("Starting ray trace ent");
+
       std::vector<double> dist = rayTraceAllParticles(req.start, req.end);
       
       // rayTraceCylinder(req.start, req.end, 1.0);
-
-      ROS_INFO("Finished Ray Trace ent");
       
       resp.entropy = CalcEntropy::calcDifferentialEntropy(dist);
-      ROS_INFO("Calculated Entropy");
+
       return true;
     }
 
@@ -231,11 +223,6 @@ namespace gazebo
       return true;
     }
 
-
-    /**
-     *  Ray Traces a cylinder
-     */
-    
 
     /** 
      *  Ray traces each particle.
@@ -256,6 +243,10 @@ namespace gazebo
       end.setZ(endm.z);
       return rayTraceAllParticles(start, end);
     }
+
+    /**
+     *  Ray Traces all particles
+     */
     std::vector<double> rayTraceAllParticles(tf::Point start, 
 					     tf::Point end)
     {
@@ -314,7 +305,13 @@ namespace gazebo
       return dist;
     }
 
+
+
+    /**
+     *  Load is called by Gazebo to initilize the plugin. 
+     */
     void Load(physics::WorldPtr _world, sdf::ElementPtr _sdf){
+      sleep(2);
       if(!ros::isInitialized()){
       	ROS_FATAL_STREAM("A ROS node for Gazebo has not been initialized, unable to load plugin");
       }

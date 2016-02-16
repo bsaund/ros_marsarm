@@ -22,6 +22,9 @@ PlotRayUtils::PlotRayUtils()
   client_ray_trace_cylinder_ = 
     n_.serviceClient<gazebo_ray_trace::RayTraceCylinder>
     ("/gazebo_simulation/ray_trace_cylinder");
+  client_ray_trace_condDisEntropy_ = 
+    n_.serviceClient<gazebo_ray_trace::RayTraceCylinder>
+    ("/gazebo_simulation/ray_trace_condDisEntropy");
 
   intersect_index_ = 0;
   ray_index_ = 0;
@@ -190,12 +193,12 @@ void PlotRayUtils::plotEntropyRay(tf::Point start, tf::Point end, bool overwrite
   plotIntersections(dist, start, end, overwrite);
   std::stringstream s;
 
-  s << CalcEntropy::calcEntropy(dist);
+  s << CalcEntropy::calcDifferentialEntropy(dist);
 
   labelRay(start, s.str());
 }
 
-void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double err)
+void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double radial_err, double dist_err)
 {
   //transform to part
   tf::StampedTransform trans;
@@ -206,11 +209,10 @@ void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double err)
   gazebo_ray_trace::RayTraceCylinder srv;
   tf::pointTFToMsg(trans * start, srv.request.start);
   tf::pointTFToMsg(trans * end,   srv.request.end);
-  srv.request.error_radius = err;
-  
+  srv.request.error_radius = radial_err;
+  srv.request.error_depth = dist_err;
 
-
-  if(client_ray_trace_cylinder_.call(srv)){
+  if(client_ray_trace_condDisEntropy_.call(srv)){
     ROS_INFO("ray traced cylinder");
   }else{
     ROS_ERROR("Ray Trace Failed");
@@ -229,8 +231,12 @@ void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double err)
 		     
     plotRay(start_tmp, end_tmp, false);
     plotIntersections(srv.response.rays[i].dist, start_tmp, end_tmp, false);
-    ros::Duration(0.2).sleep();
+    ros::Duration(0.1).sleep();
   }
+  plotRay(start, end, false);
+  std::stringstream s;
+  s<<srv.response.IG;
+  labelRay(start, s.str());
 }
 
 

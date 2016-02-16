@@ -29,18 +29,19 @@ int main(int argc, char **argv){
 
   PlotRayUtils plt;
 
-  plt.plotRay(start, end);
+  // plt.plotRay(start, end);
+  
+  plt.plotCylinder(start, end, 0.01, 0.002);
+  
+  // std::vector<double> dist = plt.getDistToParticles(start, end);
 
- 
-  std::vector<double> dist = plt.getDistToParticles(start, end);
+  // plt.plotIntersections(start, end);
 
-  plt.plotIntersections(start, end);
-
-  double entropy = CalcEntropy::calcEntropy(dist);
-  ROS_INFO("Entropy is %f", entropy);
-  std::stringstream s;
-  s << entropy;
-  plt.labelRay(start, s.str());
+  // double entropy = CalcEntropy::calcDifferentialEntropy(dist);
+  // ROS_INFO("Entropy is %f", entropy);
+  // std::stringstream s;
+  // s << entropy;
+  // plt.labelRay(start, s.str());
 
   return 0;
 }

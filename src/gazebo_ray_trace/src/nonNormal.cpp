@@ -13,7 +13,7 @@
 int main(int argc, char **argv){
   ros::init(argc, argv, "ray_trace_test");
   PlotRayUtils plt;
-  ROS_INFO("Hello");
+  ROS_INFO("Hello, this is a testing program");
 
   // tf::Vector3 v(0,0,-1);
 
@@ -21,10 +21,10 @@ int main(int argc, char **argv){
 
 
   //Start and end vectors of the ray
-  tf::Point start(1.5, 2, 3.5);
-  tf::Point end(1.5, 2, 2.5);
+  // tf::Point start(1.5, 2, 3.5);
+  // tf::Point end(1.5, 2, 2.5);
 
-  plt.plotCylinder(start, end, 0.05);
+  // plt.plotCylinder(start, end, 0.05, 0.002);
 
   // plt.plotRay(start, end);
 
@@ -44,12 +44,12 @@ int main(int argc, char **argv){
   // }
 
 
-  // plt.plotEntropyRay(tf::Point(1.5, 2, 3.5),
-  // 		     tf::Point(1.5, 2, 2.5),
-  // 		     false);
-  // plt.plotEntropyRay(tf::Point(1.5, 3, 3.5),
-  // 		     tf::Point(1.5, 1, 2.5),
-  // 		     false);
+  plt.plotCylinder(tf::Point(1.5, 2, 3.5),
+  		     tf::Point(1.5, 2, 2.5),
+		   0.01, 0.001);
+  plt.plotCylinder(tf::Point(1.5, 3, 3.5),
+  		     tf::Point(1.5, 1, 2.5),
+		   0.01, 0.001);
 
 
   

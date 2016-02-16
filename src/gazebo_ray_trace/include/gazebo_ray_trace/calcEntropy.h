@@ -4,8 +4,14 @@
 
 
 namespace CalcEntropy{
+  struct ConfigDist {
+    double dist;
+    int id;
+  };
 
-  double calcEntropy(std::vector<double> dist);
+  double calcDifferentialEntropy(std::vector<double> dist);
+  double calcCondDisEntropy(std::vector<ConfigDist> p, double binSize);
+  double calcIG(std::vector<ConfigDist> p, double binSize, int numConfigs);
 
 
 

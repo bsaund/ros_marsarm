@@ -29,6 +29,7 @@ namespace gazebo
     ros::ServiceServer srv_;
     ros::ServiceServer srv_each_;
     ros::ServiceServer srv_cylinder_;
+    ros::ServiceServer srv_condDisEntropy_;
 
     ros::Subscriber particle_sub;
     geometry_msgs::PoseArray particles_;
@@ -37,10 +38,6 @@ namespace gazebo
 
     physics::WorldPtr world_;
 
-    struct ConfigDist {
-      double dist;
-      int id;
-    };
 
     struct RayIntersection {
       geometry_msgs::Point start;
@@ -61,6 +58,33 @@ namespace gazebo
       // ROS_INFO("Particles updated");
       particles_ = p;
 
+    }
+
+    bool rayTraceCondDisEntropy(gazebo_ray_trace::RayTraceCylinder::Request &req,
+		    gazebo_ray_trace::RayTraceCylinder::Response &resp)
+    {
+      std::vector<RayIntersection> rays = rayTraceCylinderHelper(req.start, req.end, req.error_radius);
+      std::vector<CalcEntropy::ConfigDist> distToConfig;
+      for(int ray_index = 0; ray_index < rays.size(); ray_index ++){
+	for(int id=0; id < rays[ray_index].dist.size(); id++){
+	  CalcEntropy::ConfigDist c;
+	  c.id = id;
+	  c.dist = rays[ray_index].dist[id];
+	  distToConfig.push_back(c);
+	}
+      }
+
+      // CalcEntropy::calcCondDisEntropy(distToConfig, 0.0);
+      resp.IG = CalcEntropy::calcIG(distToConfig, req.error_depth, rays[0].dist.size());
+
+      resp.rays.resize(rays.size());
+      for(int i = 0; i < rays.size(); i++){
+      	resp.rays[i].start = rays[i].start;
+      	resp.rays[i].end = rays[i].end;
+      	resp.rays[i].dist = rays[i].dist;
+      }
+
+      
     }
 
     /**
@@ -93,7 +117,7 @@ namespace gazebo
       tf::Vector3 ray = end-start;
       std::vector<tf::Vector3> ray_orthog = getOrthogonalBasis(ray);
       std::vector<RayIntersection> rays;
-      int n = 6;
+      int n = 12;
       rays.resize(n);
       
       for(int i = 0; i < n; i ++){
@@ -143,7 +167,6 @@ namespace gazebo
 	ROS_INFO("%f, %f, %f", v[i].getX(), v[i].getY(), v[i].getZ());
       }
 
-
       return v;
     }
 
@@ -192,7 +215,7 @@ namespace gazebo
 
       ROS_INFO("Finished Ray Trace ent");
       
-      resp.entropy = CalcEntropy::calcEntropy(dist);
+      resp.entropy = CalcEntropy::calcDifferentialEntropy(dist);
       ROS_INFO("Calculated Entropy");
       return true;
     }
@@ -352,6 +375,14 @@ namespace gazebo
       	 ros::VoidPtr(), NULL);
 
       this->srv_cylinder_ = this->rosnode_->advertiseService(ray_trace_cylinder);
+
+      ros::AdvertiseServiceOptions ray_trace_condDisEntropy = 
+      	ros::AdvertiseServiceOptions::create<gazebo_ray_trace::RayTraceCylinder>
+      	("ray_trace_condDisEntropy",
+      	 boost::bind(&RayTracer::rayTraceCondDisEntropy, this, _1, _2),
+      	 ros::VoidPtr(), NULL);
+
+      this->srv_condDisEntropy_ = this->rosnode_->advertiseService(ray_trace_condDisEntropy);
 
     }
 

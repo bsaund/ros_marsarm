@@ -24,20 +24,21 @@ int main(int argc, char **argv){
 
 
 
-      plt.plotRay(start, end, false);
+      // plt.plotRay(start, end, false);
 
  
-      std::vector<double> dist = plt.getDistToParticles(start, end);
+      // std::vector<double> dist = plt.getDistToParticles(start, end);
 
-      plt.plotIntersections(start, end, false);
-      double entropy = CalcEntropy::calcEntropy(dist);
+      // plt.plotIntersections(start, end, false);
+      // double entropy = CalcEntropy::calcDifferentialEntropy(dist);
 
 
-      std::stringstream s;
-      std::string entropy_string;
-      // std::sprintf(entropy_string, "%f", entropy);
-      s  << std::fixed << std::setprecision(2) << entropy;
-      plt.labelRay(start, s.str());
+      // std::stringstream s;
+      // std::string entropy_string;
+      // // std::sprintf(entropy_string, "%f", entropy);
+      // s  << std::fixed << std::setprecision(2) << entropy;
+      // plt.labelRay(start, s.str());
+      plt.plotCylinder(start, end, 0.01, 0.002);
       ros::Duration(0.2).sleep();
     } 
   }

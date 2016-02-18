@@ -27,7 +27,7 @@ particleFilter::particleFilter(int n_particles, cspace b_init[2],
 	X0 = new cspace[N];
 	bzero(X0, N*sizeof(cspace));
 
-	createParticles(X0, b_Xprior, N); // WHY COMMENTED OUT??
+	createParticles(X0, b_Xprior, N);
 
 	X_1 = new cspace[N];
 	W = new double[N];
@@ -52,7 +52,7 @@ void particleFilter::addObservation(double obs[3], double cube[3], distanceTrans
 			b_Xpre[1][k] = sqrt(b_Xpre[1][k] / N);
 		}
 	}
-	bool iffar = updateParticles(X_1, X0, X, obs, cube, dist_transform, idx_obs, N, R, Xstd_ob, Xstd_tran);
+	bool iffar = updateParticles(X_1, X0, X, obs, cube, idx_obs, dist_transform, N, R, Xstd_ob, Xstd_tran);
 	if (firstObs)
 	{
 		firstObs = false;
@@ -112,7 +112,7 @@ void particleFilter::createParticles(cspace *X, cspace b_Xprior[2],
 };
 
 bool particleFilter::updateParticles(cspace *X_1, cspace *X0, cspace *X, double cur_M[3], 
-		double cube[3], distanceTransform *dist_transform, int idx_Measure, int n_particles, 
+		double cube[3], int idx_Measure, distanceTransform *dist_transform, int n_particles,
 		double R, double Xstd_ob, double Xstd_tran)
 {
 	random_device rd;
@@ -133,7 +133,40 @@ bool particleFilter::updateParticles(cspace *X_1, cspace *X0, cspace *X, double 
 	double invRot[3][3];
 	double cur_inv_M[3];
 	double tempM[3];
-
+	int num_Mean = 1000;
+	//cspace *sampleConfig = new cspace[num_Mean];
+	cspace meanConfig = { 0, 0, 0, 0, 0, 0 };
+	for (int t = 0; t < num_Mean; t++) {
+		int index = int(floor(distribution(e2)));
+		//memcpy(sampleConfig[t], b_X[index], sizeof(cspace));
+		for (int m = 0; m < cdim; m++) {
+			meanConfig[m] += b_X[index][m] / num_Mean;
+		}
+	}
+	double rotationC[3][3] = { { cos(meanConfig[cdim - 1]), -sin(meanConfig[cdim - 1]), 0 },
+	{ sin(meanConfig[cdim - 1]), cos(meanConfig[cdim - 1]), 0 },
+	{ 0, 0, 1 } };
+	double rotationB[3][3] = { { cos(meanConfig[cdim - 2]), 0 , sin(meanConfig[cdim - 2]) },
+	{ 0, 1, 0 },
+	{ -sin(meanConfig[cdim - 2]), 0, cos(meanConfig[cdim - 2]) } };
+	double rotationA[3][3] = { { 1, 0, 0 },
+	{ 0, cos(meanConfig[cdim - 3]), -sin(meanConfig[cdim - 3]) },
+	{ 0, sin(meanConfig[cdim - 3]), cos(meanConfig[cdim - 3]) } };
+	multiplyM(rotationC, rotationB, tempRot);
+	multiplyM(tempRot, rotationA, rotation);
+	inverseMatrix(rotation, invRot);
+	double transition[3] = { meanConfig[0], meanConfig[1], meanConfig[2] };
+	subtractM(cur_M, transition, tempM);
+	multiplyM(invRot, tempM, cur_inv_M);
+	double world_range[3][2];
+	cout << cur_inv_M[0] << "    " << cur_inv_M[1] << "    " << cur_inv_M[2] << endl;
+	for (int t = 0; t < 3; t++) {
+		world_range[t][0] = cur_inv_M[t] - 0.05;
+		world_range[t][1] = cur_inv_M[t] + 0.05;
+		//cout << world_range[t][0] << " to " << world_range[t][1] << endl;
+	}
+	
+	dist_transform->build(cube, world_range);
 	while (i < n_particles)
 	{
 		if ((count >= 10000000 || (i > 0 && count / i > 5000)) && iffar == false)
@@ -164,11 +197,18 @@ bool particleFilter::updateParticles(cspace *X_1, cspace *X0, cspace *X, double 
 		double transition[3] = { tempState[0], tempState[1], tempState[2] };
 		subtractM(cur_M, transition, tempM);
 		multiplyM(invRot, tempM, cur_inv_M);
+		if (cur_inv_M[0] > world_range[0][1] || cur_inv_M[0] < world_range[0][0] ||
+			cur_inv_M[1] > world_range[1][1] || cur_inv_M[1] < world_range[1][0] ||
+			cur_inv_M[2] > world_range[2][1] || cur_inv_M[2] < world_range[2][0]) {
+			continue;
+		}
+		//cout << cur_inv_M[0] << "    " << cur_inv_M[1] << "    " << cur_inv_M[2] << endl << endl;
  		//D = cur_inv_M[dir] - cube[dir] / 2 - R;
 		//cout << D << endl;
+		//cout << int(floor((cur_inv_M[0] - dist_transform->world_range[0][0]) / dist_transform->grid_res)) << "    " << int(floor((cur_inv_M[1] - dist_transform->world_range[1][0]) / dist_transform->grid_res)) << "     " << int(floor((cur_inv_M[2] - dist_transform->world_range[2][0]) / dist_transform->grid_res)) << endl;
 		D = dist_transform->dist_transform[int(floor((cur_inv_M[0] - dist_transform->world_range[0][0]) / dist_transform->grid_res))]
 										  [int(floor((cur_inv_M[1] - dist_transform->world_range[1][0]) / dist_transform->grid_res))]
-										  [int(floor((cur_inv_M[2] - dist_transform->world_range[2][0]) / dist_transform->grid_res))];
+										  [int(floor((cur_inv_M[2] - dist_transform->world_range[2][0]) / dist_transform->grid_res))] - R;
 		//cout << D << endl << endl;
 		if (D >= -Xstd_ob && D <= Xstd_ob)
 		{
@@ -180,8 +220,10 @@ bool particleFilter::updateParticles(cspace *X_1, cspace *X0, cspace *X, double 
 			i += 1;
 		}
 		count += 1;
+		
 	}
 	//cout << count << endl;
+	//delete dist_transform;
 	return iffar;
 
 };
@@ -244,11 +286,12 @@ int main()
 	double Xstd_ob = 0.0001;
 	double Xstd_tran = 0.0025;
 	double Xstd_scatter = 0.0001;
-	double grid_res = 0.02;
+	double grid_res = 0.0005;
+	double range = 0.1;
 	double R = 0.01;
 
 	double cube_para[3] = { 6, 4, 2 };
-	double range[3][2] = { {-3.5, 3.5}, {-2.5, 2.5}, {-1.5, 1.5} };
+	//double range[3][2] = { {-3.5, 3.5}, {-2.5, 2.5}, {-1.5, 1.5} };
 	particleFilter::cspace X_true = { 2.12, 1.388, 0.818, Pi / 6 + Pi / 400, Pi / 12 + Pi / 420, Pi / 18 - Pi / 380 };
 	cout << X_true[0] << ' ' << X_true[1] << ' ' << X_true[2] << endl;
 	particleFilter::cspace b_Xprior[2] = { { 2.1, 1.4, 0.8, Pi / 6, Pi / 12, Pi / 18 },
@@ -256,7 +299,8 @@ int main()
 
 	particleFilter pfilter(N, b_Xprior, Xstd_ob, Xstd_tran, Xstd_scatter, R);
 	distanceTransform *dist_transform = new distanceTransform(range, grid_res);
-	dist_transform->build(cube_para);
+	//dist_transform->build(cube_para);
+
 
 	int N_Measure = 60;
 	double M_std = 0.0001;
@@ -296,6 +340,7 @@ int main()
 		cout << "New observation: " << M[0] << " " << M[1] << " " << M[2] << endl;
 		auto tstart = chrono::high_resolution_clock::now();
 		pfilter.addObservation(M, cube_para, dist_transform, i);
+		//pfilter.addObservation(M, cube_para, i);
 		pfilter.estimatedDistribution(X_est, X_est_stat);
 		auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(chrono::high_resolution_clock::now() - tstart);
 		X_est_stat[0] = 0;

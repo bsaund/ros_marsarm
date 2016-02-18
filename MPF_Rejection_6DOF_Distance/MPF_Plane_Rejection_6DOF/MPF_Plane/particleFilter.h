@@ -12,6 +12,7 @@ class particleFilter
 		  double Xstd_scatter=0.0001, double R=0.01);
 
   void addObservation (double obs[3], double cube[3], distanceTransform *dist_transform, int idx_obs);
+  //void addObservation (double obs[3], double cube[3], int idx_obs);
   void estimatedDistribution (cspace x_est, double x_est_stat [2]) {
     memcpy(x_est, X_est, sizeof(cspace));
 	x_est_stat[0] = X_est_stat[0];
@@ -40,7 +41,7 @@ class particleFilter
   // Local functions
   void createParticles(cspace *X, cspace b_Xprior[2], int n_particles);
   bool updateParticles(cspace *X_1, cspace *X0, cspace *X, double cur_M[3],
-			double cube[3], distanceTransform *dist_transform, int idx_Measure, 
+			double cube[3], int idx_Measure, distanceTransform *dist_transform,
 			int n_particles, double R, double Xstd_ob, double Xstd_tran);
   void calcWeight(double *W, int n_particles, double Xstd_tran, 
 		   cspace *X0, cspace *X);

@@ -24,6 +24,15 @@ class PlotRayUtils{
   int ray_index_;
 
   tf::StampedTransform getTrans();
+  void transformRayToParticleFrame(tf::Point start, tf::Point end, 
+				   geometry_msgs::Point &startTransformed,
+				   geometry_msgs::Point &endTransformed);
+  void transformRayToBaseFrame(geometry_msgs::Point start,
+			       geometry_msgs::Point end,
+			       tf::Point &startBase,
+			       tf::Point &endBase);
+
+
 
  public:
   PlotRayUtils();
@@ -42,8 +51,9 @@ class PlotRayUtils{
 
   double getDistToPart(tf::Point start, tf::Point end);
   std::vector<double> getDistToParticles(tf::Point start, tf::Point end);
-  gazebo_ray_trace::RayTraceCylinder getEntropyFullResponse(
+  gazebo_ray_trace::RayTraceCylinder getIGFullResponse(
 		 tf::Point start, tf::Point end, double radial_err, double dist_err);
+  double getIG(tf::Point start, tf::Point end, double radial_err, double dist_err);
 
   void listDistances(std::vector<double> dist){
     for(int i=0; i < dist.size(); i++){

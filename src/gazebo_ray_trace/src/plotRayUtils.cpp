@@ -34,6 +34,7 @@ PlotRayUtils::PlotRayUtils()
 
 tf::StampedTransform PlotRayUtils::getTrans()
 {
+  //TODO: Update when new transform becomes available
   return trans_;
 }
 
@@ -144,7 +145,7 @@ visualization_msgs::Marker PlotRayUtils::createRayMarker(tf::Point start, tf::Po
 
 
 /*
- * publishes a message with the ray.
+ * publishes a visualization message with the ray.
  *  By default overwrites the previous array
  */
 void PlotRayUtils::plotRay(tf::Point start, tf::Point end, bool overwrite)
@@ -219,19 +220,16 @@ void PlotRayUtils::plotEntropyRay(tf::Point start, tf::Point end, bool overwrite
  */
 void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double radial_err, double dist_err)
 {
-  tf::StampedTransform trans = getTrans();
-
-  gazebo_ray_trace::RayTraceCylinder srv = getEntropyFullResponse(start, end, radial_err, dist_err);
+  gazebo_ray_trace::RayTraceCylinder srv = getIGFullResponse(start, end, radial_err, dist_err);
 
   tf::Point start_tmp;
   tf::Point end_tmp;
 
+  //Plot all rays used, first transforming to world coordinates
   for(int i=0; i<srv.response.rays.size(); i++){
-    tf::pointMsgToTF(srv.response.rays[i].start, start_tmp);
-    start_tmp = trans.inverse() * start_tmp;
-
-    tf::pointMsgToTF(srv.response.rays[i].end, end_tmp);
-    end_tmp = trans.inverse() * end_tmp;
+    transformRayToBaseFrame(srv.response.rays[i].start,
+			    srv.response.rays[i].end,
+			    start_tmp, end_tmp);
 		     
     plotRay(start_tmp, end_tmp, false);
     plotIntersections(srv.response.rays[i].dist, start_tmp, end_tmp, false);
@@ -243,24 +241,33 @@ void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double radial_er
   labelRay(start, s.str());
 }
 
-gazebo_ray_trace::RayTraceCylinder PlotRayUtils::getEntropyFullResponse(
+/** 
+ *  Calls the rayTracePlugin service to get information gain of a simulated touch
+ *   Returns the full response from the service
+ */
+gazebo_ray_trace::RayTraceCylinder PlotRayUtils::getIGFullResponse(
 		  tf::Point start, tf::Point end, double radial_err, double dist_err)
 {
-  //transform to part
-  tf::StampedTransform trans = getTrans();
 
   gazebo_ray_trace::RayTraceCylinder srv;
-  tf::pointTFToMsg(trans * start, srv.request.start);
-  tf::pointTFToMsg(trans * end,   srv.request.end);
+
+  transformRayToParticleFrame(start, end, srv.request.start, srv.request.end);
   srv.request.error_radius = radial_err;
   srv.request.error_depth = dist_err;
 
-  if(client_ray_trace_condDisEntropy_.call(srv)){
-    ROS_INFO("ray traced cylinder");
-  }else{
+  if(!client_ray_trace_condDisEntropy_.call(srv)){
     ROS_ERROR("Ray Trace Failed");
   }
   return srv;
+}
+
+/**
+ *  Calls the rayTracePlugin service to get information gain of a simulated touch
+ *   Returns the information gain
+ */
+double PlotRayUtils::getIG(tf::Point start, tf::Point end, double radial_err, double dist_err)
+{
+  return getIGFullResponse( start, end, radial_err, dist_err).response.IG;
 }
 
 /**
@@ -271,12 +278,9 @@ gazebo_ray_trace::RayTraceCylinder PlotRayUtils::getEntropyFullResponse(
 double PlotRayUtils::getDistToPart(tf::Point start, tf::Point end)
 {
 
-  //Do Ray Trace
-  tf::StampedTransform trans = getTrans();
-
   gazebo_ray_trace::RayTrace srv;
-  tf::pointTFToMsg(trans * start, srv.request.start);
-  tf::pointTFToMsg(trans * end,   srv.request.end);
+
+  transformRayToParticleFrame(start, end, srv.request.start, srv.request.end);
 
   if(client_ray_trace_.call(srv)){
     ROS_INFO("Distance  %f", srv.response.dist);
@@ -287,8 +291,6 @@ double PlotRayUtils::getDistToPart(tf::Point start, tf::Point end)
   return srv.response.dist;
 }
 
-
-
 /**
  * Calls the ros service provided by ray_trace_pluggin.
  *  This service accepts a ray and returns a list of points for where the ray 
@@ -296,18 +298,41 @@ double PlotRayUtils::getDistToPart(tf::Point start, tf::Point end)
  */
 std::vector<double> PlotRayUtils::getDistToParticles(tf::Point start, tf::Point end){
 
-  //Transform the ray into the particle frame to pass correct ray to gazebo for ray casting
-
-  tf::StampedTransform trans = getTrans();
-
   gazebo_ray_trace::RayTraceEachParticle srv;
-  tf::pointTFToMsg(trans * start, srv.request.start);
-  tf::pointTFToMsg(trans * end,   srv.request.end);
+  
+  transformRayToParticleFrame(start, end, srv.request.start, srv.request.end);
   
   if(!client_ray_trace_particles_.call(srv)){
     ROS_ERROR("Ray Trace Failed");
   }
 
-
   return srv.response.dist;
+}
+
+/**
+ *  Transform the ray into the particle frame to pass correct ray to gazebo for ray casting
+ */
+void PlotRayUtils::transformRayToParticleFrame(tf::Point start, tf::Point end, 
+					       geometry_msgs::Point &startTransformed,
+					       geometry_msgs::Point &endTransformed)
+{
+  tf::StampedTransform trans = getTrans();
+  tf::pointTFToMsg(trans * start, startTransformed);
+  tf::pointTFToMsg(trans * end, endTransformed);
+}
+
+/**
+ *  Transform the ray message into the base frame.
+ */
+void PlotRayUtils::transformRayToBaseFrame(geometry_msgs::Point start,
+					   geometry_msgs::Point end,
+					   tf::Point &startBase,
+					   tf::Point &endBase)
+{
+  tf::StampedTransform trans = getTrans();
+
+  tf::pointMsgToTF(start, startBase);
+  tf::pointMsgToTF(end,   endBase);
+  startBase = trans.inverse() * startBase;
+  endBase   = trans.inverse() * endBase;
 }

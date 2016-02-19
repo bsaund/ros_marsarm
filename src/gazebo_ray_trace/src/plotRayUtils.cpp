@@ -45,37 +45,6 @@ void PlotRayUtils::plotIntersection(tf::Point intersection, int index){
   marker_pub_.publish(getIntersectionMarker(intersection, index));
 }
 
-visualization_msgs::Marker PlotRayUtils::getIntersectionMarker(tf::Point intersection, int index){
-  visualization_msgs::Marker marker;
-  marker.header.frame_id = "/my_frame";
-  marker.header.stamp = ros::Time::now();
- 
-  // Set the namespace and id for this marker.  This serves to create a unique ID
-  // Any marker sent with the same namespace and id will overwrite the old one
-  marker.ns = "ray_intersection";
-  marker.id = index;
- 
-  marker.type = visualization_msgs::Marker::SPHERE;
- 
-  // Set the marker action.  Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
-  marker.action = visualization_msgs::Marker::ADD;
- 
-  tf::pointTFToMsg(intersection, marker.pose.position);
-
-  marker.scale.x = 0.02;
-  marker.scale.y = 0.02;
-  marker.scale.z = 0.02;
- 
-  // Set the color -- be sure to set alpha to something non-zero!
-  marker.color.r = 1.0f;
-  marker.color.g = 0.0f;
-  marker.color.b = 0.0f;
-  marker.color.a = 1.0;
- 
-  marker.lifetime = ros::Duration();
-  return marker;
-}
-
 /**
  *  Plots intersections of a ray with all particles as red dots
  */
@@ -102,47 +71,35 @@ void PlotRayUtils::plotIntersections(tf::Point rayStart, tf::Point rayEnd, bool 
   plotIntersections(getDistToParticles(rayStart, rayEnd), rayStart, rayEnd, overwrite);
 }
 
-
-
-/**
- * Creates and returns the ray marker
- */
-visualization_msgs::Marker PlotRayUtils::createRayMarker(tf::Point start, tf::Point end, 
-							 int index)
-{
+visualization_msgs::Marker PlotRayUtils::getIntersectionMarker(tf::Point intersection, int index){
   visualization_msgs::Marker marker;
   marker.header.frame_id = "/my_frame";
   marker.header.stamp = ros::Time::now();
  
   // Set the namespace and id for this marker.  This serves to create a unique ID
   // Any marker sent with the same namespace and id will overwrite the old one
-  marker.ns = "ray";
+  marker.ns = "ray_intersection";
   marker.id = index;
-
-  marker.type = visualization_msgs::Marker::ARROW;
+ 
+  marker.type = visualization_msgs::Marker::SPHERE;
  
   marker.action = visualization_msgs::Marker::ADD;
  
-  
-  marker.points.resize(2);
-  tf::pointTFToMsg(start, marker.points[0]);
-  tf::pointTFToMsg(end, marker.points[1]);
- 
-  marker.scale.x = 0.005;
-  marker.scale.y = 0.1;
-  // marker.scale.z = 1.0;
+  tf::pointTFToMsg(intersection, marker.pose.position);
+
+  marker.scale.x = 0.02;
+  marker.scale.y = 0.02;
+  marker.scale.z = 0.02;
  
   // Set the color -- be sure to set alpha to something non-zero!
-  marker.color.r = 0.0f;
-  marker.color.g = 1.0f;
+  marker.color.r = 1.0f;
+  marker.color.g = 0.0f;
   marker.color.b = 0.0f;
-  marker.color.a = 0.6;
+  marker.color.a = 1.0;
  
   marker.lifetime = ros::Duration();
-
   return marker;
 }
-
 
 /*
  * publishes a visualization message with the ray.
@@ -195,9 +152,46 @@ void PlotRayUtils::labelRay(tf::Point start, std::string text){
   marker_pub_.publish(marker);
 }
 
-
-
 /**
+ * Creates and returns the ray marker
+ */
+visualization_msgs::Marker PlotRayUtils::createRayMarker(tf::Point start, tf::Point end, 
+							 int index)
+{
+  visualization_msgs::Marker marker;
+  marker.header.frame_id = "/my_frame";
+  marker.header.stamp = ros::Time::now();
+ 
+  // Set the namespace and id for this marker.  This serves to create a unique ID
+  // Any marker sent with the same namespace and id will overwrite the old one
+  marker.ns = "ray";
+  marker.id = index;
+
+  marker.type = visualization_msgs::Marker::ARROW;
+ 
+  marker.action = visualization_msgs::Marker::ADD;
+ 
+  
+  marker.points.resize(2);
+  tf::pointTFToMsg(start, marker.points[0]);
+  tf::pointTFToMsg(end, marker.points[1]);
+ 
+  marker.scale.x = 0.005;
+  marker.scale.y = 0.1;
+  // marker.scale.z = 1.0;
+ 
+  // Set the color -- be sure to set alpha to something non-zero!
+  marker.color.r = 0.0f;
+  marker.color.g = 1.0f;
+  marker.color.b = 0.0f;
+  marker.color.a = 0.6;
+ 
+  marker.lifetime = ros::Duration();
+
+  return marker;
+}
+
+/**  DEPRICATED
  *  Plots ray, intersections, and entropy (text)
  *   DEPRICATED SINCE DIFFERENTIAL ENTROPY IS NO LONGER USED
  */
@@ -214,7 +208,7 @@ void PlotRayUtils::plotEntropyRay(tf::Point start, tf::Point end, bool overwrite
 }
 
 /**
- * Plots a cylinder of rays and labels with the information gain
+ * Plots a cylinder of rays and labels the ray with the information gain
  *  radial_err determines the radius of the cylinder
  *  dist_err determines the bin size for calculating the entropy for calculating Information Gain
  */
@@ -225,7 +219,7 @@ void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double radial_er
   tf::Point start_tmp;
   tf::Point end_tmp;
 
-  //Plot all rays used, first transforming to world coordinates
+  //Plot all rays used, transforming to world coordinates
   for(int i=0; i<srv.response.rays.size(); i++){
     transformRayToBaseFrame(srv.response.rays[i].start,
 			    srv.response.rays[i].end,
@@ -235,9 +229,11 @@ void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double radial_er
     plotIntersections(srv.response.rays[i].dist, start_tmp, end_tmp, false);
     // ros::Duration(0.02).sleep();
   }
+  //Plot and label center ray
   plotRay(start, end, false);
   std::stringstream s;
-  s << (fabs(srv.response.IG) < .0001 ? 0 : srv.response.IG);
+  //Note: IG should always be positive, but I am using fabs here to see errors if IG is negative
+  s << (fabs(srv.response.IG) < .0001 ? 0 : srv.response.IG); 
   labelRay(start, s.str());
 }
 
@@ -248,7 +244,6 @@ void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double radial_er
 gazebo_ray_trace::RayTraceCylinder PlotRayUtils::getIGFullResponse(
 		  tf::Point start, tf::Point end, double radial_err, double dist_err)
 {
-
   gazebo_ray_trace::RayTraceCylinder srv;
 
   transformRayToParticleFrame(start, end, srv.request.start, srv.request.end);
@@ -277,14 +272,10 @@ double PlotRayUtils::getIG(tf::Point start, tf::Point end, double radial_err, do
  */
 double PlotRayUtils::getDistToPart(tf::Point start, tf::Point end)
 {
-
   gazebo_ray_trace::RayTrace srv;
-
   transformRayToParticleFrame(start, end, srv.request.start, srv.request.end);
 
-  if(client_ray_trace_.call(srv)){
-    ROS_INFO("Distance  %f", srv.response.dist);
-  }else{
+  if(!client_ray_trace_.call(srv)){
     ROS_ERROR("Ray Trace Failed");
   }
 
@@ -296,8 +287,8 @@ double PlotRayUtils::getDistToPart(tf::Point start, tf::Point end)
  *  This service accepts a ray and returns a list of points for where the ray 
  *  intersected each obstacle
  */
-std::vector<double> PlotRayUtils::getDistToParticles(tf::Point start, tf::Point end){
-
+std::vector<double> PlotRayUtils::getDistToParticles(tf::Point start, tf::Point end)
+{
   gazebo_ray_trace::RayTraceEachParticle srv;
   
   transformRayToParticleFrame(start, end, srv.request.start, srv.request.end);

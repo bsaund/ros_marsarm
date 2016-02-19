@@ -39,7 +39,7 @@ int main(int argc, char **argv){
       // s  << std::fixed << std::setprecision(2) << entropy;
       // plt.labelRay(start, s.str());
       plt.plotCylinder(start, end, 0.01, 0.002);
-      ros::Duration(0.2).sleep();
+      ros::Duration(0.1).sleep();
     } 
   }
 

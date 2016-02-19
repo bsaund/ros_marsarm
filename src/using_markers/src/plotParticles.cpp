@@ -12,6 +12,7 @@
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/PoseArray.h>
 #include <random>
+#include <iostream>
 
 class ShapePlotter
 {
@@ -65,8 +66,8 @@ void ShapePlotter::generateTransforms()
     particleTransform.position.z = 0;
 
     particleTransform.orientation = 
-      tf::createQuaternionMsgFromRollPitchYaw(randn(gen)/50, randn(gen)/50, randn(gen)/50);
-      // tf::createQuaternionMsgFromRollPitchYaw(randn(gen)/20, 0, 0);
+      // tf::createQuaternionMsgFromRollPitchYaw(randn(gen)/50, randn(gen)/50, randn(gen)/50);
+      tf::createQuaternionMsgFromRollPitchYaw(0, randn(gen)/20, 0);
     
 
     // particles_.push_back(particleTransform);
@@ -99,15 +100,23 @@ void ShapePlotter::updateMarkers()
 
     //Change this in two locations: Here and gazebo
     // points.markers[i].mesh_resource = "package://touch_optimization/sdf/boeing_part_binary.stl";
-    points.markers[i].mesh_resource = "package://touch_optimization/sdf/flat_plate.stl";
-
-
+    // points.markers[i].mesh_resource = "package://touch_optimization/sdf/flat_plate.stl";
+    std::string s;
+   
+    if( n.getParam("/localization_object_cad", s)){
+      ROS_INFO("Localization object is:");
+      ROS_INFO(s.c_str());
+    } else{
+      ROS_INFO("Failed to get param");
+    }
+    // std::cout << "LOCALIZATION OBJECT: " << s.c_str() << std::endl;
+    points.markers[i].mesh_resource = s;
+    
     // POINTS markers use x and y scale for width/height respectively
     // Boeing part is in inches, we are in meters
     points.markers[i].scale.x = .0254;
     points.markers[i].scale.y = .0254;
     points.markers[i].scale.z = .0254;
-
 
     points.markers[i].color.r = 0.74f;
     points.markers[i].color.g = 0.78f;
@@ -132,7 +141,7 @@ void ShapePlotter::plotParticles(){
   tf::transformStampedTFToMsg(tfstmp, trans);
   
   br.sendTransform(trans);
-  tfstmp =   tf::StampedTransform(unityTransform, ros::Time::now(),"base_plate", "my_frame");
+  tfstmp = tf::StampedTransform(unityTransform, ros::Time::now(),"base_plate", "my_frame");
   tf::transformStampedTFToMsg(tfstmp, trans);
 
   br.sendTransform(trans);

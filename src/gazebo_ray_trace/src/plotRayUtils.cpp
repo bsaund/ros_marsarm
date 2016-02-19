@@ -25,8 +25,16 @@ PlotRayUtils::PlotRayUtils()
     n_.serviceClient<gazebo_ray_trace::RayTraceCylinder>
     ("/gazebo_simulation/ray_trace_condDisEntropy");
 
+  tf_listener_.waitForTransform("/my_frame", "/particle_frame", ros::Time(0), ros::Duration(10.0));
+  tf_listener_.lookupTransform("/particle_frame", "/my_frame", ros::Time(0), trans_);
+
   intersect_index_ = 0;
   ray_index_ = 0;
+}
+
+tf::StampedTransform PlotRayUtils::getTrans()
+{
+  return trans_;
 }
 
 /** 
@@ -156,8 +164,9 @@ void PlotRayUtils::plotRay(tf::Point start, tf::Point end, bool overwrite)
   marker_pub_.publish(marker);
 }
 
+
 void PlotRayUtils::labelRay(tf::Point start, std::string text){
- visualization_msgs::Marker marker;
+  visualization_msgs::Marker marker;
   marker.header.frame_id = "/my_frame";
   marker.header.stamp = ros::Time::now();
  
@@ -189,6 +198,7 @@ void PlotRayUtils::labelRay(tf::Point start, std::string text){
 
 /**
  *  Plots ray, intersections, and entropy (text)
+ *   DEPRICATED SINCE DIFFERENTIAL ENTROPY IS NO LONGER USED
  */
 void PlotRayUtils::plotEntropyRay(tf::Point start, tf::Point end, bool overwrite)
 {
@@ -209,24 +219,9 @@ void PlotRayUtils::plotEntropyRay(tf::Point start, tf::Point end, bool overwrite
  */
 void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double radial_err, double dist_err)
 {
-  //transform to part
-  tf::StampedTransform trans;
+  tf::StampedTransform trans = getTrans();
 
-  tf_listener_.waitForTransform("/my_frame", "/particle_frame", ros::Time(0), ros::Duration(10.0));
-  tf_listener_.lookupTransform("/particle_frame", "/my_frame", ros::Time(0), trans);
-
-  gazebo_ray_trace::RayTraceCylinder srv;
-  tf::pointTFToMsg(trans * start, srv.request.start);
-  tf::pointTFToMsg(trans * end,   srv.request.end);
-  srv.request.error_radius = radial_err;
-  srv.request.error_depth = dist_err;
-
-  if(client_ray_trace_condDisEntropy_.call(srv)){
-    ROS_INFO("ray traced cylinder");
-  }else{
-    ROS_ERROR("Ray Trace Failed");
-  }
-
+  gazebo_ray_trace::RayTraceCylinder srv = getEntropyFullResponse(start, end, radial_err, dist_err);
 
   tf::Point start_tmp;
   tf::Point end_tmp;
@@ -248,6 +243,25 @@ void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double radial_er
   labelRay(start, s.str());
 }
 
+gazebo_ray_trace::RayTraceCylinder PlotRayUtils::getEntropyFullResponse(
+		  tf::Point start, tf::Point end, double radial_err, double dist_err)
+{
+  //transform to part
+  tf::StampedTransform trans = getTrans();
+
+  gazebo_ray_trace::RayTraceCylinder srv;
+  tf::pointTFToMsg(trans * start, srv.request.start);
+  tf::pointTFToMsg(trans * end,   srv.request.end);
+  srv.request.error_radius = radial_err;
+  srv.request.error_depth = dist_err;
+
+  if(client_ray_trace_condDisEntropy_.call(srv)){
+    ROS_INFO("ray traced cylinder");
+  }else{
+    ROS_ERROR("Ray Trace Failed");
+  }
+  return srv;
+}
 
 /**
  * Call the ros service providedby ray_trace_plugging
@@ -258,17 +272,11 @@ double PlotRayUtils::getDistToPart(tf::Point start, tf::Point end)
 {
 
   //Do Ray Trace
-  tf::StampedTransform trans;
-
-  tf_listener_.waitForTransform("/my_frame", "/particle_frame", ros::Time(0), ros::Duration(10.0));
-  tf_listener_.lookupTransform("/particle_frame", "/my_frame", ros::Time(0), trans);
-
+  tf::StampedTransform trans = getTrans();
 
   gazebo_ray_trace::RayTrace srv;
   tf::pointTFToMsg(trans * start, srv.request.start);
   tf::pointTFToMsg(trans * end,   srv.request.end);
-  
-
 
   if(client_ray_trace_.call(srv)){
     ROS_INFO("Distance  %f", srv.response.dist);
@@ -290,11 +298,7 @@ std::vector<double> PlotRayUtils::getDistToParticles(tf::Point start, tf::Point 
 
   //Transform the ray into the particle frame to pass correct ray to gazebo for ray casting
 
-  tf::StampedTransform trans;
-
-  tf_listener_.waitForTransform("/my_frame", "/particle_frame", ros::Time(0), ros::Duration(10.0));
-  tf_listener_.lookupTransform("/particle_frame", "/my_frame", ros::Time(0), trans);
-
+  tf::StampedTransform trans = getTrans();
 
   gazebo_ray_trace::RayTraceEachParticle srv;
   tf::pointTFToMsg(trans * start, srv.request.start);

@@ -5,7 +5,7 @@
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
 #include <visualization_msgs/MarkerArray.h>
-
+#include "gazebo_ray_trace/RayTraceCylinder.h"
 
 class PlotRayUtils{
  private:
@@ -18,9 +18,12 @@ class PlotRayUtils{
   ros::ServiceClient client_ray_trace_cylinder_;
   ros::ServiceClient client_ray_trace_condDisEntropy_;
   tf::TransformListener tf_listener_;
+  tf::StampedTransform trans_;
 
   int intersect_index_;
   int ray_index_;
+
+  tf::StampedTransform getTrans();
 
  public:
   PlotRayUtils();
@@ -39,7 +42,8 @@ class PlotRayUtils{
 
   double getDistToPart(tf::Point start, tf::Point end);
   std::vector<double> getDistToParticles(tf::Point start, tf::Point end);
-  double getEntropy(tf::Point start, tf::Point end);
+  gazebo_ray_trace::RayTraceCylinder getEntropyFullResponse(
+		 tf::Point start, tf::Point end, double radial_err, double dist_err);
 
   void listDistances(std::vector<double> dist){
     for(int i=0; i < dist.size(); i++){

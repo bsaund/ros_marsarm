@@ -77,6 +77,5 @@ int main(int argc, char **argv){
 		   tf::Point(1.6, 2.3, 2.5),
   		   0.01, 0.001);
 
-
   return 0;
 }

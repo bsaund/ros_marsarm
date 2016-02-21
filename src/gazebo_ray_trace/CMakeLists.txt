@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 
 
-set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 
 project(gazebo_ray_trace)
 
@@ -73,7 +73,6 @@ target_link_libraries(ray_tracer
   ${Boost_LIBRARIES}
   ${SDF_LIBRARIES}
   calc_entropy
-  plot_ray_utils
 )
 
 
@@ -114,14 +113,13 @@ target_link_libraries(gazebo_rayTrace_test
 
 
 
-add_library(distance_ray_trace SHARED src/rayTracePlugin.cpp)
+add_library(distance_ray_trace SHARED src/touchLocalizationPlugin.cpp)
 target_link_libraries(distance_ray_trace
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
   ${Boost_LIBRARIES}
   ${SDF_LIBRARIES}
   calc_entropy
-  plot_ray_utils
   ray_tracer
 )
 

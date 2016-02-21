@@ -30,7 +30,7 @@
   <arg     if="$(arg debug)" name="script_type" value="debug"/>
 
   <!-- start gazebo server-->
-  <node name="gazebo" pkg="gazebo_ros" type="$(arg script_type)" respawn="false" output="screen"
+  <node name="gazebo" pkg="gazebo_ros" type="$(arg script_type)" respawn="true" output="screen"
 	args="$(arg command_arg1) $(arg command_arg2) $(arg command_arg3) -e $(arg physics) $(arg extra_gazebo_args) $(arg world_name)">
     <!-- <env name="GAZEBO_RESOURCE_PATH" value="/home/bsaund/Documents/Work/ROS/marsarm/src/gazebo_ray_trace"/> -->
   </node>

@@ -15,7 +15,7 @@
 #include <boost/thread.hpp>
 #include "calcEntropy.h"
 #include "rayTracePluginUtils.h"
-
+#include "touchOptimizationUtils.h"
 
 namespace gazebo
 {
@@ -28,6 +28,7 @@ namespace gazebo
     ros::Subscriber particle_sub;
 
     RayTracePluginUtils ray_tracer_;
+    TouchOptimizationUtils touch_optimizer_;
 
 
   public:
@@ -56,6 +57,8 @@ namespace gazebo
       ROS_INFO("Setting up ray tracing");
       ray_tracer_.world_ = _world;      
       ray_tracer_.rosnode_ = rosnode_;
+      touch_optimizer_.rosnode_ = rosnode_;
+      touch_optimizer_.ray_tracer_ = &ray_tracer_;
       
       
       advertiseServices();
@@ -75,6 +78,7 @@ namespace gazebo
       rosnode_->setParam("/use_sim_time", false);
 
       ray_tracer_.advertiseServices();
+      touch_optimizer_.advertiseServices();
     }
 
   };

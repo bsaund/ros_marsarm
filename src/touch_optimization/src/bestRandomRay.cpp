@@ -6,13 +6,15 @@
 
 #include "gazebo_ray_trace/calcEntropy.h"
 #include "gazebo_ray_trace/plotRayUtils.h"
+#include "gazebo_ray_trace/TouchOptimizeGrid.h"
+#include "geometry_msgs/Vector3.h"
+#include "geometry_msgs/Point.h"
 #include <sstream>
 
 
 
-int main(int argc, char **argv){
-  ros::init(argc, argv, "best_random_ray");
-
+void bestRayUsingMessages()
+{
   tf::Point best_start, best_end;
   double bestIG;
   bestIG = 0;
@@ -38,7 +40,63 @@ int main(int argc, char **argv){
   }
 
   plt.plotCylinder(best_start, best_end, 0.01, 0.002);
+}
+
+void bestRayUsingSingleService()
+{
+  PlotRayUtils plt;
+  ros::NodeHandle n_;
+  ros::ServiceClient client_optimize_ = 
+    n_.serviceClient<gazebo_ray_trace::TouchOptimizeGrid>
+    ("/gazebo_simulation/optimize_grid");
+
+  gazebo_ray_trace::TouchOptimizeGrid srv;
   
+  
+  srv.request.direction.x = 0;
+  srv.request.direction.y = 0;
+  srv.request.direction.z = -1;
+  srv.request.x_start = 0.6;
+  srv.request.x_end   = 1.4;
+  srv.request.x_bins  = 41;
+
+  srv.request.y_start = 1.6;
+  srv.request.y_end   = 2.4;
+  srv.request.y_bins  = 41;
+
+  srv.request.z_start = 3.3;
+  srv.request.z_end   = 3.3;
+  srv.request.z_bins  = 1;
+
+  srv.request.err_radius = 0.01;
+  srv.request.err_dist = 0.002;
+
+  tf::transformStampedTFToMsg( plt.getTrans(), srv.request.trans);
+
+  if(!client_optimize_.call(srv)){
+    ROS_ERROR("Ray Trace Failed");
+  }
+
+  ROS_INFO("response %f", srv.response.best.x);
+
+  tf::Point best_start;
+  tf::Point best_end;
+  tf::pointMsgToTF(srv.response.best, best_start);
+  tf::vector3MsgToTF(srv.request.direction, best_end);
+  best_end = best_end + best_start;
+  
+  plt.plotCylinder(best_start, best_end, 0.01, 0.002);
+
+  // plt.plotCylinder(srv.response.best, srv.response.best + srv.request.direction, 0.01, 0.002);
+
+}
+
+
+
+int main(int argc, char **argv){
+  ros::init(argc, argv, "best_random_ray");
+  bestRayUsingMessages();
+  // bestRayUsingSingleService();
   
 
   return 0;

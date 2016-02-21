@@ -4,6 +4,7 @@
 #include "gazebo_ray_trace/RayTraceEachParticle.h"
 #include "gazebo_ray_trace/RayTraceEntropy.h"
 #include "gazebo_ray_trace/RayTraceCylinder.h"
+#include "gazebo_ray_trace/TouchOptimizeGrid.h"
 #include "calcEntropy.h"
 
 PlotRayUtils::PlotRayUtils()
@@ -24,6 +25,7 @@ PlotRayUtils::PlotRayUtils()
   client_ray_trace_condDisEntropy_ = 
     n_.serviceClient<gazebo_ray_trace::RayTraceCylinder>
     ("/gazebo_simulation/ray_trace_condDisEntropy");
+
 
   tf_listener_.waitForTransform("/my_frame", "/particle_frame", ros::Time(0), ros::Duration(10.0));
   tf_listener_.lookupTransform("/particle_frame", "/my_frame", ros::Time(0), trans_);
@@ -262,7 +264,7 @@ gazebo_ray_trace::RayTraceCylinder PlotRayUtils::getIGFullResponse(
  */
 double PlotRayUtils::getIG(tf::Point start, tf::Point end, double radial_err, double dist_err)
 {
-  return getIGFullResponse( start, end, radial_err, dist_err).response.IG;
+  return getIGFullResponse(start, end, radial_err, dist_err).response.IG;
 }
 
 /**

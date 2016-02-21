@@ -17,13 +17,14 @@ class PlotRayUtils{
   ros::ServiceClient client_ray_trace_IG_;
   ros::ServiceClient client_ray_trace_cylinder_;
   ros::ServiceClient client_ray_trace_condDisEntropy_;
+  ros::ServiceClient client_optimize_;
   tf::TransformListener tf_listener_;
   tf::StampedTransform trans_;
 
   int intersect_index_;
   int ray_index_;
 
-  tf::StampedTransform getTrans();
+
   void transformRayToParticleFrame(tf::Point start, tf::Point end, 
 				   geometry_msgs::Point &startTransformed,
 				   geometry_msgs::Point &endTransformed);
@@ -36,6 +37,7 @@ class PlotRayUtils{
 
  public:
   PlotRayUtils();
+  tf::StampedTransform getTrans();
   void plotIntersections(tf::Point rayStart, tf::Point rayEnd, bool overwrite = true);
   void plotIntersections(std::vector<double> dist, tf::Point rayStart, tf::Point rayEnd,
 			 bool overwrite = true);

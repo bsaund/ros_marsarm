@@ -30,6 +30,7 @@ add_service_files(
   RayTraceEachParticle.srv
   RayTraceEntropy.srv
   RayTraceCylinder.srv
+  TouchOptimizeGrid.srv
 )
 
 generate_messages(
@@ -75,6 +76,11 @@ target_link_libraries(ray_tracer
   calc_entropy
 )
 
+add_library(touch_optimizer src/touchOptimizationUtils.cpp)
+target_link_libraries(touch_optimizer
+  ${catkin_LIBRARIES}
+  ray_tracer
+)
 
 add_executable(gazebo_rayTrace_test src/rayTraceTestingClient.cpp)
 
@@ -99,9 +105,6 @@ target_link_libraries(gazebo_rayTrace_grid
   plot_ray_utils
 )
 
-
-
-
 add_dependencies(gazebo_rayTrace_test gazebo_ray_trace_gencpp)
 add_dependencies(gazebo_rayTrace_plot gazebo_ray_trace_gencpp)
 
@@ -109,9 +112,6 @@ add_dependencies(gazebo_rayTrace_plot gazebo_ray_trace_gencpp)
 target_link_libraries(gazebo_rayTrace_test
   ${catkin_LIBRARIES}
 )
-
-
-
 
 add_library(distance_ray_trace SHARED src/touchLocalizationPlugin.cpp)
 target_link_libraries(distance_ray_trace
@@ -121,6 +121,7 @@ target_link_libraries(distance_ray_trace
   ${SDF_LIBRARIES}
   calc_entropy
   ray_tracer
+  touch_optimizer
 )
 
 

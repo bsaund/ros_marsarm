@@ -31,8 +31,8 @@ class RayTracePluginUtils{
     geometry_msgs::Point end;
     std::vector<double> dist;
   };
-  std::vector<RayIntersection> rayTraceCylinderHelper(geometry_msgs::Point start_msg, 
-						      geometry_msgs::Point end_msg, 
+  std::vector<RayIntersection> rayTraceCylinderHelper(tf::Point start_msg, 
+						      tf::Point end_msg, 
 						      double err);
 
   bool rayTraceEachParticle(gazebo_ray_trace::RayTraceEachParticle::Request &req,
@@ -47,6 +47,8 @@ class RayTracePluginUtils{
 
   bool rayTraceCondDisEntropy(gazebo_ray_trace::RayTraceCylinder::Request &req,
 			      gazebo_ray_trace::RayTraceCylinder::Response &resp);
+
+
 
  public:
   ros::NodeHandle* rosnode_;
@@ -64,6 +66,8 @@ class RayTracePluginUtils{
   void setParticles(geometry_msgs::PoseArray p);
 
   std::vector<tf::Vector3> getOrthogonalBasis(tf::Vector3 ray);
+
+  double getIG(tf::Point start, tf::Point end, double err_radius, double err_dist);
 
 };
 

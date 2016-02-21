@@ -77,12 +77,10 @@ std::vector<tf::Vector3> RayTracePluginUtils::getOrthogonalBasis(tf::Vector3 ray
  *   produced with all the intersections to particles
  */
 std::vector<RayTracePluginUtils::RayIntersection> 
-RayTracePluginUtils::rayTraceCylinderHelper(geometry_msgs::Point start_msg, 
-					    geometry_msgs::Point end_msg, 
+RayTracePluginUtils::rayTraceCylinderHelper(tf::Point start, 
+					    tf::Point end, 
 					    double err)
 {
-  tf::Vector3 start(start_msg.x, start_msg.y, start_msg.z);
-  tf::Vector3 end(end_msg.x, end_msg.y, end_msg.z);
   tf::Vector3 ray = end-start;
   std::vector<tf::Vector3> ray_orthog = getOrthogonalBasis(ray);
   std::vector<RayIntersection> rays;
@@ -106,14 +104,17 @@ RayTracePluginUtils::rayTraceCylinderHelper(geometry_msgs::Point start_msg,
 
 
 
-
+/**
+ *  Service for calculating the conditional discrete entropy of a touch
+ */
 bool RayTracePluginUtils::rayTraceCondDisEntropy(gazebo_ray_trace::RayTraceCylinder::Request &req,
 						 gazebo_ray_trace::RayTraceCylinder::Response &resp)
 {
-  // ROS_INFO("Starting to ray trace CondDisEntropy");
-  std::vector<RayIntersection> rays = rayTraceCylinderHelper(req.start, req.end, req.error_radius);
-  // ROS_INFO("rays size: %d", rays.size());
-  // ROS_INFO("rays[0] size: %d", rays[0].dist.size());
+  tf::Vector3 start(req.start.x, req.start.y, req.start.z);
+  tf::Vector3 end(req.end.x, req.end.y, req.end.z);
+
+  std::vector<RayIntersection> rays = rayTraceCylinderHelper(start, end, req.error_radius);
+
   std::vector<CalcEntropy::ConfigDist> distToConfig;
   for(int ray_index = 0; ray_index < rays.size(); ray_index ++){
     for(int id=0; id < rays[ray_index].dist.size(); id++){
@@ -135,8 +136,24 @@ bool RayTracePluginUtils::rayTraceCondDisEntropy(gazebo_ray_trace::RayTraceCylin
     resp.rays[i].end = rays[i].end;
     resp.rays[i].dist = rays[i].dist;
   }
+}
 
-      
+double RayTracePluginUtils::getIG(tf::Point start, tf::Point end,
+				  double err_radius, double err_dist)
+{
+  std::vector<RayIntersection> rays = rayTraceCylinderHelper(start, end, err_radius);
+  // ROS_INFO("There are %d intersections", rays[0].dist.size());    
+
+  std::vector<CalcEntropy::ConfigDist> distToConfig;
+  for(int ray_index = 0; ray_index < rays.size(); ray_index ++){
+    for(int id=0; id < rays[ray_index].dist.size(); id++){
+      CalcEntropy::ConfigDist c;
+      c.id = id;
+      c.dist = rays[ray_index].dist[id];
+      distToConfig.push_back(c);
+    }
+  }
+  return CalcEntropy::calcIG(distToConfig, err_dist, rays[0].dist.size());
 }
 
 /**
@@ -145,8 +162,10 @@ bool RayTracePluginUtils::rayTraceCondDisEntropy(gazebo_ray_trace::RayTraceCylin
 bool RayTracePluginUtils::rayTraceCylinder(gazebo_ray_trace::RayTraceCylinder::Request &req,
 					   gazebo_ray_trace::RayTraceCylinder::Response &resp)
 {
+  tf::Vector3 start(req.start.x, req.start.y, req.start.z);
+  tf::Vector3 end(req.end.x, req.end.y, req.end.z);
 
-  std::vector<RayIntersection> rays = rayTraceCylinderHelper(req.start, req.end, req.error_radius);
+  std::vector<RayIntersection> rays = rayTraceCylinderHelper(start, end, req.error_radius);
 
   resp.rays.resize(rays.size());
   for(int i = 0; i < rays.size(); i++){

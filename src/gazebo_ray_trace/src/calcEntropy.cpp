@@ -16,20 +16,29 @@ struct Bin {
  */
 static std::vector<Bin> histogram(std::vector<CalcEntropy::ConfigDist> c, double binSize){
   double min = c[0].dist;
-  double max = c[c.size() -1].dist;
-  int nbins = (int)((max-min)/binSize) + 1;
+  
+  int m = c.size()-1;
+  while(m>0 && c[m].dist > 999){
+    m--;
+  }
+
+  double max = c[m].dist;
+  
+
+  int nbins = (int)((max-min)/binSize) + 2;
   double binValue = min + binSize;
   int binNum = 0;
   std::vector<Bin> hist;
 
   hist.resize(nbins);
 
+
   // std::cout <<"Max: " << max << " Min: " << min << std::endl;
   // std::cout <<"c size " << c.size() << " hist size: " << hist.size() << std::endl;
 
   int i=0;
   while(i < c.size()){
-    if(c[i].dist < binValue){
+    if(c[i].dist < binValue || c[i].dist > 999){
       hist[binNum].id.push_back(c[i].id);
       i++;
     } else {
@@ -174,7 +183,7 @@ namespace CalcEntropy{
     double p = 1.0 / (double)numConfigs;
     double H_Y = -log(p);
 
-    std::cout << "IG: " <<  H_Y - H_Y_given_X << std::endl;
+    // std::cout << "IG: " <<  H_Y - H_Y_given_X << std::endl;
     return H_Y - H_Y_given_X;
   }
 

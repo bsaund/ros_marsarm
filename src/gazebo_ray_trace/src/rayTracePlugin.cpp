@@ -33,7 +33,6 @@ namespace gazebo
     ros::Subscriber particle_sub;
     geometry_msgs::PoseArray particles_;
 
-
     physics::WorldPtr world_;
 
 
@@ -196,6 +195,7 @@ namespace gazebo
     }
 
     /**
+     *  DEPRICATED because differential entropy is no longer used
      *  Service for Ray tracing each particle and 
      *   return the entropy of the distribution
      */
@@ -333,53 +333,20 @@ namespace gazebo
     void advertiseServices()
     {
       std::string robot_namespace = "gazebo_simulation";
-      this->rosnode_ = new ros::NodeHandle(robot_namespace);
+      rosnode_ = new ros::NodeHandle(robot_namespace);
       
-      this->rosnode_->setParam("/use_sim_time", false);
-      //This is how static services can be advertised
-      // this->srv_ = this->rosnode_->advertiseService("ray_trace", &RayTracer::rayTrace);
+      rosnode_->setParam("/use_sim_time", false);
 
-      //boost is needed to bind member function rayTrace
-      ros::AdvertiseServiceOptions ray_trace_srv = 
-      	ros::AdvertiseServiceOptions::create<gazebo_ray_trace::RayTrace>
-      	("ray_trace",
-      	 boost::bind(&RayTracer::rayTrace, this, _1, _2),
-      	 ros::VoidPtr(), NULL);
+      srv_ = rosnode_->advertiseService("ray_trace", &RayTracer::rayTrace, this);
 
-      this->srv_ = this->rosnode_->advertiseService(ray_trace_srv);
+      srv_each_ = rosnode_->advertiseService("ray_trace_each_particle", 
+					     &RayTracer::rayTraceEachParticle, this);
 
+      srv_cylinder_ = rosnode_->
+	advertiseService("ray_trace_cylinder", &RayTracer::rayTraceCylinder, this);
 
-      ros::AdvertiseServiceOptions ray_trace_srv_2 = 
-      	ros::AdvertiseServiceOptions::create<gazebo_ray_trace::RayTraceEachParticle>
-      	("ray_trace_each_particle",
-      	 boost::bind(&RayTracer::rayTraceEachParticle, this, _1, _2),
-      	 ros::VoidPtr(), NULL);
-
-      this->srv_each_ = this->rosnode_->advertiseService(ray_trace_srv_2);
-
-      // ros::AdvertiseServiceOptions ray_trace_entropy = 
-      // 	ros::AdvertiseServiceOptions::create<gazebo_ray_trace::RayTraceEntropy>
-      // 	("ray_trace_entropy",
-      // 	 boost::bind(&RayTracer::rayTraceEntropy, this, _1, _2),
-      // 	 ros::VoidPtr(), NULL);
-
-      // this->srv_entropy_ = this->rosnode_->advertiseService(ray_trace_entropy);
-
-      ros::AdvertiseServiceOptions ray_trace_cylinder = 
-      	ros::AdvertiseServiceOptions::create<gazebo_ray_trace::RayTraceCylinder>
-      	("ray_trace_cylinder",
-      	 boost::bind(&RayTracer::rayTraceCylinder, this, _1, _2),
-      	 ros::VoidPtr(), NULL);
-
-      this->srv_cylinder_ = this->rosnode_->advertiseService(ray_trace_cylinder);
-
-      ros::AdvertiseServiceOptions ray_trace_condDisEntropy = 
-      	ros::AdvertiseServiceOptions::create<gazebo_ray_trace::RayTraceCylinder>
-      	("ray_trace_condDisEntropy",
-      	 boost::bind(&RayTracer::rayTraceCondDisEntropy, this, _1, _2),
-      	 ros::VoidPtr(), NULL);
-
-      this->srv_condDisEntropy_ = this->rosnode_->advertiseService(ray_trace_condDisEntropy);
+      srv_condDisEntropy_ = rosnode_->
+	advertiseService("ray_trace_condDisEntropy", &RayTracer::rayTraceCondDisEntropy, this);
 
     }
 

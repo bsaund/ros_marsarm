@@ -20,7 +20,7 @@
 namespace gazebo
 {
 
-  class RayTracer : public WorldPlugin
+  class TouchLocalizationPlugin : public WorldPlugin
   {
   private:
     ros::NodeHandle* rosnode_;
@@ -42,7 +42,7 @@ namespace gazebo
 
 
   public:
-    RayTracer() : WorldPlugin()
+    TouchLocalizationPlugin() : WorldPlugin()
     {
     }
 
@@ -70,9 +70,9 @@ namespace gazebo
       ray_tracer_.rosnode_ = rosnode_;
       
       
-      this->advertiseServices();
-      this->particle_sub = this->rosnode_->subscribe("/transform_particles", 1000, 
-				   &RayTracer::updateParticles, this);
+      advertiseServices();
+      particle_sub = rosnode_->subscribe("/transform_particles", 1000, 
+				   &TouchLocalizationPlugin::updateParticles, this);
 
       ROS_INFO("Ready to ray trace");
 	  
@@ -90,7 +90,7 @@ namespace gazebo
     }
 
   };
-  GZ_REGISTER_WORLD_PLUGIN(RayTracer);
+  GZ_REGISTER_WORLD_PLUGIN(TouchLocalizationPlugin);
 }
 
 

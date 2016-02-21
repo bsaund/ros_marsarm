@@ -48,7 +48,7 @@ class RayTracePluginUtils{
   bool rayTraceCondDisEntropy(gazebo_ray_trace::RayTraceCylinder::Request &req,
 			      gazebo_ray_trace::RayTraceCylinder::Response &resp);
 
-
+  std::vector<CalcEntropy::ConfigDist> intersectionsToConfig(std::vector<RayIntersection> const &rays);
 
  public:
   ros::NodeHandle* rosnode_;

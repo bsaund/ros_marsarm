@@ -101,7 +101,19 @@ RayTracePluginUtils::rayTraceCylinderHelper(tf::Point start,
 }
 
 
-
+std::vector<CalcEntropy::ConfigDist> RayTracePluginUtils::intersectionsToConfig(std::vector<RayIntersection> const &rays)
+{
+ std::vector<CalcEntropy::ConfigDist> distToConfig;
+  for(int ray_index = 0; ray_index < rays.size(); ray_index ++){
+    for(int id=0; id < rays[ray_index].dist.size(); id++){
+      CalcEntropy::ConfigDist c;
+      c.id = id;
+      c.dist = rays[ray_index].dist[id];
+      distToConfig.push_back(c);
+    }
+  }
+  return distToConfig;
+}
 
 
 /**
@@ -115,18 +127,7 @@ bool RayTracePluginUtils::rayTraceCondDisEntropy(gazebo_ray_trace::RayTraceCylin
 
   std::vector<RayIntersection> rays = rayTraceCylinderHelper(start, end, req.error_radius);
 
-  std::vector<CalcEntropy::ConfigDist> distToConfig;
-  for(int ray_index = 0; ray_index < rays.size(); ray_index ++){
-    for(int id=0; id < rays[ray_index].dist.size(); id++){
-      CalcEntropy::ConfigDist c;
-      c.id = id;
-      c.dist = rays[ray_index].dist[id];
-      distToConfig.push_back(c);
-    }
-  }
-
-  // CalcEntropy::calcCondDisEntropy(distToConfig, 0.0);
-  // ROS_INFO("Calculating IG");
+  std::vector<CalcEntropy::ConfigDist>  distToConfig = intersectionsToConfig(rays);
 
   resp.IG = CalcEntropy::calcIG(distToConfig, req.error_depth, rays[0].dist.size());
   // ROS_INFO("IG calculated");
@@ -143,16 +144,11 @@ double RayTracePluginUtils::getIG(tf::Point start, tf::Point end,
 {
   std::vector<RayIntersection> rays = rayTraceCylinderHelper(start, end, err_radius);
   // ROS_INFO("There are %d intersections", rays[0].dist.size());    
+  ROS_INFO("About to call distToConfig");
 
-  std::vector<CalcEntropy::ConfigDist> distToConfig;
-  for(int ray_index = 0; ray_index < rays.size(); ray_index ++){
-    for(int id=0; id < rays[ray_index].dist.size(); id++){
-      CalcEntropy::ConfigDist c;
-      c.id = id;
-      c.dist = rays[ray_index].dist[id];
-      distToConfig.push_back(c);
-    }
-  }
+
+  std::vector<CalcEntropy::ConfigDist>  distToConfig= intersectionsToConfig(rays);
+  ROS_INFO("Called distToConfig");
   return CalcEntropy::calcIG(distToConfig, err_dist, rays[0].dist.size());
 }
 

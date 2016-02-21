@@ -35,19 +35,6 @@ class RayTracePluginUtils{
 						      geometry_msgs::Point end_msg, 
 						      double err);
 
-
- public:
-  ros::NodeHandle* rosnode_;
-  physics::WorldPtr world_;
-  void advertiseServices();
-    
-  double rayTrace(math::Vector3 start, math::Vector3 end, gazebo::physics::RayShapePtr ray_);
-  math::Vector3 vectorTFToGazebo(const tf::Vector3 t);
-
-  std::vector<double> rayTraceAllParticles(tf::Point start, 
-					   tf::Point end);
-  std::vector<double> rayTraceAllParticles(geometry_msgs::Point startm, 
-					   geometry_msgs::Point endm);
   bool rayTraceEachParticle(gazebo_ray_trace::RayTraceEachParticle::Request &req,
 			    gazebo_ray_trace::RayTraceEachParticle::Response &resp);
   bool rayTraceEntropy(gazebo_ray_trace::RayTraceEntropy::Request &req,
@@ -61,17 +48,22 @@ class RayTracePluginUtils{
   bool rayTraceCondDisEntropy(gazebo_ray_trace::RayTraceCylinder::Request &req,
 			      gazebo_ray_trace::RayTraceCylinder::Response &resp);
 
+ public:
+  ros::NodeHandle* rosnode_;
+  physics::WorldPtr world_;
+  void advertiseServices();
+    
+  double rayTrace(math::Vector3 start, math::Vector3 end, gazebo::physics::RayShapePtr ray_);
+  math::Vector3 vectorTFToGazebo(const tf::Vector3 t);
+
+  std::vector<double> rayTraceAllParticles(tf::Point start, 
+					   tf::Point end);
+  std::vector<double> rayTraceAllParticles(geometry_msgs::Point startm, 
+					   geometry_msgs::Point endm);
+
   void setParticles(geometry_msgs::PoseArray p);
 
-
-
-
-
   std::vector<tf::Vector3> getOrthogonalBasis(tf::Vector3 ray);
-
-
-
-
 
 };
 

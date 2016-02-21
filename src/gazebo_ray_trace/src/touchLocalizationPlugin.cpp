@@ -3,14 +3,14 @@
  *   via a ros service
  */
 #include "ros/ros.h"
-#include "gazebo_ray_trace/RayTrace.h"
-#include "gazebo_ray_trace/RayTraceEachParticle.h"
-#include "gazebo_ray_trace/RayTraceEntropy.h"
-#include "gazebo_ray_trace/RayTraceCylinder.h"
+// #include "gazebo_ray_trace/RayTrace.h"
+// #include "gazebo_ray_trace/RayTraceEachParticle.h"
+// #include "gazebo_ray_trace/RayTraceEntropy.h"
+// #include "gazebo_ray_trace/RayTraceCylinder.h"
 #include <math.h>
 #include <gazebo/common/Plugin.hh>
 #include "gazebo/physics/physics.hh"
-#include <geometry_msgs/PoseArray.h>
+// #include <geometry_msgs/PoseArray.h>
 #include <tf/tf.h>
 #include <boost/thread.hpp>
 #include "calcEntropy.h"
@@ -26,19 +26,8 @@ namespace gazebo
     ros::NodeHandle* rosnode_;
 
     ros::Subscriber particle_sub;
-    geometry_msgs::PoseArray particles_;
 
     RayTracePluginUtils ray_tracer_;
-
-
-
-
-    struct RayIntersection {
-      geometry_msgs::Point start;
-      geometry_msgs::Point end;
-      std::vector<double> dist;
-    };
-      
 
 
   public:
@@ -49,7 +38,6 @@ namespace gazebo
     
     void updateParticles(const geometry_msgs::PoseArray p)
     {
-      particles_ = p;
       ray_tracer_.setParticles(p);
     }
 

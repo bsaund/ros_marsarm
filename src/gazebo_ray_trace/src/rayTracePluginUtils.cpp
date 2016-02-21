@@ -172,6 +172,8 @@ bool RayTracePluginUtils::rayTrace(gazebo_ray_trace::RayTrace::Request &req,
   end.y = req.end.y;
   end.z = req.end.z;
 
+
+
   gazebo::physics::RayShapePtr ray_;
   gazebo::physics::PhysicsEnginePtr engine = world_->GetPhysicsEngine(); 
   engine->InitForThread();
@@ -185,9 +187,6 @@ bool RayTracePluginUtils::rayTrace(gazebo_ray_trace::RayTrace::Request &req,
   return true;
 }
 
-
-
-
 /**
  *  DEPRICATED because differential entropy is no longer used
  *  Service for Ray tracing each particle and 
@@ -196,16 +195,10 @@ bool RayTracePluginUtils::rayTrace(gazebo_ray_trace::RayTrace::Request &req,
 bool RayTracePluginUtils::rayTraceEntropy(gazebo_ray_trace::RayTraceEntropy::Request &req,
 					  gazebo_ray_trace::RayTraceEntropy::Response &resp)
 {
-
   std::vector<double> dist = rayTraceAllParticles(req.start, req.end);
-      
-  // rayTraceCylinder(req.start, req.end, 1.0);
-      
   resp.entropy = CalcEntropy::calcDifferentialEntropy(dist);
-
   return true;
 }
-
 
 /**
  *  Service for Ray traces each particles
@@ -217,9 +210,6 @@ bool RayTracePluginUtils::rayTraceEachParticle(gazebo_ray_trace::RayTraceEachPar
   // ROS_INFO("Traced ray and responded with %d different distances", resp.dist.size());
   return true;
 }
-
-
-
 
 /** 
  *  Ray traces each particle.
@@ -241,14 +231,12 @@ std::vector<double> RayTracePluginUtils::rayTraceAllParticles(geometry_msgs::Poi
   return rayTraceAllParticles(start, end);
 }
 
-
 /**
  *  Ray Traces all particles
  */
 std::vector<double> RayTracePluginUtils::rayTraceAllParticles(tf::Point start, 
 							      tf::Point end)
 {
-
   tf::Transform trans;
   // ROS_INFO("Setting up ray");
   gazebo::physics::RayShapePtr ray_;

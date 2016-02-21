@@ -66,6 +66,17 @@ target_link_libraries(plot_ray_utils
   calc_entropy
 )
 
+add_library(ray_tracer src/rayTracePluginUtils.cpp)
+target_link_libraries(ray_tracer
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+  ${Boost_LIBRARIES}
+  ${SDF_LIBRARIES}
+  calc_entropy
+  plot_ray_utils
+)
+
+
 add_executable(gazebo_rayTrace_test src/rayTraceTestingClient.cpp)
 
 add_executable(gazebo_rayTrace_plot src/rayTracePlotter.cpp)
@@ -111,6 +122,7 @@ target_link_libraries(distance_ray_trace
   ${SDF_LIBRARIES}
   calc_entropy
   plot_ray_utils
+  ray_tracer
 )
 
 

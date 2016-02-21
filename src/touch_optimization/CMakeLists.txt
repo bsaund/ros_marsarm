@@ -4,7 +4,10 @@ project(touch_optimization)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+  gazebo_ray_trace
+  roscpp
+)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -108,7 +111,10 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+)
+
 
 ## Declare a C++ library
 # add_library(touch_optimization
@@ -122,6 +128,10 @@ catkin_package(
 
 ## Declare a C++ executable
 # add_executable(touch_optimization_node src/touch_optimization_node.cpp)
+
+add_executable(random_ray src/bestRandomRay.cpp)
+target_link_libraries(random_ray
+  ${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above

@@ -10,8 +10,41 @@
 #include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/Point.h"
 #include <sstream>
+#include <random>
 
 
+
+void randomSelection()
+{
+  tf::Point best_start, best_end;
+
+  double bestIG;
+  bestIG = 0;
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<double> rand(0.0,1.0);
+  PlotRayUtils plt;
+
+  for(int i=0; i<500; i++){
+    tf::Point start(rand(gen), rand(gen), rand(gen));
+    tf::Point end(rand(gen)+.5, rand(gen)+.5, rand(gen)+.5);
+    end.normalized();
+    double IG = plt.getIG(start, end, 0.01, 0.002);
+    if (IG > bestIG){
+      bestIG = IG;
+      best_start = start;
+      best_end = end;
+    }
+    
+  }
+
+
+  plt.plotCylinder(best_start, best_end, 0.01, 0.002);
+  ROS_INFO("Ray is: %f, %f, %f.  %f, %f, %f", 
+	   best_start.getX(), best_start.getY(), best_start.getZ(),
+	   best_end.getX(), best_end.getY(), best_end.getZ());
+  
+}
 
 void bestRayUsingMessages()
 {
@@ -95,9 +128,9 @@ void bestRayUsingSingleService()
 
 int main(int argc, char **argv){
   ros::init(argc, argv, "best_random_ray");
-  bestRayUsingMessages();
+  // bestRayUsingMessages();
   // bestRayUsingSingleService();
-  
+  randomSelection();
 
   return 0;
 }

@@ -66,8 +66,8 @@ void ShapePlotter::generateTransforms()
     particleTransform.position.z = 0;
 
     particleTransform.orientation = 
-      // tf::createQuaternionMsgFromRollPitchYaw(randn(gen)/50, randn(gen)/50, randn(gen)/50);
-      tf::createQuaternionMsgFromRollPitchYaw(0, randn(gen)/20, 0);
+      tf::createQuaternionMsgFromRollPitchYaw(randn(gen)/50, randn(gen)/50, randn(gen)/50);
+      // tf::createQuaternionMsgFromRollPitchYaw(0, randn(gen)/20, 0);
     
 
     // particles_.push_back(particleTransform);
@@ -136,7 +136,8 @@ void ShapePlotter::plotParticles(){
   geometry_msgs::TransformStamped trans;
   tf::Transform unityTransform;
   tf::Transform particleTransform;
-  particleTransform.setOrigin(tf::Vector3(1,2,3));
+  particleTransform.setOrigin(tf::Vector3(1,1,1));
+  // particleTransform.setOrigin(tf::Vector3(0,0,0));
   tf::StampedTransform tfstmp(particleTransform, ros::Time::now(),"my_frame", "particle_frame");
   tf::transformStampedTFToMsg(tfstmp, trans);
   

@@ -1,5 +1,5 @@
 /**
- *  Plots a ray and the intersections of that ray with obstacles 
+ *  Plots a grid of rays and the intersections of that ray with obstacles 
  */
 
 #include "ros/ros.h"

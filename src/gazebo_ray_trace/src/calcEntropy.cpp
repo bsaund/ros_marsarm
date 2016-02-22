@@ -112,6 +112,13 @@ static double calcEntropyOfBin(Bin bin){
 }
 
 
+/**
+ * Ordering function for COnfigDist sort.
+ *  
+ */
+bool distOrdering(const CalcEntropy::ConfigDist &left, const CalcEntropy::ConfigDist &right) {
+  return left.dist < right.dist;
+}
 
 
 namespace CalcEntropy{
@@ -148,9 +155,7 @@ namespace CalcEntropy{
    */
   double calcCondDisEntropy(std::vector<ConfigDist> p, double binSize)
   {
-    std::sort(p.begin(), p.end(), [](const ConfigDist &left, const ConfigDist &right) {
-	return left.dist < right.dist;
-      });
+    std::sort(p.begin(), p.end(), &distOrdering);
     std::vector<Bin> hist = histogram(p, binSize);
 
     double totalPoints = p.size();

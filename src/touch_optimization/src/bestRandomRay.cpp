@@ -14,7 +14,7 @@
 
 
 
-void randomSelection()
+void randomSelection(PlotRayUtils &plt)
 {
   tf::Point best_start, best_end;
 
@@ -23,7 +23,7 @@ void randomSelection()
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_real_distribution<double> rand(0.0,1.0);
-  PlotRayUtils plt;
+
 
   for(int i=0; i<500; i++){
     tf::Point start(rand(gen), rand(gen), rand(gen));
@@ -45,6 +45,7 @@ void randomSelection()
 	   best_end.getX(), best_end.getY(), best_end.getZ());
   
 }
+
 
 void bestRayUsingMessages()
 {
@@ -127,10 +128,14 @@ void bestRayUsingSingleService()
 
 
 int main(int argc, char **argv){
+
   ros::init(argc, argv, "best_random_ray");
+  PlotRayUtils plt;
   // bestRayUsingMessages();
   // bestRayUsingSingleService();
-  randomSelection();
+  for(int i=0; i < 5; i++){
+    randomSelection(plt);
+  }
 
   return 0;
 }

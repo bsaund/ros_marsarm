@@ -26,8 +26,8 @@ int main(int argc, char **argv){
   //     ros::Duration(0.1).sleep();
   //   } 
   // }
-  double n = 5;
-  for(int i = 0; i <= n; i++){
+  double n = 10;
+  for(int i = -2; i <= n+2; i++){
     double theta = 3.1415*i/n/2;
     double x1 = .9 - cos(theta);
     double x2 = .9 + cos(theta);

@@ -37,6 +37,33 @@ double RayTracePluginUtils::rayTrace(math::Vector3 start, math::Vector3 end, gaz
   return dist;
 }
 
+double RayTracePluginUtils::rayTrace(tf::Vector3 start, tf::Vector3 end)
+{
+  gazebo::physics::RayShapePtr ray_;
+  gazebo::physics::PhysicsEnginePtr engine = world_->GetPhysicsEngine(); 
+  engine->InitForThread();
+
+  ray_ = boost::dynamic_pointer_cast<gazebo::physics::RayShape>
+    (engine->CreateShape("ray", gazebo::physics::CollisionPtr()));
+  return rayTrace(vectorTFToGazebo(start), vectorTFToGazebo(end), ray_);
+}
+
+tf::Vector3 RayTracePluginUtils::calcNormal(tf::Vector3 start, tf::Vector3 end){
+  tf::Vector3 direction = end-start;
+  double distance = 0.0005;
+  std::vector<tf::Vector3> orthog = getOrthogonalBasis(direction);
+  
+  tf::Point p1 = start + direction*rayTrace(start, end);
+  start = start+orthog[0]*distance;
+  end = end+orthog[0]*distance;
+  tf::Point p2 = start + direction*rayTrace(start,end);
+
+  start = start+orthog[1]*distance;
+  end = end+orthog[1]*distance;
+  tf::Point p3 = start + direction*rayTrace(start,end);
+  return (p3-p1).cross(p2-p1).normalize();  
+}
+
 /**
  *  Return vector of two Vector3s that form a basis for the space orthogonal to the ray
  */
@@ -101,15 +128,19 @@ RayTracePluginUtils::rayTraceCylinderHelper(tf::Point start,
 }
 
 
-std::vector<CalcEntropy::ConfigDist> RayTracePluginUtils::intersectionsToConfig(std::vector<RayIntersection> const &rays)
+std::vector<CalcEntropy::ConfigDist> RayTracePluginUtils::intersectionsToConfig(std::vector<RayIntersection> const &rays, double depth_err)
 {
  std::vector<CalcEntropy::ConfigDist> distToConfig;
   for(int ray_index = 0; ray_index < rays.size(); ray_index ++){
     for(int id=0; id < rays[ray_index].dist.size(); id++){
-      CalcEntropy::ConfigDist c;
-      c.id = id;
-      c.dist = rays[ray_index].dist[id];
-      distToConfig.push_back(c);
+      int n = 0; //For adding extra points to simulate error
+      for(int i=-1*n; i <=n; i++){
+	double err = depth_err * i/n;
+	CalcEntropy::ConfigDist c;
+	c.id = id;
+	c.dist = rays[ray_index].dist[id];
+	distToConfig.push_back(c);
+      }
     }
   }
   return distToConfig;
@@ -127,9 +158,16 @@ bool RayTracePluginUtils::rayTraceCondDisEntropy(gazebo_ray_trace::RayTraceCylin
 
   std::vector<RayIntersection> rays = rayTraceCylinderHelper(start, end, req.error_radius);
 
-  std::vector<CalcEntropy::ConfigDist>  distToConfig = intersectionsToConfig(rays);
+  std::vector<CalcEntropy::ConfigDist>  distToConfig = intersectionsToConfig(rays, req.error_depth);
 
-  resp.IG = CalcEntropy::calcIG(distToConfig, req.error_depth, rays[0].dist.size());
+  tf::Vector3 normal = calcNormal(start, end);
+  double cosOffNormal = fabs(normal.dot((end-start).normalized()));
+  // ROS_INFO("Along Normal: %f", cosOffNormal);
+
+  cosOffNormal = std::max(cosOffNormal, 0.05); //Limit off angle to avoid overflow errors
+  double dist_err = req.error_depth/cosOffNormal;
+
+  resp.IG = CalcEntropy::calcIG(distToConfig, dist_err, rays[0].dist.size());
   // ROS_INFO("IG calculated");
   resp.rays.resize(rays.size());
   for(int i = 0; i < rays.size(); i++){
@@ -147,7 +185,7 @@ double RayTracePluginUtils::getIG(tf::Point start, tf::Point end,
   ROS_INFO("About to call distToConfig");
 
 
-  std::vector<CalcEntropy::ConfigDist>  distToConfig= intersectionsToConfig(rays);
+  std::vector<CalcEntropy::ConfigDist>  distToConfig= intersectionsToConfig(rays, err_dist);
   ROS_INFO("Called distToConfig");
   return CalcEntropy::calcIG(distToConfig, err_dist, rays[0].dist.size());
 }

@@ -5,6 +5,17 @@
 
 #define NUM_PARTICLES 1000
 
+class PFilterTest
+{
+private:
+  ros::NodeHandle n;
+public:
+  geometry_msgs::PoseArray getParticlePoseArray();
+  particleFilter pFilter_;
+  PFilterTest(int n_particles);
+  
+};
+
 void computeInitialDistribution(particleFilter::cspace binit[2],
 				tf::Point p1, tf::Point p2, tf::Point p3)
 {
@@ -45,10 +56,10 @@ tf::Pose poseAt(double y, double z, particleFilter::cspace plane)
 }
 
 
-geometry_msgs::PoseArray getParticlePoseArray(particleFilter &pfilter)
+geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
 {
   particleFilter::cspace particles[NUM_PARTICLES];
-  pfilter.getAllParticles(particles);
+  pFilter_.getAllParticles(particles);
 
   geometry_msgs::PoseArray poseArray;
   for(int i=0; i<50; i++){
@@ -60,6 +71,19 @@ geometry_msgs::PoseArray getParticlePoseArray(particleFilter &pfilter)
   return poseArray;
 }
 
+PFilterTest::PFilterTest(int n_particles) :
+    pFilter_(n_particles)
+{
+  tf::Point touch1(0, 0, 0);
+  tf::Point touch2(0, 1, -1);
+  tf::Point touch3(1, -1, 0);
+  particleFilter::cspace binit[2];
+  computeInitialDistribution(binit, touch1, touch2, touch3);
+  ROS_INFO("Computed Initial Distribution");
+  pFilter_.setDistribution(binit);
+
+}
+
 int main(int argc, char **argv)
 { 
   ros::init(argc, argv, "pfilterTest");
@@ -67,17 +91,11 @@ int main(int argc, char **argv)
   ros::Publisher pub = n.advertise<geometry_msgs::PoseArray>("/particles_from_filter", 5);
 
   ROS_INFO("Testing particle filter");
+  
+  PFilterTest pFilterTest(NUM_PARTICLES);
 
-  particleFilter pfilter(NUM_PARTICLES);
   particleFilter::cspace binit[2];
 
-  tf::Point touch1(0, 0, 0);
-  tf::Point touch2(0, 1, -1);
-  tf::Point touch3(1, -1, 0);
-
-  computeInitialDistribution(binit, touch1, touch2, touch3);
-  ROS_INFO("Computed Initial Distribution");
-  pfilter.setDistribution(binit);
   
   // double obs[3] = {0, 1, -1};
   // pfilter.addObservation(obs);
@@ -94,8 +112,8 @@ int main(int argc, char **argv)
   
   for(int i=0; i<10; i++){
     double obs2[3] = {0,0,0};
-    pfilter.addObservation(obs2);
-    pub.publish(getParticlePoseArray(pfilter));
+    pFilterTest.pFilter_.addObservation(obs2);
+    pub.publish(pFilterTest.getParticlePoseArray());
     ROS_INFO("Estimated Dist: %f, %f, %f", binit[0][0], binit[0][1], binit[0][2]);
     ros::Duration(5.0).sleep();
   }

@@ -192,7 +192,7 @@ int main(int argc, char **argv)
   while (ros::ok()) {
     waitForRViz.sleep();
     plt.plotParticles();
-    ROS_INFO("spinning");
+    // ROS_INFO("spinning");
     ros::spinOnce();
   }
   

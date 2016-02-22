@@ -49,7 +49,7 @@ class PlotRayUtils{
   void plotRay(tf::Point start, tf::Point end, bool overwrite = true);
   void labelRay(tf::Point start, std::string text);
   void plotEntropyRay(tf::Point start, tf::Point end, bool overwrite);
-  void plotCylinder(tf::Point start, tf::Point end, double radial_err, double dist_err);
+  void plotCylinder(tf::Point start, tf::Point end, double radial_err, double dist_err, bool overwrite = false);
 
   double getDistToPart(tf::Point start, tf::Point end);
   std::vector<double> getDistToParticles(tf::Point start, tf::Point end);

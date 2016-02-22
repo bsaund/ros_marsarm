@@ -214,8 +214,13 @@ void PlotRayUtils::plotEntropyRay(tf::Point start, tf::Point end, bool overwrite
  *  radial_err determines the radius of the cylinder
  *  dist_err determines the bin size for calculating the entropy for calculating Information Gain
  */
-void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double radial_err, double dist_err)
+void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double radial_err, double dist_err, bool overwrite)
 {
+
+  if(overwrite){
+    ray_index_ = intersect_index_ = 0;
+  }
+    
   gazebo_ray_trace::RayTraceCylinder srv = getIGFullResponse(start, end, radial_err, dist_err);
 
   tf::Point start_tmp;
@@ -227,8 +232,8 @@ void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double radial_er
 			    srv.response.rays[i].end,
 			    start_tmp, end_tmp);
 		     
-    plotRay(start_tmp, end_tmp, false);
-    plotIntersections(srv.response.rays[i].dist, start_tmp, end_tmp, false);
+    plotRay(start_tmp, end_tmp, overwrite);
+    plotIntersections(srv.response.rays[i].dist, start_tmp, end_tmp, overwrite);
     // ros::Duration(0.02).sleep();
   }
   //Plot and label center ray

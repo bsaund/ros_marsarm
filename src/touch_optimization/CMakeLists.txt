@@ -8,7 +8,9 @@ project(touch_optimization)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   gazebo_ray_trace
+  particle_filter
   roscpp
+  tf
 )
 
 ## System dependencies are found with CMake's conventions
@@ -134,6 +136,11 @@ include_directories(
 add_executable(random_ray src/bestRandomRay.cpp)
 target_link_libraries(random_ray
   ${catkin_LIBRARIES})
+
+add_executable(particle_test src/updatingParticles.cpp)
+target_link_libraries(particle_test
+  ${catkin_LIBRARIES})
+
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above

@@ -45,6 +45,21 @@ tf::Pose poseAt(double y, double z, particleFilter::cspace plane)
 }
 
 
+geometry_msgs::PoseArray getParticlePoseArray(particleFilter &pfilter)
+{
+  particleFilter::cspace particles[NUM_PARTICLES];
+  pfilter.getAllParticles(particles);
+
+  geometry_msgs::PoseArray poseArray;
+  for(int i=0; i<50; i++){
+    tf::Pose pose = poseAt(0,0,particles[i]);
+    geometry_msgs::Pose pose_msg;
+    tf::poseTFToMsg(pose, pose_msg);
+    poseArray.poses.push_back(pose_msg);
+  }
+  return poseArray;
+}
+
 int main(int argc, char **argv)
 { 
   ros::init(argc, argv, "pfilterTest");
@@ -74,18 +89,16 @@ int main(int argc, char **argv)
   tf::Pose pose = poseAt(0,0, binit[0]);
   tf::Vector3 point = pose.getOrigin();
   ROS_INFO("Point: %f, %f, %f", point.getX(), point.getY(), point.getZ());
-  
-  particleFilter::cspace particles[NUM_PARTICLES];
-  pfilter.getAllParticles(particles);
 
-  geometry_msgs::PoseArray poseArray;
-  for(int i=0; i<50; i++){
-    pose = poseAt(0,0,particles[i]);
-    geometry_msgs::Pose pose_msg;
-    tf::poseTFToMsg(pose, pose_msg);
-    poseArray.poses.push_back(pose_msg);
-  }
-  pub.publish(poseArray);
+
+  
+  pub.publish(getParticlePoseArray(pfilter));
+  ros::Duration(5.0).sleep();
+
+  double obs2[3] = {1, 0, -1};
+  pfilter.addObservation(obs2);
+  pub.publish(getParticlePoseArray(pfilter));
+
   ros::spin();
 
 }

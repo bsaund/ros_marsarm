@@ -24,11 +24,15 @@ class ShapePlotter
   ros::Publisher particle_pub;
   ros::Publisher marker_pub;
 
+  ros::Subscriber sub;
+
   tf::Transform transform;
   visualization_msgs::MarkerArray points;
   geometry_msgs::PoseArray particles_;
 
   int numParticles = 50;
+
+  void externalParticleUpdate(geometry_msgs::PoseArray p);
 
  public:
   ShapePlotter();
@@ -43,6 +47,14 @@ ShapePlotter::ShapePlotter()
 {
   marker_pub = n.advertise<visualization_msgs::MarkerArray>("visualization_marker_array", 10);
   particle_pub = n.advertise<geometry_msgs::PoseArray>("/transform_particles", 10);
+  sub = n.subscribe("/particles_from_filter", 1, &ShapePlotter::externalParticleUpdate, this);
+}
+
+void ShapePlotter::externalParticleUpdate(geometry_msgs::PoseArray p)
+{
+  ROS_INFO("Particles Updated");
+  particles_ = p;
+  updateMarkers();
 }
 
 /** 
@@ -66,7 +78,7 @@ void ShapePlotter::generateTransforms()
     particleTransform.position.z = 0;
 
     particleTransform.orientation = 
-      tf::createQuaternionMsgFromRollPitchYaw(randn(gen)/50, randn(gen)/50, randn(gen)/50);
+      tf::createQuaternionMsgFromRollPitchYaw(randn(gen)/20, randn(gen)/20, randn(gen)/20);
       // tf::createQuaternionMsgFromRollPitchYaw(0, randn(gen)/20, 0);
     
 
@@ -104,8 +116,8 @@ void ShapePlotter::updateMarkers()
     std::string s;
    
     if( n.getParam("/localization_object_cad", s)){
-      ROS_INFO("Localization object is:");
-      ROS_INFO(s.c_str());
+      // ROS_INFO("Localization object is:");
+      // ROS_INFO(s.c_str());
     } else{
       ROS_INFO("Failed to get param");
     }
@@ -137,6 +149,9 @@ void ShapePlotter::plotParticles(){
   tf::Transform unityTransform;
   tf::Transform particleTransform;
   particleTransform.setOrigin(tf::Vector3(1,1,1));
+  tf::Quaternion q;
+  q.setRPY(0,0,0);
+  particleTransform.setRotation(q);
   // particleTransform.setOrigin(tf::Vector3(0,0,0));
   tf::StampedTransform tfstmp(particleTransform, ros::Time::now(),"my_frame", "particle_frame");
   tf::transformStampedTFToMsg(tfstmp, trans);
@@ -172,8 +187,8 @@ int main(int argc, char **argv)
   while (ros::ok()) {
     waitForRViz.sleep();
     plt.plotParticles();
-
-
+    ROS_INFO("spinning");
+    ros::spinOnce();
   }
   
   

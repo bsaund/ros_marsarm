@@ -79,25 +79,26 @@ int main(int argc, char **argv)
   ROS_INFO("Computed Initial Distribution");
   pfilter.setDistribution(binit);
   
-  double obs[3] = {0, 1, -1};
-  pfilter.addObservation(obs);
+  // double obs[3] = {0, 1, -1};
+  // pfilter.addObservation(obs);
 
 
-  pfilter.estimatedDistribution(binit);
-  ROS_INFO("Estimated Dist: %f, %f, %f", binit[0][0], binit[0][1], binit[0][2]);
-
-  tf::Pose pose = poseAt(0,0, binit[0]);
-  tf::Vector3 point = pose.getOrigin();
-  ROS_INFO("Point: %f, %f, %f", point.getX(), point.getY(), point.getZ());
+  // pfilter.estimatedDistribution(binit);
 
 
+  // tf::Pose pose = poseAt(0,0, binit[0]);
+  // tf::Vector3 point = pose.getOrigin();
+  // ROS_INFO("Point: %f, %f, %f", point.getX(), point.getY(), point.getZ());
+  // pub.publish(getParticlePoseArray(pfilter));
+  // ros::Duration(5.0).sleep();
   
-  pub.publish(getParticlePoseArray(pfilter));
-  ros::Duration(5.0).sleep();
-
-  double obs2[3] = {1, 0, -1};
-  pfilter.addObservation(obs2);
-  pub.publish(getParticlePoseArray(pfilter));
+  for(int i=0; i<10; i++){
+    double obs2[3] = {0,0,0};
+    pfilter.addObservation(obs2);
+    pub.publish(getParticlePoseArray(pfilter));
+    ROS_INFO("Estimated Dist: %f, %f, %f", binit[0][0], binit[0][1], binit[0][2]);
+    ros::Duration(5.0).sleep();
+  }
 
   ros::spin();
 

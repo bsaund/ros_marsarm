@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
+set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
 project(particle_filter)
 
 ## Find catkin macros and libraries
@@ -7,6 +8,8 @@ project(particle_filter)
 find_package(catkin REQUIRED COMPONENTS
   gazebo_ray_trace
   roscpp
+  visualization_msgs
+  tf
 )
 
 ## System dependencies are found with CMake's conventions
@@ -114,6 +117,7 @@ catkin_package(
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  include/${PROJECT_NAME}
 )
 
 ## Declare a C++ library
@@ -126,10 +130,23 @@ include_directories(
 ## either from message generation or dynamic reconfigure
 # add_dependencies(particle_filter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+add_library(pfilter3D src/particleFilter.cpp)
+target_link_libraries(pfilter3D
+  ${catkin_LIBRARIES})
+
 ## Declare a C++ executable
 add_executable(first_node src/BradDemo.cpp)
 target_link_libraries(first_node
   ${catkin_LIBRARIES})
+
+
+add_executable(pfilterTest src/particleFilterTest.cpp)
+target_link_libraries(pfilterTest
+  ${catkin_LIBRARIES}
+  pfilter3D
+)
+  
+
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above

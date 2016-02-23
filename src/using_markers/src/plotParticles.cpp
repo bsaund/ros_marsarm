@@ -23,12 +23,15 @@ class ShapePlotter
   tf::TransformBroadcaster br;
   ros::Publisher particle_pub;
   ros::Publisher marker_pub;
+  ros::Publisher marker_true_pub;
 
   ros::Subscriber sub;
 
   tf::Transform transform;
   visualization_msgs::MarkerArray points;
+  visualization_msgs::Marker part;
   geometry_msgs::PoseArray particles_;
+  
 
   int numParticles = 50;
 
@@ -37,8 +40,10 @@ class ShapePlotter
  public:
   ShapePlotter();
   void updateMarkers();
+  void updateTrueMarker();
   void generateTransforms();
   void plotParticles();
+  void plotTruePart();
 };
 
 
@@ -46,6 +51,7 @@ class ShapePlotter
 ShapePlotter::ShapePlotter()
 {
   marker_pub = n.advertise<visualization_msgs::MarkerArray>("visualization_marker_array", 10);
+  marker_true_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 10);
   particle_pub = n.advertise<geometry_msgs::PoseArray>("/transform_particles", 10);
   sub = n.subscribe("/particles_from_filter", 1, &ShapePlotter::externalParticleUpdate, this);
 }
@@ -116,13 +122,10 @@ void ShapePlotter::updateMarkers()
     // points.markers[i].mesh_resource = "package://touch_optimization/sdf/flat_plate.stl";
     std::string s;
    
-    if( n.getParam("/localization_object_cad", s)){
-      // ROS_INFO("Localization object is:");
-      // ROS_INFO(s.c_str());
-    } else{
+    if(!n.getParam("/localization_object_cad", s)){
       ROS_INFO("Failed to get param");
     }
-    // std::cout << "LOCALIZATION OBJECT: " << s.c_str() << std::endl;
+
     points.markers[i].mesh_resource = s;
     
     // POINTS markers use x and y scale for width/height respectively
@@ -141,6 +144,49 @@ void ShapePlotter::updateMarkers()
   }
 }
 
+
+void ShapePlotter::updateTrueMarker()
+{
+    part.header.frame_id = "particle_frame";
+    part.header.stamp = ros::Time(0);
+    part.ns = "true_part";
+    part.action = visualization_msgs::Marker::ADD;
+
+    tf::Pose pose;
+    part.pose.position.x = 0;
+    part.pose.position.y = 0;
+    part.pose.position.z = 0;
+    part.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0,0,0);
+
+    part.id = 1;
+
+    part.type = visualization_msgs::Marker::MESH_RESOURCE;
+
+    //Change this in two locations: Here and gazebo
+    // part.mesh_resource = "package://touch_optimization/sdf/boeing_part_binary.stl";
+    // part.mesh_resource = "package://touch_optimization/sdf/flat_plate.stl";
+    std::string s;
+   
+    if(!n.getParam("/localization_object_cad", s)){
+      ROS_INFO("Failed to get param");
+    }
+
+    part.mesh_resource = s;
+    
+    // POINTS markers use x and y scale for width/height respectively
+    // Boeing part is in inches, we are in meters
+    part.scale.x = .0254;
+    part.scale.y = .0254;
+    part.scale.z = .0254;
+
+    part.color.r = 1.0f;
+    part.color.g = 0.0f;
+    part.color.b = 0.0f;
+
+    //alpha to make the particles transparent
+    part.color.a = 1.0;
+
+}
 
 /**
  * Publishes both the marker points and particle transforms
@@ -176,6 +222,11 @@ void ShapePlotter::plotParticles(){
   particle_pub.publish(particles_);
 }
 
+void::ShapePlotter::plotTruePart()
+{
+  marker_true_pub.publish(part);
+}
+
 
 int main(int argc, char **argv)
 {
@@ -187,11 +238,13 @@ int main(int argc, char **argv)
 
   plt.generateTransforms();
   plt.updateMarkers();
+  plt.updateTrueMarker();
 
 
   while (ros::ok()) {
     waitForRViz.sleep();
     plt.plotParticles();
+    plt.plotTruePart();
     // ROS_INFO("spinning");
     ros::spinOnce();
   }

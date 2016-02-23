@@ -3,6 +3,7 @@
 #include <tf/transform_broadcaster.h>
 #include <geometry_msgs/PoseArray.h>
 #include "particle_filter/PFilterInit.h"
+#include "particle_filter/AddObservation.h"
 #include "gazebo_ray_trace/plotRayUtils.h"
 
 #define NUM_PARTICLES 1000
@@ -12,7 +13,7 @@ class PFilterTest
 private:
   ros::NodeHandle n;
   ros::Subscriber sub_init;
-  ros::Subscriber sub_add_obs;
+  ros::ServiceServer srv_add_obs;
   ros::Publisher pub_particles;
   
   PlotRayUtils plt;
@@ -20,7 +21,10 @@ public:
   geometry_msgs::PoseArray getParticlePoseArray();
   particleFilter pFilter_;
   PFilterTest(int n_particles);
-  void addObs(geometry_msgs::Point obs);
+  // void addObs(geometry_msgs::Point obs);
+  bool addObs(particle_filter::AddObservation::Request &req,
+	      particle_filter::AddObservation::Response &resp);
+
   void initDistribution(particle_filter::PFilterInit points);
 };
 
@@ -63,8 +67,10 @@ tf::Pose poseAt(double y, double z, particleFilter::cspace plane)
 
 }
 
-void PFilterTest::addObs(geometry_msgs::Point obs)
+bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
+			 particle_filter::AddObservation::Response &resp)
 {
+  geometry_msgs::Point obs = req.p;
   ROS_INFO("Adding Observation...");
   double obs2[3] = {obs.x, obs.y, obs.z};
   pFilter_.addObservation(obs2);
@@ -72,6 +78,7 @@ void PFilterTest::addObs(geometry_msgs::Point obs)
   pub_particles.publish(getParticlePoseArray());
 
 }
+
 void PFilterTest::initDistribution(particle_filter::PFilterInit points)
 {
   ROS_INFO("Starting to compute distribution");
@@ -102,11 +109,15 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
 }
 
 PFilterTest::PFilterTest(int n_particles) :
-    pFilter_(n_particles)
+  pFilter_(n_particles, 0.003, 0.0, 0.0, 0.0)
+  // particleFilter (int n_particles,
+  // 		  double Xstd_ob=0.0001, double Xstd_tran=0.0025,
+  // 		  double Xstd_scatter=0.0001, double R=0.0005);
+
 {
   
   sub_init = n.subscribe("/particle_filter_init", 1, &PFilterTest::initDistribution, this);
-  sub_add_obs = n.subscribe("/particle_filter_add", 1, &PFilterTest::addObs, this);
+  srv_add_obs = n.advertiseService("/particle_filter_add", &PFilterTest::addObs, this);
   pub_particles = n.advertise<geometry_msgs::PoseArray>("/particles_from_filter", 5);
 
   // tf::Point touch1(0, 0, 0);

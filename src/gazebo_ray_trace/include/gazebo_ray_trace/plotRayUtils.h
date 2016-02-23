@@ -52,7 +52,7 @@ class PlotRayUtils{
   void plotCylinder(tf::Point start, tf::Point end, double radial_err, double dist_err, bool overwrite = false);
 
   double getDistToPart(tf::Point start, tf::Point end);
-  tf::Point getIntersectionWithPart(tf::Point start, tf::Point end);
+  bool getIntersectionWithPart(tf::Point start, tf::Point end, tf::Point &intersection);
   std::vector<double> getDistToParticles(tf::Point start, tf::Point end);
   gazebo_ray_trace::RayTraceCylinder getIGFullResponse(
 		 tf::Point start, tf::Point end, double radial_err, double dist_err);

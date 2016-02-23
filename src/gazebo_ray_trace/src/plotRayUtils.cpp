@@ -293,10 +293,11 @@ double PlotRayUtils::getDistToPart(tf::Point start, tf::Point end)
  * Returns the point of intersection with the part along the ray
  *
  */
-tf::Point PlotRayUtils::getIntersectionWithPart(tf::Point start, tf::Point end)
+bool PlotRayUtils::getIntersectionWithPart(tf::Point start, tf::Point end, tf::Point &intersection)
 {
   double dist = getDistToPart(start, end);
-  return start + (end-start).normalize() * dist;
+  intersection= start + (end-start).normalize() * dist;
+  return dist < 999;
 }
 
 /**

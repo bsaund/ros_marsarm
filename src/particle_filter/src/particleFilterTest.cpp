@@ -1,5 +1,5 @@
 #include <ros/ros.h>
-#include "particleFilter.h"
+#include "particleFilter3DOF.h"
 #include <tf/transform_broadcaster.h>
 #include <geometry_msgs/PoseArray.h>
 #include "particle_filter/PFilterInit.h"

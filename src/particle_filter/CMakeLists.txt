@@ -130,7 +130,7 @@ include_directories(
 ## either from message generation or dynamic reconfigure
 # add_dependencies(particle_filter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-add_library(pfilter3D src/particleFilter.cpp)
+add_library(pfilter3D src/particleFilter3DOF.cpp)
 target_link_libraries(pfilter3D
   ${catkin_LIBRARIES})
 

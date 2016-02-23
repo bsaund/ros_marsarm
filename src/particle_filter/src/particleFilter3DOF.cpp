@@ -3,7 +3,7 @@
 #include <random>
 #include<cmath>
 using namespace std;	
-#include "particleFilter.h"
+#include "particleFilter3DOF.h"
 
 # define Pi          3.141592653589793238462643383279502884L
 

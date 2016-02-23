@@ -1,36 +1,35 @@
 #ifndef DISTANCE_TRANSFORM_H
 #define DISTANCE_TRANSFORM_H
 #include <limits>
-//using namespace std;
 
 class distanceTransform
 {
 public:
-	double grid_res;
-	double world_range[3][2];
-	int grid_nums[3];
+	double voxel_size; //voxel size
+	double world_range[3][2]; //work space range
 	double ***dist_transform;
 	double ***obstacle_map;
-	distanceTransform(double range, double grid_res);
+	distanceTransform(double range, double voxel_size);
 	void build(double cube_para[3], double World_Range[3][2]);
 protected:
+	int voxel_nums[3]; // voxel number along each dimension
 	void distanceTransform_1D(double ***dist_transform_1D, int range[3], double ***cost_fun, int dir, int idx1, int idx2);
 };
-/*distanceTransform::distanceTransform(double World_Range[3][2], double Grid_Res) :grid_res(Grid_Res) {
+/*distanceTransform::distanceTransform(double World_Range[3][2], double Grid_Res) :voxel_size(Grid_Res) {
 	memcpy(world_range, World_Range, 6 * sizeof(double));
 }*/
-distanceTransform::distanceTransform(double range, double grid_Res): grid_res(grid_Res) {
+distanceTransform::distanceTransform(double range, double grid_Res): voxel_size(grid_Res) {
 	for (int i = 0; i < 3; i++) {
-		grid_nums[i] = ceil(range / grid_res);
+		voxel_nums[i] = ceil(range / voxel_size);
 	}
-	dist_transform = new double **[grid_nums[0]];
-	obstacle_map = new double **[grid_nums[0]];
-	for (int i = 0; i < grid_nums[0]; i++) {
-		dist_transform[i] = new double *[grid_nums[1]];
-		obstacle_map[i] = new double *[grid_nums[1]];
-		for (int j = 0; j < grid_nums[1]; j++) {
-			dist_transform[i][j] = new double[grid_nums[2]];
-			obstacle_map[i][j] = new double[grid_nums[2]];
+	dist_transform = new double **[voxel_nums[0]];
+	obstacle_map = new double **[voxel_nums[0]];
+	for (int i = 0; i < voxel_nums[0]; i++) {
+		dist_transform[i] = new double *[voxel_nums[1]];
+		obstacle_map[i] = new double *[voxel_nums[1]];
+		for (int j = 0; j < voxel_nums[1]; j++) {
+			dist_transform[i][j] = new double[voxel_nums[2]];
+			obstacle_map[i][j] = new double[voxel_nums[2]];
 		}
 	}
 }
@@ -115,15 +114,15 @@ void distanceTransform::distanceTransform_1D(double ***dist_transform_1D, int ra
 }
 void distanceTransform::build(double cube_para[3], double World_Range[3][2])
 {
-	double LARGE_NUM = 10000000;
+	const double LARGE_NUM = 10000000;
 	double x, y, z;
 	memcpy(world_range, World_Range, 6 * sizeof(double));
-	for (int i = 0; i < grid_nums[0]; i++) {
-		for (int j = 0; j < grid_nums[1]; j++) {
-			for (int k = 0; k < grid_nums[2]; k++) {
-				x = double(i)*grid_res + world_range[0][0];
-				y = double(j)*grid_res + world_range[1][0];
-				z = double(k)*grid_res + world_range[2][0];
+	for (int i = 0; i < voxel_nums[0]; i++) {
+		for (int j = 0; j < voxel_nums[1]; j++) {
+			for (int k = 0; k < voxel_nums[2]; k++) {
+				x = double(i)*voxel_size + world_range[0][0];
+				y = double(j)*voxel_size + world_range[1][0];
+				z = double(k)*voxel_size + world_range[2][0];
 				if (abs(x) <= cube_para[0] / 2 && abs(y) <= cube_para[1] / 2 && abs(z) <= cube_para[2] / 2) {
 					obstacle_map[i][j][k] = 0;
 				}
@@ -132,20 +131,20 @@ void distanceTransform::build(double cube_para[3], double World_Range[3][2])
 			}
 		}
 	}
-	for (int i = 0; i < grid_nums[0]; i++) {
-		for (int j = 0; j < grid_nums[1]; j++) {
-			distanceTransform_1D(dist_transform, grid_nums, obstacle_map, 2, i, j);
+	for (int i = 0; i < voxel_nums[0]; i++) {
+		for (int j = 0; j < voxel_nums[1]; j++) {
+			distanceTransform_1D(dist_transform, voxel_nums, obstacle_map, 2, i, j);
 		}
-		for (int k = 0; k < grid_nums[2]; k++) {
-			distanceTransform_1D(obstacle_map, grid_nums, dist_transform, 1, i, k);
+		for (int k = 0; k < voxel_nums[2]; k++) {
+			distanceTransform_1D(obstacle_map, voxel_nums, dist_transform, 1, i, k);
 		}
 	}
-	//memcpy(dist_transform, temp, grid_nums[0] * grid_nums[1] * grid_nums[2] * sizeof(double));
-	for (int j = 0; j < grid_nums[1]; j++) {
-		for (int k = 0; k < grid_nums[2]; k++) {
-			distanceTransform_1D(dist_transform, grid_nums, obstacle_map, 0, j, k);
-			for (int i = 0; i < grid_nums[0]; i++) {
-				dist_transform[i][j][k] = sqrt(dist_transform[i][j][k]) * grid_res;
+
+	for (int j = 0; j < voxel_nums[1]; j++) {
+		for (int k = 0; k < voxel_nums[2]; k++) {
+			distanceTransform_1D(dist_transform, voxel_nums, obstacle_map, 0, j, k);
+			for (int i = 0; i < voxel_nums[0]; i++) {
+				dist_transform[i][j][k] = sqrt(dist_transform[i][j][k]) * voxel_size;
 			}
 		}
 	}

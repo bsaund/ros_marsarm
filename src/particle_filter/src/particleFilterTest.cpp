@@ -3,6 +3,7 @@
 #include <tf/transform_broadcaster.h>
 #include <geometry_msgs/PoseArray.h>
 #include "particle_filter/PFilterInit.h"
+#include "gazebo_ray_trace/plotRayUtils.h"
 
 #define NUM_PARTICLES 1000
 
@@ -13,6 +14,8 @@ private:
   ros::Subscriber sub_init;
   ros::Subscriber sub_add_obs;
   ros::Publisher pub_particles;
+  
+  PlotRayUtils plt;
 public:
   geometry_msgs::PoseArray getParticlePoseArray();
   particleFilter pFilter_;
@@ -86,12 +89,13 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
 {
   particleFilter::cspace particles[NUM_PARTICLES];
   pFilter_.getAllParticles(particles);
+  tf::Transform trans = plt.getTrans();
 
   geometry_msgs::PoseArray poseArray;
   for(int i=0; i<50; i++){
     tf::Pose pose = poseAt(0,0,particles[i]);
     geometry_msgs::Pose pose_msg;
-    tf::poseTFToMsg(pose, pose_msg);
+    tf::poseTFToMsg(trans*pose, pose_msg);
     poseArray.poses.push_back(pose_msg);
   }
   return poseArray;

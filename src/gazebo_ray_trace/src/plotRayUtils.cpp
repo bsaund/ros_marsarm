@@ -290,6 +290,16 @@ double PlotRayUtils::getDistToPart(tf::Point start, tf::Point end)
 }
 
 /**
+ * Returns the point of intersection with the part along the ray
+ *
+ */
+tf::Point PlotRayUtils::getIntersectionWithPart(tf::Point start, tf::Point end)
+{
+  double dist = getDistToPart(start, end);
+  return start + (end-start).normalize() * dist;
+}
+
+/**
  * Calls the ros service provided by ray_trace_pluggin.
  *  This service accepts a ray and returns a list of points for where the ray 
  *  intersected each obstacle

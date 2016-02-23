@@ -55,6 +55,7 @@ void ShapePlotter::externalParticleUpdate(geometry_msgs::PoseArray p)
   ROS_INFO("Particles Updated");
   particles_ = p;
   updateMarkers();
+  plotParticles();
 }
 
 /** 
@@ -155,16 +156,15 @@ void ShapePlotter::plotParticles(){
   tf::Transform particleTransform;
   // particleTransform.setOrigin(tf::Vector3(1,1,1));
   particleTransform.setOrigin(tf::Vector3(0,0,0));
+  q.setRPY(-.7, 1.5, 0);
   particleTransform.setRotation(q);
 
   tf::StampedTransform tfstmp(particleTransform, ros::Time::now(),"my_frame", "particle_frame");
   tf::transformStampedTFToMsg(tfstmp, trans);
-  
-  br.sendTransform(trans);
-  tfstmp = tf::StampedTransform(unityTransform, ros::Time::now(),"base_plate", "my_frame");
-  
-  tf::transformStampedTFToMsg(tfstmp, trans);
+    br.sendTransform(trans);
 
+  tfstmp = tf::StampedTransform(unityTransform, ros::Time::now(),"base_plate", "my_frame");
+    tf::transformStampedTFToMsg(tfstmp, trans);
   br.sendTransform(trans);
 
   for(int i=0; i<particles_.poses.size(); i++){

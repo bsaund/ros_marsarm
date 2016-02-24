@@ -1,6 +1,8 @@
 #ifndef PARTICLE_FILTER_6DOF_H
 #define PARTICLE_FILTER_6DOF_H
 
+#include "distanceTransform.h"
+
 class particleFilter
 {
  public:
@@ -10,7 +12,7 @@ class particleFilter
   particleFilter (int n_particles, cspace b_init[2], 
 		  double Xstd_ob=0.0001, double Xstd_tran=0.0025,
 		  double Xstd_scatter=0.0001, double R=0.01);
-
+  void getAllParticles(cspace *particles);
   void addObservation (double obs[3], double cube[3], distanceTransform *dist_transform, int idx_obs);
   //void addObservation (double obs[3], double cube[3], int idx_obs);
   void estimatedDistribution (cspace x_est, double x_est_stat [2]) {

@@ -3,7 +3,7 @@
 #include <random>
 #include <cmath>
 #include <chrono>
-#include "distanceTransform.h"
+
 #include "particleFilter6DOF.h"
 #include "matrix.h"
 using namespace std;
@@ -32,6 +32,16 @@ particleFilter::particleFilter(int n_particles, cspace b_init[2],
   X_1 = new cspace[N];
   W = new double[N];
 }
+
+void particleFilter::getAllParticles(cspace *particles)
+{
+  for(int i=0; i<N; i++){
+    for(int j=0; j<cdim; j++){
+      particles[i][j] = X[i][j];
+    }
+  }
+}
+
 
 void particleFilter::addObservation(double obs[3], double cube[3], distanceTransform *dist_transform, int idx_obs)
 {
@@ -277,6 +287,8 @@ bool particleFilter::updateParticles(cspace *X_1, cspace *X0, cspace *X, double 
 //	}
 //}
 
+
+#if 0
 int main()
 {
   int N = 500; // number of particles
@@ -357,3 +369,4 @@ int main()
   }
 }
 
+#endif

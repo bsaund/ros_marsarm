@@ -1,10 +1,11 @@
 #include <ros/ros.h>
-#include "particleFilter3DOF.h"
+#include "particleFilter6DOF.h"
 #include <tf/transform_broadcaster.h>
 #include <geometry_msgs/PoseArray.h>
 #include "particle_filter/PFilterInit.h"
 #include "particle_filter/AddObservation.h"
 #include "gazebo_ray_trace/plotRayUtils.h"
+#include <math.h>
 
 #define NUM_PARTICLES 1000
 
@@ -20,7 +21,7 @@ private:
 public:
   geometry_msgs::PoseArray getParticlePoseArray();
   particleFilter pFilter_;
-  PFilterTest(int n_particles);
+  PFilterTest(int n_particles, particleFilter::cspace b_init[2]);
   // void addObs(geometry_msgs::Point obs);
   bool addObs(particle_filter::AddObservation::Request &req,
 	      particle_filter::AddObservation::Response &resp);
@@ -51,19 +52,20 @@ double SQ(double d)
 }
 
 
-tf::Pose poseAt(double y, double z, particleFilter::cspace plane)
+/*
+ *  Converts a cspace pose to a tf::Pose
+ */
+tf::Pose poseAt(particleFilter::cspace particle_pose)
 {
-  double t = atan(plane[0]);
-  double p = acos(plane[1]/sqrt(1 + SQ(plane[0]) + SQ(plane[1])));
-
-  tf::Pose pose;
-  pose.setOrigin(tf::Vector3(-(plane[0]*y + plane[1]*z + plane[2]), y, z));
+  tf::Pose tf_pose;
+  tf_pose.setOrigin(tf::Vector3(particle_pose[0], 
+				particle_pose[1], 
+				particle_pose[2]));
   tf::Quaternion q;
-  q.setRPY(-t, p, 0);
-  pose.setRotation(q);
-
+  q.setRPY(particle_pose[4], particle_pose[5], particle_pose[6]);
+  tf_pose.setRotation(q);
   
-  return pose;
+  return tf_pose;
 
 }
 
@@ -73,11 +75,13 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
   geometry_msgs::Point obs = req.p;
   ROS_INFO("Adding Observation...");
   double obs2[3] = {obs.x, obs.y, obs.z};
-  pFilter_.addObservation(obs2);
+  double cube[3] = {.508, .508, .508};
+  // pFilter_.addObservation(obs2);
   ROS_INFO("...Done adding observation");
   pub_particles.publish(getParticlePoseArray());
 
 }
+
 
 void PFilterTest::initDistribution(particle_filter::PFilterInit points)
 {
@@ -88,7 +92,7 @@ void PFilterTest::initDistribution(particle_filter::PFilterInit points)
   particleFilter::cspace binit[2];
   computeInitialDistribution(binit, touch1, touch2, touch3);
   ROS_INFO("Computed Initial Distribution");
-  pFilter_.setDistribution(binit);
+  // pFilter_.setDistribution(binit);
 }
 
 
@@ -100,7 +104,7 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
 
   geometry_msgs::PoseArray poseArray;
   for(int i=0; i<50; i++){
-    tf::Pose pose = poseAt(0,0,particles[i]);
+    tf::Pose pose = poseAt(particles[i]);
     geometry_msgs::Pose pose_msg;
     tf::poseTFToMsg(trans*pose, pose_msg);
     poseArray.poses.push_back(pose_msg);
@@ -108,8 +112,8 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   return poseArray;
 }
 
-PFilterTest::PFilterTest(int n_particles) :
-  pFilter_(n_particles, 0.003, 0.005, 0.0, 0.0)
+PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
+  pFilter_(n_particles, b_init, 0.003, 0.0, 0.0, 0.0)
   // particleFilter (int n_particles,
   // 		  double Xstd_ob=0.0001, double Xstd_tran=0.0025,
   // 		  double Xstd_scatter=0.0001, double R=0.0005);
@@ -138,7 +142,9 @@ int main(int argc, char **argv)
 
   ROS_INFO("Testing particle filter");
   
-  PFilterTest pFilterTest(NUM_PARTICLES);
+  particleFilter::cspace b_Xprior[2] = { { 2.1, 1.4, 0.8, M_PI / 6, M_PI / 12, M_PI / 18 },
+					 { 0.01, 0.01, 0.01, M_PI / 360, M_PI / 360, M_PI / 360 } }; // o
+  PFilterTest pFilterTest(NUM_PARTICLES, b_Xprior);
 
   // particleFilter::cspace binit[2];
 

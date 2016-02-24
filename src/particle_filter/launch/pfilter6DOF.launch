@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="particle_filter" type="pfilter6DOFTest" name="particle_filter_test" output="screen"/>
+</launch>

@@ -56,6 +56,10 @@ ShapePlotter::ShapePlotter()
   sub = n.subscribe("/particles_from_filter", 1, &ShapePlotter::externalParticleUpdate, this);
 }
 
+/*
+ * Callback for a ros listener to allow external ros nodes to
+ *  update particles
+ */
 void ShapePlotter::externalParticleUpdate(geometry_msgs::PoseArray p)
 {
   ROS_INFO("Particles Updated");

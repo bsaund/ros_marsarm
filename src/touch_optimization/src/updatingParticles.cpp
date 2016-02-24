@@ -83,7 +83,7 @@ int main(int argc, char **argv)
 
   std::random_device rd;
   std::mt19937 gen(rd());
-  std::normal_distribution<double> randn(0.0,0.003);
+  std::normal_distribution<double> randn(0.0,0.00003);
 
   ROS_INFO("Running...");
 
@@ -113,6 +113,10 @@ int main(int argc, char **argv)
     obs.x=intersection.getX() + randn(gen); 
     obs.y=intersection.getY() + randn(gen); 
     obs.z=intersection.getZ() + randn(gen);
+    // obs.x=intersection.getX(); 
+    // obs.y=intersection.getY(); 
+    // obs.z=intersection.getZ();
+
     // pub_add.publish(obs);
     
     plt.plotCylinder(start, end, 0.01, 0.002, true);

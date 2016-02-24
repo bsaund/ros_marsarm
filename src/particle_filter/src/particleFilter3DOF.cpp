@@ -9,6 +9,10 @@ using namespace std;
 
 #define SQ(x) ((x)*(x))
 
+
+/**
+ *  
+ */
 particleFilter::particleFilter (int n_particles,
 				double Xstd_ob, double Xstd_tran,
 				double Xstd_scatter, double R)
@@ -36,6 +40,7 @@ void particleFilter::setDistribution (cspace dist[2])
   memcpy(X_est,    dist, 2*sizeof(cspace));
 }
 
+
 void particleFilter::getAllParticles(cspace *particles)
 {
   for(int i=0; i<N; i++){
@@ -45,6 +50,9 @@ void particleFilter::getAllParticles(cspace *particles)
   }
 }
 
+/**
+ * Takes a points as an observation
+ */
 void particleFilter::addObservation (double obs[3])
 {
   std::default_random_engine generator;
@@ -71,6 +79,7 @@ void particleFilter::addObservation (double obs[3])
     b_Xpre[1][2] = sqrt(b_Xpre[1][2]);
   }
   bool iffar = update_particles(X, b_Xprior, b_Xpre, Xstd_ob, R, obs, N);
+  std::cout <<"HELLO"<<std::endl;
   if (firstObs)
     {
       firstObs = false;
@@ -79,6 +88,7 @@ void particleFilter::addObservation (double obs[3])
     }
   else if (iffar == true)
     {
+      std::cout << "OH NO, Prior be being used instead of previous belief" << std::endl;
       memcpy(X0, Xpre_weight, N*sizeof(cspace));
     }
   calc_weight(W, N, Xstd_tran, X0, X);
@@ -125,6 +135,11 @@ void particleFilter::create_particles(cspace *X, cspace b_Xprior[2],
     }
 };
 
+/**
+ *  Updates particles according to Measurement and previous belief
+ *   If particles are not being found fast enough it updates particles
+ *   based on measurement and original prior
+ */
 bool particleFilter::update_particles(cspace *X, cspace b_Xprior[2],
 				      cspace b_Xpre[2], double Xstd_ob,
 				      double R, double cur_M[3],
@@ -141,29 +156,26 @@ bool particleFilter::update_particles(cspace *X, cspace b_Xprior[2],
   bool iffar = false;
   cspace *b_X = b_Xpre;
   double tempa, tempb, tempc, D;
-  while (i < n_particles)
-    {
-      if ((count == nIter && iffar==false) || (i>0 && count/i>3000))
-	{
-	  iffar = true;
-	  b_X = b_Xprior;
-	  count = 0;
-	}
-      tempa = b_X[0][0] + b_X[1][0] * dist(e2);
-      tempb = b_X[0][1] + b_X[1][1] * dist(e2);
-      tempc = b_X[0][2] + b_X[1][2] * dist(e2);
-      D = ((cur_M[0] + tempa*cur_M[1] + tempb*cur_M[2] + tempc) /
-	   sqrt(1 + SQ(tempa) + SQ(tempb))) - R;
-      if (D >= -Xstd_ob && D <= Xstd_ob)
-	{
-	  X[i][0] = tempa;
-	  X[i][1] = tempb;
-	  X[i][2] = tempc;
-
-	  i += 1;
-	}
-      count += 1;
+  while (i < n_particles){
+    if ((count == nIter && iffar==false) || (i>0 && count/i>3000)){
+      iffar = true;
+      b_X = b_Xprior;
+      count = 0;
     }
+    tempa = b_X[0][0] + b_X[1][0] * dist(e2);
+    tempb = b_X[0][1] + b_X[1][1] * dist(e2);
+    tempc = b_X[0][2] + b_X[1][2] * dist(e2);
+    D = ((cur_M[0] + tempa*cur_M[1] + tempb*cur_M[2] + tempc) /
+	 sqrt(1 + SQ(tempa) + SQ(tempb))) - R;
+    if (D >= -Xstd_ob && D <= Xstd_ob){
+      X[i][0] = tempa;
+      X[i][1] = tempb;
+      X[i][2] = tempc;
+
+      i += 1;
+    }
+    count += 1;
+  }
   return iffar;
 
 };
@@ -193,31 +205,26 @@ void particleFilter::resample_particles(cspace *X0, cspace *X, double *W,
   Cum_sum[0] = W[0];
   std::default_random_engine generator;
   std::uniform_real_distribution<double> rd(0,1);
-  for (int i = 1; i < n_particles; i++)
-    {
-      Cum_sum[i] = Cum_sum[i - 1] + W[i];
-		
-    }
+  for (int i = 1; i < n_particles; i++){
+    Cum_sum[i] = Cum_sum[i - 1] + W[i];
+  }
+
   double t;
-  for (int i = 0; i < n_particles; i++)
-    {
-      t=rd(generator);
-      for (int j = 0; j < n_particles; j++)
-	{
-	  if (j==0 && t <= Cum_sum[0])
-	    {
-	      X0[i][0] = X[0][0];
-	      X0[i][1] = X[0][1];
-	      X0[i][2] = X[0][2];
-	    }
-	  else if (Cum_sum[j-1]<t && t<= Cum_sum[j])
-	    {
-	      X0[i][0] = X[j][0];
-	      X0[i][1] = X[j][1];
-	      X0[i][2] = X[j][2];
-	    }
-	}
+  for (int i = 0; i < n_particles; i++){
+    t=rd(generator);
+    for (int j = 0; j < n_particles; j++){
+      if (j==0 && t <= Cum_sum[0]){
+	X0[i][0] = X[0][0];
+	X0[i][1] = X[0][1];
+	X0[i][2] = X[0][2];
+      }
+      else if (Cum_sum[j-1]<t && t<= Cum_sum[j]) {
+	X0[i][0] = X[j][0];
+	X0[i][1] = X[j][1];
+	X0[i][2] = X[j][2];
+      }
     }
+  }
 }
 
 #if 0

@@ -1,3 +1,10 @@
+/**
+ *  This is a rosnode that randomly chooses touch points, 
+ *    performs simulated measurements, and updates the particle filter.
+ *   This node is made to work with a particle filter node, a node that 
+ *    publishes visualization messages, and RViz.
+ */
+
 #include <ros/ros.h>
 #include "particle_filter/PFilterInit.h"
 #include "particle_filter/AddObservation.h"
@@ -5,6 +12,10 @@
 #include <tf/transform_broadcaster.h>
 #include "gazebo_ray_trace/plotRayUtils.h"
 
+/**
+ * Gets initial points for the particle filter by shooting
+ * rays at the object
+ */
 particle_filter::PFilterInit getInitialPoints(PlotRayUtils &plt)
 {
   particle_filter::PFilterInit init_points;
@@ -26,7 +37,10 @@ particle_filter::PFilterInit getInitialPoints(PlotRayUtils &plt)
   return init_points;
 }
 
-
+/**
+ * Randomly chooses vectors, gets the Information Gain for each of 
+ *  those vectors, and returns the ray (start and end) with the highest information gain
+ */
 void randomSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_end)
 {
   // tf::Point best_start, best_end;
@@ -92,7 +106,7 @@ int main(int argc, char **argv)
     tf::Point start, end;
     randomSelection(plt, start, end);
     tf::Point intersection;
-    if(!plt.getIntersectionWithPart(start,end, intersection)){
+    if(!plt.getIntersectionWithPart(start, end, intersection)){
       ROS_INFO("NO INTERSECTION, Skipping");
       break;
     }

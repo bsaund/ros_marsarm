@@ -102,14 +102,12 @@ void particleFilter::createParticles(cspace *X, cspace b_Xprior[2],
   mt19937 e2(rd());
   normal_distribution<double> dist(0, 1);
   int cdim = sizeof(cspace) / sizeof(double);
-  for (int i = 0; i < n_particles; i++)
-    {
-      for (int j = 0; j < cdim; j++)
-	{
-	  X[i][j] = b_Xprior[0][j] + b_Xprior[1][j] * (dist(e2));
-	}
+  for (int i = 0; i < n_particles; i++){
+    for (int j = 0; j < cdim; j++){
+      X[i][j] = b_Xprior[0][j] + b_Xprior[1][j] * (dist(e2));
     }
-};
+  }
+}
 
 bool particleFilter::updateParticles(cspace *X_1, cspace *X0, cspace *X, double cur_M[3], 
 				     double cube[3], int idx_Measure, distanceTransform *dist_transform, int n_particles,
@@ -213,21 +211,19 @@ bool particleFilter::updateParticles(cspace *X_1, cspace *X0, cspace *X, double 
 	[int(floor((cur_inv_M[1] - dist_transform->world_range[1][0]) / dist_transform->voxel_size))]
 	[int(floor((cur_inv_M[2] - dist_transform->world_range[2][0]) / dist_transform->voxel_size))] - R;
       //cout << D << endl << endl;
-      if (D >= -Xstd_ob && D <= Xstd_ob)
-	{
-	  for (int j = 0; j < cdim; j++)
-	    {
-	      X[i][j] = tempState[j];
-	    }
-	  //cout << D << "       " << cur_inv_M[dir] - cube[dir] / 2 - R << endl;
-	  i += 1;
+      if (D >= -Xstd_ob && D <= Xstd_ob){
+	for (int j = 0; j < cdim; j++){
+	  X[i][j] = tempState[j];
 	}
+	//cout << D << "       " << cur_inv_M[dir] - cube[dir] / 2 - R << endl;
+	i += 1;
+      }
       count += 1;
 		
     }
   //cout << count << endl;
   return iffar;
-};
+}
 
 //void particleFilter::calcWeight(double *W, int n_particles, double Xstd_tran,
 //	cspace *X0, cspace *X)

@@ -206,7 +206,8 @@ void ShapePlotter::plotParticles(){
   tf::Transform particleTransform;
   // particleTransform.setOrigin(tf::Vector3(1,1,1));
   particleTransform.setOrigin(tf::Vector3(0,0,0));
-  q.setRPY(-.7, 1.5, 0);
+  // q.setRPY(-.7, 1.5, 0);
+  q.setRPY(0,0, 0);
   particleTransform.setRotation(q);
 
   tf::StampedTransform tfstmp(particleTransform, ros::Time::now(),"my_frame", "particle_frame");

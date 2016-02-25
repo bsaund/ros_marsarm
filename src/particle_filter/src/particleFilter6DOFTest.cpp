@@ -17,6 +17,7 @@ private:
   ros::ServiceServer srv_add_obs;
   ros::Publisher pub_particles;
   
+  distanceTransform dist_transform;
   PlotRayUtils plt;
 public:
   geometry_msgs::PoseArray getParticlePoseArray();
@@ -25,24 +26,24 @@ public:
   // void addObs(geometry_msgs::Point obs);
   bool addObs(particle_filter::AddObservation::Request &req,
 	      particle_filter::AddObservation::Response &resp);
-
-  void initDistribution(particle_filter::PFilterInit points);
 };
 
-void computeInitialDistribution(particleFilter::cspace binit[2],
-				tf::Point p1, tf::Point p2, tf::Point p3)
+void computeInitialDistribution(particleFilter::cspace binit[2])
 {
-  tf::Vector3 d1 = p2-p1;
-  tf::Vector3 d2 = p2-p3;
-  tf::Vector3 cross = d1.cross(d2);
 
-  double D= cross.dot(p1);
+  binit[0][0] = 0.00;
+  binit[0][1] = 0.00;
+  binit[0][2] = 0.00;
+  binit[0][3] = 0.00;
+  binit[0][4] = 0.00;
+  binit[0][5] = 0.00;
+  binit[1][0] = 0.01;
+  binit[1][1] = 0.01;
+  binit[1][2] = 0.01;
+  binit[1][3] = 0.01;
+  binit[1][4] = 0.01;
+  binit[1][5] = 0.01;
 
-  binit[0][0] = cross.getY()/cross.getX();
-  binit[0][1] = cross.getZ()/cross.getX();
-  binit[0][2] = -D/cross.getX();
-  std::cerr << "Init: " << binit[0][0] << " " << binit[0][1] << " " << binit[0][2] << std::endl;
-  binit[1][0] = binit[1][1] = binit[1][2] = 0.1;
 
 }
 
@@ -76,24 +77,12 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
   ROS_INFO("Adding Observation...");
   double obs2[3] = {obs.x, obs.y, obs.z};
   double cube[3] = {.508, .508, .508};
-  // pFilter_.addObservation(obs2);
+  pFilter_.addObservation(obs2, cube, &dist_transform, 0);
   ROS_INFO("...Done adding observation");
   pub_particles.publish(getParticlePoseArray());
 
 }
 
-
-void PFilterTest::initDistribution(particle_filter::PFilterInit points)
-{
-  ROS_INFO("Starting to compute distribution");
-  tf::Point touch1(points.p1.x, points.p1.y, points.p1.z);
-  tf::Point touch2(points.p2.x, points.p2.y, points.p2.z);
-  tf::Point touch3(points.p3.x, points.p3.y, points.p3.z);
-  particleFilter::cspace binit[2];
-  computeInitialDistribution(binit, touch1, touch2, touch3);
-  ROS_INFO("Computed Initial Distribution");
-  // pFilter_.setDistribution(binit);
-}
 
 
 geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
@@ -113,14 +102,15 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
 }
 
 PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
-  pFilter_(n_particles, b_init, 0.003, 0.0, 0.0, 0.0)
+  pFilter_(n_particles, b_init, 0.003, 0.0, 0.0, 0.0),
+  dist_transform(0.1, 0.0005)
   // particleFilter (int n_particles,
   // 		  double Xstd_ob=0.0001, double Xstd_tran=0.0025,
   // 		  double Xstd_scatter=0.0001, double R=0.0005);
 
 {
   
-  sub_init = n.subscribe("/particle_filter_init", 1, &PFilterTest::initDistribution, this);
+  // sub_init = n.subscribe("/particle_filter_init", 1, &PFilterTest::initDistribution, this);
   srv_add_obs = n.advertiseService("/particle_filter_add", &PFilterTest::addObs, this);
   pub_particles = n.advertise<geometry_msgs::PoseArray>("/particles_from_filter", 5);
 
@@ -142,8 +132,8 @@ int main(int argc, char **argv)
 
   ROS_INFO("Testing particle filter");
   
-  particleFilter::cspace b_Xprior[2] = { { 2.1, 1.4, 0.8, M_PI / 6, M_PI / 12, M_PI / 18 },
-					 { 0.01, 0.01, 0.01, M_PI / 360, M_PI / 360, M_PI / 360 } }; // o
+  particleFilter::cspace b_Xprior[2];
+  computeInitialDistribution(b_Xprior);
   PFilterTest pFilterTest(NUM_PARTICLES, b_Xprior);
 
   // particleFilter::cspace binit[2];

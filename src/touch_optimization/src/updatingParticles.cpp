@@ -91,11 +91,11 @@ int main(int argc, char **argv)
     n.advertise<particle_filter::PFilterInit>("/particle_filter_init", 5);
   ros::ServiceClient srv_add = 
     n.serviceClient<particle_filter::AddObservation>("/particle_filter_add");
-    // n.advertise<geometry_msgs::Point>("/particle_filter_add", 5);
+
 
  
   ros::Duration(2).sleep();
-  pub_init.publish(getInitialPoints(plt));
+  // pub_init.publish(getInitialPoints(plt));
  
   geometry_msgs::Point obs;
  

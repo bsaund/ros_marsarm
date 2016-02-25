@@ -42,7 +42,12 @@ void particleFilter::getAllParticles(cspace *particles)
   }
 }
 
-
+/**
+ *  Adds an observation and updates the particles accordingly
+ *   obs: the contact point of the observation
+ *   cube: the x, y, z dimensions of the cube (prism) being touched
+ * 
+ */
 void particleFilter::addObservation(double obs[3], double cube[3], distanceTransform *dist_transform, int idx_obs)
 {
   std::default_random_engine generator;
@@ -151,6 +156,8 @@ bool particleFilter::updateParticles(cspace *X_1, cspace *X0, cspace *X, double 
       meanConfig[m] += b_X[index][m] / num_Mean;
     }
   }
+  cout << "Measurement: " << cur_M[0]<< ", " << cur_M[1] << ", " << cur_M[2] << endl;
+  cout << "MeanConfig:" << meanConfig[0] << ", " << meanConfig[1] << ", " << meanConfig[2] << ", " << meanConfig[3] << ", " << meanConfig[4] << ", " << meanConfig[5] << endl;
   // inverse-transform using sampled configuration
   double rotationC[3][3] = { { cos(meanConfig[cdim - 1]), -sin(meanConfig[cdim - 1]), 0 },
 			     { sin(meanConfig[cdim - 1]), cos(meanConfig[cdim - 1]), 0 },

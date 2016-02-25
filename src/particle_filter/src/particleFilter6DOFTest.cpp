@@ -37,12 +37,16 @@ void computeInitialDistribution(particleFilter::cspace binit[2])
   binit[0][3] = 0.00;
   binit[0][4] = 0.00;
   binit[0][5] = 0.00;
-  binit[1][0] = 0.01;
-  binit[1][1] = 0.01;
-  binit[1][2] = 0.01;
-  binit[1][3] = 0.01;
-  binit[1][4] = 0.01;
-  binit[1][5] = 0.01;
+  binit[1][0] = 0.05;
+  binit[1][1] = 0.05;
+  binit[1][2] = 0.05;
+  // binit[1][3] = .1;
+  // binit[1][4] = .1;
+  // binit[1][5] = .1;
+
+  binit[1][3] = 0;
+  binit[1][4] = 0;
+  binit[1][5] = 0;
 
 
 }
@@ -63,7 +67,8 @@ tf::Pose poseAt(particleFilter::cspace particle_pose)
 				particle_pose[1], 
 				particle_pose[2]));
   tf::Quaternion q;
-  q.setRPY(particle_pose[4], particle_pose[5], particle_pose[6]);
+  // q.setRPY(particle_pose[6], particle_pose[5], particle_pose[4]);
+  q.setEuler(particle_pose[6], particle_pose[5], particle_pose[4]);
   tf_pose.setRotation(q);
   
   return tf_pose;
@@ -102,8 +107,8 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
 }
 
 PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
-  pFilter_(n_particles, b_init, 0.003, 0.0, 0.0, 0.0),
-  dist_transform(0.1, 0.0005)
+  pFilter_(n_particles, b_init, 0.003, 0.003, 0.0, 0.0),
+  dist_transform(.1, 0.0005)
   // particleFilter (int n_particles,
   // 		  double Xstd_ob=0.0001, double Xstd_tran=0.0025,
   // 		  double Xstd_scatter=0.0001, double R=0.0005);

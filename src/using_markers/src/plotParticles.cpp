@@ -66,6 +66,7 @@ void ShapePlotter::externalParticleUpdate(geometry_msgs::PoseArray p)
   particles_ = p;
   updateMarkers();
   plotParticles();
+  particle_pub.publish(particles_);
 }
 
 /** 
@@ -78,18 +79,29 @@ void ShapePlotter::generateTransforms()
   std::normal_distribution<> randn(0, 1);
   
   particles_.poses.resize(numParticles);
+  std::vector<double> uncertainties;
+  if(!n.getParam("/initial_uncertainties", uncertainties)){
+    ROS_INFO("Failed to get param");
+    uncertainties.resize(6);
+  }
+
 
   for(int i=0; i<particles_.poses.size(); i++){
     geometry_msgs::Pose particleTransform;
     // particleTransform.position.x = randn(gen)/50;
     // particleTransform.position.y = randn(gen)/50;
     // particleTransform.position.z = randn(gen)/50;
-    particleTransform.position.x = 0;
-    particleTransform.position.y = 0;
-    particleTransform.position.z = 0;
+
+
+    particleTransform.position.x = randn(gen)*uncertainties[0];
+    particleTransform.position.y = randn(gen)*uncertainties[1];
+    particleTransform.position.z = randn(gen)*uncertainties[2];
 
     particleTransform.orientation = 
-      tf::createQuaternionMsgFromRollPitchYaw(randn(gen)/20, randn(gen)/20, randn(gen)/20);
+      tf::createQuaternionMsgFromRollPitchYaw(randn(gen)*uncertainties[3], 
+					      randn(gen)*uncertainties[4], 
+					      randn(gen)*uncertainties[5]);
+					      
       // tf::createQuaternionMsgFromRollPitchYaw(0, randn(gen)/20, 0);
     
 

@@ -49,12 +49,13 @@ void randomSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_e
   bestIG = 0;
   std::random_device rd;
   std::mt19937 gen(rd());
-  std::uniform_real_distribution<double> rand(0.0,1.0);
+  std::uniform_real_distribution<double> rand(-1.0,1.0);
 
 
   for(int i=0; i<500; i++){
-    tf::Point start(rand(gen), rand(gen), 2*rand(gen)-1);
-    tf::Point end(rand(gen)-1, rand(gen)-1, 2*rand(gen)-1);
+    tf::Point start(rand(gen), rand(gen), rand(gen));
+    start = start.normalize();
+    tf::Point end(rand(gen), rand(gen), rand(gen));
     end.normalized();
     double IG = plt.getIG(start, end, 0.01, 0.002);
     if (IG > bestIG){
@@ -62,9 +63,7 @@ void randomSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_e
       best_start = start;
       best_end = end;
     }
-    
   }
-
 
   // plt.plotCylinder(best_start, best_end, 0.01, 0.002, true);
   ROS_INFO("Ray is: %f, %f, %f.  %f, %f, %f", 
@@ -74,6 +73,12 @@ void randomSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_e
 }
 
 
+bool getIntersection(PlotRayUtils &plt, tf::Point start, tf::Point end, tf::Point &intersection){
+  bool intersectionExists = plt.getIntersectionWithPart(start, end, intersection);
+  double radius = 0.005;
+  intersection = intersection - (end-start).normalize() * radius;
+  return intersectionExists;
+}
 
 int main(int argc, char **argv)
 {
@@ -106,9 +111,9 @@ int main(int argc, char **argv)
     tf::Point start, end;
     randomSelection(plt, start, end);
     tf::Point intersection;
-    if(!plt.getIntersectionWithPart(start, end, intersection)){
+    if(!getIntersection(plt, start, end, intersection)){
       ROS_INFO("NO INTERSECTION, Skipping");
-      break;
+      continue;
     }
     obs.x=intersection.getX() + randn(gen); 
     obs.y=intersection.getY() + randn(gen); 

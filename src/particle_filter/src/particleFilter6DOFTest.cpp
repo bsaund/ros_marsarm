@@ -28,8 +28,14 @@ public:
 	      particle_filter::AddObservation::Response &resp);
 };
 
-void computeInitialDistribution(particleFilter::cspace binit[2])
+void computeInitialDistribution(particleFilter::cspace binit[2], ros::NodeHandle n)
 {
+
+  std::vector<double> uncertainties;
+  if(!n.getParam("/initial_uncertainties", uncertainties)){
+    ROS_INFO("Failed to get param");
+    uncertainties.resize(6);
+  }
 
   binit[0][0] = 0.00;
   binit[0][1] = 0.00;
@@ -37,16 +43,21 @@ void computeInitialDistribution(particleFilter::cspace binit[2])
   binit[0][3] = 0.00;
   binit[0][4] = 0.00;
   binit[0][5] = 0.00;
-  binit[1][0] = 0.05;
-  binit[1][1] = 0.05;
-  binit[1][2] = 0.05;
-  // binit[1][3] = .1;
-  // binit[1][4] = .1;
-  // binit[1][5] = .1;
+  binit[1][0] = uncertainties[0];
+  binit[1][1] = uncertainties[1];
+  binit[1][2] = uncertainties[2];
 
-  binit[1][3] = 0;
-  binit[1][4] = 0;
-  binit[1][5] = 0;
+  // binit[1][0] = 0.00;
+  // binit[1][1] = 0.00;
+  // binit[1][2] = 0.00;
+
+  binit[1][3] = uncertainties[3];
+  binit[1][4] = uncertainties[4];
+  binit[1][5] = uncertainties[5];
+
+  // binit[1][3] = 0;
+  // binit[1][4] = 0;
+  // binit[1][5] = 0;
 
 
 }
@@ -68,7 +79,10 @@ tf::Pose poseAt(particleFilter::cspace particle_pose)
 				particle_pose[2]));
   tf::Quaternion q;
   // q.setRPY(particle_pose[6], particle_pose[5], particle_pose[4]);
-  q.setEuler(particle_pose[6], particle_pose[5], particle_pose[4]);
+  // q.setEulerZYX(particle_pose[6], particle_pose[5], particle_pose[4]);
+  q = tf::Quaternion(tf::Vector3(0,0,1), particle_pose[5]) * 
+    tf::Quaternion(tf::Vector3(0,1,0), particle_pose[4]) * 
+    tf::Quaternion(tf::Vector3(1,0,0), particle_pose[3]);
   tf_pose.setRotation(q);
   
   return tf_pose;
@@ -107,7 +121,7 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
 }
 
 PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
-  pFilter_(n_particles, b_init, 0.003, 0.003, 0.0, 0.0),
+  pFilter_(n_particles, b_init, 0.003, 0.003, 0.01, 0.005),
   dist_transform(.1, 0.0005)
   // particleFilter (int n_particles,
   // 		  double Xstd_ob=0.0001, double Xstd_tran=0.0025,
@@ -132,13 +146,13 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
 int main(int argc, char **argv)
 { 
   ros::init(argc, argv, "pfilterTest");
-  // ros::NodeHandle n;
+  ros::NodeHandle n;
   // ros::Publisher pub = n.advertise<geometry_msgs::PoseArray>("/particles_from_filter", 5);
 
   ROS_INFO("Testing particle filter");
   
   particleFilter::cspace b_Xprior[2];
-  computeInitialDistribution(b_Xprior);
+  computeInitialDistribution(b_Xprior, n);
   PFilterTest pFilterTest(NUM_PARTICLES, b_Xprior);
 
   // particleFilter::cspace binit[2];

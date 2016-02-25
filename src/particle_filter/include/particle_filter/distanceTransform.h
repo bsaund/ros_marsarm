@@ -147,8 +147,13 @@ void distanceTransform::build(double cube_para[3], double World_Range[3][2])
 	y = double(j)*voxel_size + world_range[1][0];
 	z = double(k)*voxel_size + world_range[2][0];
 	if (fabs(x) <= cube_para[0] / 2 && 
+	    /* fabs(x) > cube_para[0] / 2 - 0.001 &&  */
 	    fabs(y) <= cube_para[1] / 2 && 
-	    fabs(z) <= cube_para[2] / 2) {
+	    /* fabs(y) > cube_para[1] / 2 - 0.001 &&  */
+	    fabs(z) <= cube_para[2] / 2 
+	    /* && */
+	    /* fabs(z) > cube_para[2] / 2 - 0.001 */
+	    ) {
 	  obstacle_map[i][j][k] = 0;
 	}
 	else
@@ -176,7 +181,7 @@ void distanceTransform::build(double cube_para[3], double World_Range[3][2])
       for (int i = 0; i < voxel_nums[0]; i++) {
 	dist_transform[i][j][k] = sqrt(dist_transform[i][j][k]) * voxel_size;
 	if(i%10==0 && j%10==0 && k%10==0){
-	  std::cout<<dist_transform[i][j][k] << ", ";
+	  /* std::cout<<dist_transform[i][j][k] << ", "; */
 	}
       }
     }

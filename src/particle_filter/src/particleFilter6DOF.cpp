@@ -229,6 +229,9 @@ bool particleFilter::updateParticles(cspace *X_1, cspace *X0, cspace *X, double 
 	[int(floor((cur_inv_M[2] - dist_transform->world_range[2][0]) / dist_transform->voxel_size))] - R;
       //cout << D << endl << endl;
       if (D >= -Xstd_ob && D <= Xstd_ob){
+	if(i<10){
+	  cout << D << endl;
+	}
 	for (int j = 0; j < cdim; j++){
 	  X[i][j] = tempState[j];
 	}
@@ -238,7 +241,7 @@ bool particleFilter::updateParticles(cspace *X_1, cspace *X0, cspace *X, double 
       count += 1;
 		
     }
-  //cout << count << endl;
+  cout << "count: " << count << endl;
   return iffar;
 }
 

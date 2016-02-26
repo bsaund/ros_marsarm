@@ -37,12 +37,20 @@ void computeInitialDistribution(particleFilter::cspace binit[2], ros::NodeHandle
     uncertainties.resize(6);
   }
 
-  binit[0][0] = 0.00;
-  binit[0][1] = 0.00;
-  binit[0][2] = 0.00;
-  binit[0][3] = 0.00;
-  binit[0][4] = 0.00;
-  binit[0][5] = 0.00;
+  std::vector<double> pFrame;
+  if(!n.getParam("/particle_frame", pFrame)){
+    ROS_INFO("Failed to get param particle_frame");
+    pFrame.resize(6);
+  }
+
+
+  binit[0][0] = pFrame[0];
+  binit[0][1] = pFrame[1];
+  binit[0][2] = pFrame[2];
+  binit[0][3] = pFrame[3];
+  binit[0][4] = pFrame[4];
+  binit[0][5] = pFrame[5];
+
   binit[1][0] = uncertainties[0];
   binit[1][1] = uncertainties[1];
   binit[1][2] = uncertainties[2];
@@ -133,13 +141,6 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
   srv_add_obs = n.advertiseService("/particle_filter_add", &PFilterTest::addObs, this);
   pub_particles = n.advertise<geometry_msgs::PoseArray>("/particles_from_filter", 5);
 
-  // tf::Point touch1(0, 0, 0);
-  // tf::Point touch2(0, 1, -1);
-  // tf::Point touch3(1, -1, 0);
-  // particleFilter::cspace binit[2];
-  // computeInitialDistribution(binit, touch1, touch2, touch3);
-  // ROS_INFO("Computed Initial Distribution");
-  // pFilter_.setDistribution(binit);
 
 }
 
@@ -154,30 +155,6 @@ int main(int argc, char **argv)
   particleFilter::cspace b_Xprior[2];
   computeInitialDistribution(b_Xprior, n);
   PFilterTest pFilterTest(NUM_PARTICLES, b_Xprior);
-
-  // particleFilter::cspace binit[2];
-
-  
-  // double obs[3] = {0, 1, -1};
-  // pfilter.addObservation(obs);
-
-
-  // pfilter.estimatedDistribution(binit);
-
-
-  // tf::Pose pose = poseAt(0,0, binit[0]);
-  // tf::Vector3 point = pose.getOrigin();
-  // ROS_INFO("Point: %f, %f, %f", point.getX(), point.getY(), point.getZ());
-  // pub.publish(getParticlePoseArray(pfilter));
-  // ros::Duration(5.0).sleep();
-  
-  // for(int i=0; i<10; i++){
-  //   double obs2[3] = {0,0,0};
-  //   pFilterTest.pFilter_.addObservation(obs2);
-  //   pub.publish(pFilterTest.getParticlePoseArray());
-  //   ROS_INFO("Estimated Dist: %f, %f, %f", binit[0][0], binit[0][1], binit[0][2]);
-  //   ros::Duration(5.0).sleep();
-  // }
 
   ros::spin();
 

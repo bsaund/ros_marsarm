@@ -291,7 +291,8 @@ double PlotRayUtils::getDistToPart(tf::Point start, tf::Point end)
 
 /**
  * Returns the point of intersection with the part along the ray
- *
+ *   rays are given in the world frame, 
+ *   intersection point is returned in the world frame
  */
 bool PlotRayUtils::getIntersectionWithPart(tf::Point start, tf::Point end, tf::Point &intersection)
 {

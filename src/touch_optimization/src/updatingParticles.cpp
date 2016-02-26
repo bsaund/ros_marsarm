@@ -88,7 +88,7 @@ int main(int argc, char **argv)
 
   std::random_device rd;
   std::mt19937 gen(rd());
-  std::normal_distribution<double> randn(0.0,0.00003);
+  std::normal_distribution<double> randn(0.0,0.003);
 
   ROS_INFO("Running...");
 

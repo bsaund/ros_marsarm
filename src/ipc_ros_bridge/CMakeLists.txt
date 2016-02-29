@@ -5,7 +5,9 @@ project(ipc_ros_bridge)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  roscpp)
+  roscpp
+  geometry_msgs
+  particle_filter)
 
 # This message does not appear to actually print to the command line
 message(WARNING, "Not building IPC package")

@@ -8,6 +8,8 @@
 #include "ros/ros.h"
 #include "marsarm_moveit/Joints.h"
 #include "sensor_msgs/JointState.h"
+#include "particle_filter/AddObservation.h"
+#include "geometry_msgs/Point.h"
 
 // struct Status
 // {
@@ -26,6 +28,9 @@
 // };
 
 static ros::Publisher pub;
+ros::ServiceClient srv_add;
+
+static ros::
 
 static void forceSensorNoiseHnd (MSG_INSTANCE msg, void *callData,
 				 void* clientData)
@@ -90,6 +95,9 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "ipc_bridge");
   ros::NodeHandle n;
   pub = n.advertise<sensor_msgs::JointState>("/joints_from_marsarm",10);
+  srv_add = 
+    n.serviceClient<particle_filter::AddObservation>("/particle_filter_add");
+
   ipcInit();
 
   // ros::Duration d(10);

@@ -28,9 +28,7 @@
 // };
 
 static ros::Publisher pub;
-ros::ServiceClient srv_add;
-
-static ros::
+static ros::ServiceClient srv_add;
 
 static void forceSensorNoiseHnd (MSG_INSTANCE msg, void *callData,
 				 void* clientData)

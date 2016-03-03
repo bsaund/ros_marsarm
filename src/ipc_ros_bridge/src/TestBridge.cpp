@@ -3,6 +3,7 @@
 #include <Components/Controllers/CoordinatedController/coordinatedController-ipc.h>
 #include <Components/Controllers/CoordinatedController/utils.h>
 #include <Common/commonMath.h>
+#include <Scenarios/Tactile/tactileLocalizeMsg.h>
 // #include <Common/ConstrainedMoveMessages.h>
 #include <iostream>
 #include "ros/ros.h"
@@ -35,7 +36,7 @@ static void forceSensorNoiseHnd (MSG_INSTANCE msg, void *callData,
 {
   // Status status;
   CoordinatedControllerStatus* ccStatus = (CoordinatedControllerStatus *)callData;
-  std::cout <<"Received ipc message" << std::endl;
+  // std::cout <<"Received ipc message" << std::endl;
   if (ccStatus->manipStatus.cur.positionLen > 0){
       // std::cout <<"Received ipc message" << std::endl;
   //   status.jointAngles = ccStatus->manipStatus.cur.position[0];
@@ -68,7 +69,7 @@ static void forceSensorNoiseHnd (MSG_INSTANCE msg, void *callData,
       if(i==1){
 	j.position[i] = j.position[i] - 3.1415/2;
       }
-      ROS_INFO("Joint %d is p %f, v %f", i, j.position[i], j.velocity[i]);
+      // ROS_INFO("Joint %d is p %f, v %f", i, j.position[i], j.velocity[i]);
     }
     pub.publish(j);
   }
@@ -79,12 +80,34 @@ static void forceSensorNoiseHnd (MSG_INSTANCE msg, void *callData,
   IPC_freeData (IPC_msgInstanceFormatter(msg), callData);
 }
 
+static void observationHnd (MSG_INSTANCE msg, void *callData,
+			    void* clientData)
+{
+  TouchObservation* obs = (TouchObservation *)callData;
+  std::cout << "observationHnd Called" << std::endl;
+  std::cout << obs->x << ", " << obs->y << ", "<< obs->z << std::endl;
+  
+  particle_filter::AddObservation pfilter_obs;
+  pfilter_obs.request.p.x = obs->x;
+  pfilter_obs.request.p.y = obs->y;
+  pfilter_obs.request.p.z = obs->z;
+  
+  if(!srv_add.call(pfilter_obs)){
+    ROS_INFO("Failed to call add observation");
+  }
+
+
+  IPC_freeData (IPC_msgInstanceFormatter(msg), callData);
+}
+
 void ipcInit()
 {
   IPC_connect("tactileLocalize");
   // IPC_subscribeData("force_sensor_noise", forceSensorNoiseHnd, NULL);
   IPC_subscribeData("coordinated control status message", forceSensorNoiseHnd, NULL);
-  // IPC_subscribeData("ipc_ros_msg", forceSensorNoiseHnd, NULL);
+
+  IPC_subscribeData("TestTopicMsg", observationHnd, NULL);
+  std::cout << "Subscribing to ipc_ros_msg" << std::endl;
   std::cout << "HI" << std::endl;
 }
 

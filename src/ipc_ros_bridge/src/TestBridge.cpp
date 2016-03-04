@@ -12,6 +12,7 @@
 #include "particle_filter/AddObservation.h"
 #include "geometry_msgs/Point.h"
 
+
 // struct Status
 // {
 //   Status () : calibrated(false), moveDone(false), touched(false) {}
@@ -30,6 +31,7 @@
 
 static ros::Publisher pub;
 static ros::ServiceClient srv_add;
+
 
 static void forceSensorNoiseHnd (MSG_INSTANCE msg, void *callData,
 				 void* clientData)
@@ -106,7 +108,7 @@ void ipcInit()
   // IPC_subscribeData("force_sensor_noise", forceSensorNoiseHnd, NULL);
   IPC_subscribeData("coordinated control status message", forceSensorNoiseHnd, NULL);
 
-  IPC_subscribeData("TestTopicMsg", observationHnd, NULL);
+  IPC_subscribeData(TOUCH_OBSERVATION_MSG, observationHnd, NULL);
   std::cout << "Subscribing to ipc_ros_msg" << std::endl;
   std::cout << "HI" << std::endl;
 }
@@ -115,6 +117,10 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "ipc_bridge");
   ros::NodeHandle n;
+  // actionlib::SimpleActionServer<touch_optimization::ProbePointAction> 
+  //   as_(n, "ProbePoint", boost::bind(&ProbePointAction::executeCB;
+  // actionlib::SimpleActionServer<learning_actionlib::FibonacciAction> as_;
+  
   pub = n.advertise<sensor_msgs::JointState>("/joints_from_marsarm",10);
   srv_add = 
     n.serviceClient<particle_filter::AddObservation>("/particle_filter_add");

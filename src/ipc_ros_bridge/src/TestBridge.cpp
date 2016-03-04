@@ -11,6 +11,7 @@
 #include "sensor_msgs/JointState.h"
 #include "particle_filter/AddObservation.h"
 #include "geometry_msgs/Point.h"
+#include "geometry_msgs/Pose.h"
 
 
 // struct Status
@@ -31,7 +32,7 @@
 
 static ros::Publisher pub;
 static ros::ServiceClient srv_add;
-
+static ros::Subscriber sub_probe;
 
 static void forceSensorNoiseHnd (MSG_INSTANCE msg, void *callData,
 				 void* clientData)
@@ -102,6 +103,19 @@ static void observationHnd (MSG_INSTANCE msg, void *callData,
   IPC_freeData (IPC_msgInstanceFormatter(msg), callData);
 }
 
+void probePointHnd(const geometry_msgs::Pose msg)
+{
+  TouchLocation l;
+  l.x = 0;
+  l.y = 0;
+  l.z = 0;
+  l.r = 0;
+  l.p = 0;
+  l.yaw = 0;
+  IPC_publishData(TOUCH_LOCATION_MSG, &l);
+
+}
+
 void ipcInit()
 {
   IPC_connect("tactileLocalize");
@@ -124,6 +138,7 @@ int main(int argc, char **argv)
   pub = n.advertise<sensor_msgs::JointState>("/joints_from_marsarm",10);
   srv_add = 
     n.serviceClient<particle_filter::AddObservation>("/particle_filter_add");
+  sub_probe = n.subscribe("/probe_point", 10, probePointHnd);
 
   ipcInit();
 

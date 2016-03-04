@@ -106,12 +106,14 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
   ROS_INFO("Adding Observation...");
   double obs2[3] = {obs.x, obs.y, obs.z};
 
+
   
   std::vector<double> cube;
   getCube(cube);
 
 
   pFilter_.addObservation(obs2, &cube[0], &dist_transform, 0);
+
   ROS_INFO("...Done adding observation");
   pub_particles.publish(getParticlePoseArray());
 
@@ -158,6 +160,9 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
     tf::poseTFToMsg(trans*pose, pose_msg);
     poseArray.poses.push_back(pose_msg);
   }
+  ROS_INFO("Pose 1: %f%f%f", poseArray.poses[0].position.x,
+	   poseArray.poses[0].position.y, 
+	   poseArray.poses[0].position.z);
   return poseArray;
 }
 

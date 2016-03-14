@@ -12,6 +12,7 @@
 #include "particle_filter/AddObservation.h"
 #include "geometry_msgs/Point.h"
 #include "geometry_msgs/Pose.h"
+#include <tf/transform_broadcaster.h>
 
 
 // struct Status
@@ -77,9 +78,6 @@ static void forceSensorNoiseHnd (MSG_INSTANCE msg, void *callData,
     pub.publish(j);
   }
 
-  
-
-
   IPC_freeData (IPC_msgInstanceFormatter(msg), callData);
 }
 
@@ -105,15 +103,22 @@ static void observationHnd (MSG_INSTANCE msg, void *callData,
 
 void probePointHnd(const geometry_msgs::Pose msg)
 {
-  TouchLocation l;
-  l.x = 0;
-  l.y = 0;
-  l.z = 0;
-  l.r = 0;
-  l.p = 0;
-  l.yaw = 0;
-  IPC_publishData(TOUCH_LOCATION_MSG, &l);
+  ROS_INFO("Handling probe point");
+  tf::Pose p;
+  tf::poseMsgToTF(msg, p);
 
+  double roll, pitch, yaw;
+  tf::Matrix3x3(p.getRotation()).getRPY(roll, pitch, yaw);  
+
+  TouchLocation l;
+  l.x = p.getOrigin().getX();
+  l.y = p.getOrigin().getY();
+  l.z = p.getOrigin().getZ();
+  l.r = roll;
+  l.p = pitch;
+  l.yaw = yaw;
+
+  IPC_publishData(TOUCH_LOCATION_MSG, &l);
 }
 
 void ipcInit()

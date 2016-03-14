@@ -18,6 +18,9 @@
     [0.45, 0.31, 1.19, 1.57, 0, 0.7]
   </rosparam>
 
+
+  <node pkg="ipc_ros_bridge" type="ipc_ros_bridge_test" name="ipc_ros_bridge" output="screen"/>
+
 <!-- Temporary file used to generate particles and send images to RViz -->
   <include file="$(find using_markers)/launch/particles.launch"/>
 

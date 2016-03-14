@@ -7,7 +7,8 @@ project(ipc_ros_bridge)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   geometry_msgs
-  particle_filter)
+  particle_filter
+  tf)
 
 # This message does not appear to actually print to the command line
 message(WARNING, "Not building IPC package")

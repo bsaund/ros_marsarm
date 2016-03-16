@@ -41,22 +41,19 @@ void particleFilter::addObservation (double obs[3])
       X0[j][0] += dist2(generator);
       X0[j][1] += dist2(generator);
       X0[j][2] += dist2(generator);
-      b_Xpre[0][0] += X0[j][0];
-      b_Xpre[0][1] += X0[j][1];
-      b_Xpre[0][2] += X0[j][2];
+      b_Xpre[0][0] += X0[j][0] / N;
+      b_Xpre[0][1] += X0[j][1] / N;
+      b_Xpre[0][2] += X0[j][2] / N;
     }
-	b_Xpre[0][0] /= N;
-	b_Xpre[0][1] /= N;
-	b_Xpre[0][2] /= N;
     for (int j = 0; j < N; j++)
       {
-	b_Xpre[1][0] += SQ(X0[j][0] - b_Xpre[0][0]);
-	b_Xpre[1][1] += SQ(X0[j][1] - b_Xpre[0][1]);
-	b_Xpre[1][2] += SQ(X0[j][2] - b_Xpre[0][2]);
+	b_Xpre[1][0] += SQ(X0[j][0] - b_Xpre[0][0]) / N;
+	b_Xpre[1][1] += SQ(X0[j][1] - b_Xpre[0][1]) / N;
+	b_Xpre[1][2] += SQ(X0[j][2] - b_Xpre[0][2]) / N;
       }
-    b_Xpre[1][0] = sqrt(b_Xpre[1][0] / N);
-    b_Xpre[1][1] = sqrt(b_Xpre[1][1] / N);
-    b_Xpre[1][2] = sqrt(b_Xpre[1][2] / N);
+    b_Xpre[1][0] = sqrt(b_Xpre[1][0]);
+    b_Xpre[1][1] = sqrt(b_Xpre[1][1]);
+    b_Xpre[1][2] = sqrt(b_Xpre[1][2]);
   }
   bool iffar = update_particles(X, b_Xprior, b_Xpre, Xstd_ob, R, obs, N);
   if (firstObs)
@@ -224,7 +221,7 @@ int main()
   particleFilter pfilter(N, b_Xprior, Xstd_ob, Xstd_tran, Xstd_scatter, R);
 
   int N_Measure = 20;
-  double M_std = 0.001;
+  double M_std = 0.000000001;
   double M[3];
   particleFilter::cspace X_est[2];
   std::default_random_engine generator;
@@ -243,8 +240,8 @@ int main()
     pfilter.addObservation(M);
     pfilter.estimatedDistribution(X_est);
     double diff = sqrt(SQ(X_true[0] - X_est[0][0]) +
-		       SQ(X_true[1] - X_est[0][0]) +
-		       SQ(X_true[2] - X_est[0][0]));
+		       SQ(X_true[0] - X_est[0][0]) +
+		       SQ(X_true[0] - X_est[0][0]));
     cout << "est: " << X_est[0][0] << ' ' << X_est[0][1] << ' ' << X_est[0][2]
 	 << ' ' << X_est[1][0]<< " (" << diff << ")" << endl;
   }

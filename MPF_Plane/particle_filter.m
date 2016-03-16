@@ -2,9 +2,9 @@ clear;
 
 N = 800;
 
-Xstd_ob = 0.0001;
+Xstd_ob = 0.003;
 Xstd_tran = 0.0025;
-Xstd_scatter = 0.0001;
+Xstd_scatter = 0.000;
 
 R=0.01;
 
@@ -17,7 +17,7 @@ b_Xpre=b_Xprior;
 X0 = create_particles(b_Xprior, N*40);
 Xpre_weight=X0;
 N_Measure=100;
-M_std=0.000;
+M_std=0.001;
 M=zeros(3,N_Measure);
 for i = 1:N_Measure
     M(1,i)=(rand-0.5)*6;

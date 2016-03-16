@@ -14,14 +14,14 @@ class particleFilter
   void addObservation (double obs[3], double cube[3], distanceTransform *dist_transform, int idx_obs);
   //void addObservation (double obs[3], double cube[3], int idx_obs);
   void estimatedDistribution (cspace x_est, double x_est_stat [2]) {
-    memcpy(x_est, X_est, sizeof(cspace));
-	x_est_stat[0] = X_est_stat[0];
-	x_est_stat[1] = X_est_stat[1];
+    memcpy(x_est, particles_est, sizeof(cspace));
+	x_est_stat[0] = particles_est_stat[0];
+	x_est_stat[1] = particles_est_stat[1];
   }
 
  protected:
   // Parameters of filter
-  int N; // number of particles
+  int numParticles; // number of particles
   double Xstd_ob; // observation measurement error
   double Xstd_tran;
   double Xstd_scatter; // default scattering of particles
@@ -31,21 +31,22 @@ class particleFilter
   // internal variables
   cspace b_Xprior[2]; // Initial distribution (mean and variance)
   cspace b_Xpre[2];   // Previous (estimated) distribution (mean and variance)
-  cspace *X;  // Current set of particles
-  cspace *X0; // Previous set of particles
-  cspace *X_1; // Previous previous set of particles
-  cspace X_est; // Estimated distribution
-  double X_est_stat[2];
+  cspace *particles;  // Current set of particles
+  cspace *particles0; // Previous set of particles
+  cspace *particles_1; // Previous previous set of particles
+  cspace particles_est; // Estimated distribution
+  double particles_est_stat[2];
   double *W;
 
   // Local functions
-  void createParticles(cspace *X, cspace b_Xprior[2], int n_particles);
-  bool updateParticles(cspace *X_1, cspace *X0, cspace *X, double cur_M[3],
+  void createParticles(cspace *particles, cspace b_Xprior[2], int n_particles);
+  bool updateParticles(cspace *particles_1, cspace *particles0, cspace *particles, double cur_M[3],
 			double cube[3], int idx_Measure, distanceTransform *dist_transform,
 			int n_particles, double R, double Xstd_ob, double Xstd_tran);
   void calcWeight(double *W, int n_particles, double Xstd_tran, 
-		   cspace *X0, cspace *X);
-  void resampleParticles(cspace *X0, cspace *X, double *W, int n_particles);
+		   cspace *particles0, cspace *particles);
+  void resampleParticles(cspace *particles0, cspace *particles, double *W, int n_particles);
 };
+void inverseTransform(double measure[3], particleFilter::cspace src, double dest[3]);
 
 #endif // PARTICLE_FILTER_H

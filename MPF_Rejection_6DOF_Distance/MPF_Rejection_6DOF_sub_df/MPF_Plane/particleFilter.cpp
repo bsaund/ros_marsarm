@@ -128,38 +128,31 @@ bool particleFilter::updateParticles(cspace *X_1, cspace *X0, cspace *X, double 
 	int idx = 0;
 	double tempState[6];
 	double D;
-	double rotation[3][3];
-	double tempRot[3][3];
-	double invRot[3][3];
 	double cur_inv_M[3];
-	double tempM[3];
 	int num_Mean = 1000;
-	//cspace *sampleConfig = new cspace[num_Mean];
+	double **measure_workspace = new double*[num_Mean];
+	double var_measure[3] = { 0, 0, 0 };
 	cspace meanConfig = { 0, 0, 0, 0, 0, 0 };
 	for (int t = 0; t < num_Mean; t++) {
+		measure_workspace[t] = new double[3];
 		int index = int(floor(distribution(e2)));
 		//memcpy(sampleConfig[t], b_X[index], sizeof(cspace));
 		for (int m = 0; m < cdim; m++) {
 			meanConfig[m] += b_X[index][m] / num_Mean;
 		}
+		inverseTransform(cur_M, b_X[index], measure_workspace[t]);
 	}
 	// inverse-transform using sampled configuration
-	double rotationC[3][3] = { { cos(meanConfig[cdim - 1]), -sin(meanConfig[cdim - 1]), 0 },
-	{ sin(meanConfig[cdim - 1]), cos(meanConfig[cdim - 1]), 0 },
-	{ 0, 0, 1 } };
-	double rotationB[3][3] = { { cos(meanConfig[cdim - 2]), 0 , sin(meanConfig[cdim - 2]) },
-	{ 0, 1, 0 },
-	{ -sin(meanConfig[cdim - 2]), 0, cos(meanConfig[cdim - 2]) } };
-	double rotationA[3][3] = { { 1, 0, 0 },
-	{ 0, cos(meanConfig[cdim - 3]), -sin(meanConfig[cdim - 3]) },
-	{ 0, sin(meanConfig[cdim - 3]), cos(meanConfig[cdim - 3]) } };
-	multiplyM(rotationC, rotationB, tempRot);
-	multiplyM(tempRot, rotationA, rotation);
-	inverseMatrix(rotation, invRot);
-	double transition[3] = { meanConfig[0], meanConfig[1], meanConfig[2] };
-	subtractM(cur_M, transition, tempM);
-	multiplyM(invRot, tempM, cur_inv_M);
-
+	inverseTransform(cur_M, meanConfig, cur_inv_M);
+	for (int t = 0; t < num_Mean; t++) {
+		var_measure[0] += SQ(measure_workspace[t][0] - cur_inv_M[0]);
+		var_measure[1] += SQ(measure_workspace[t][1] - cur_inv_M[1]);
+		var_measure[2] += SQ(measure_workspace[t][2] - cur_inv_M[2]);
+	}
+	var_measure[0] /= num_Mean;
+	var_measure[1] /= num_Mean;
+	var_measure[2] /= num_Mean;
+	cout << "Touch Var: " << sqrt(var_measure[0]) << "  " << sqrt(var_measure[1]) << "  " << sqrt(var_measure[2]) << endl;
 	double world_range[3][2];
 	cout << cur_inv_M[0] << "    " << cur_inv_M[1] << "    " << cur_inv_M[2] << endl;
 	for (int t = 0; t < 3; t++) {
@@ -184,21 +177,8 @@ bool particleFilter::updateParticles(cspace *X_1, cspace *X0, cspace *X, double 
 			tempState[j] = b_X[idx][j] + Xstd_tran * dist(e2);
 		}
 		//double tempState[6] = { 2.11, 1.388, 0.818, Pi / 6 + Pi / 400, Pi / 12 + Pi / 420, Pi / 18 - Pi / 380 };
-		double rotationC[3][3] = { { cos(tempState[cdim - 1]), -sin(tempState[cdim - 1]), 0 },
-								   { sin(tempState[cdim - 1]), cos(tempState[cdim - 1]), 0 },
-								   { 0, 0, 1 } };
-		double rotationB[3][3] = { { cos(tempState[cdim - 2]), 0 , sin(tempState[cdim - 2]) },
-								   { 0, 1, 0 },
-								   { -sin(tempState[cdim - 2]), 0, cos(tempState[cdim - 2]) } };
-		double rotationA[3][3] = { { 1, 0, 0 },
-								   { 0, cos(tempState[cdim - 3]), -sin(tempState[cdim - 3]) },
-								   { 0, sin(tempState[cdim - 3]), cos(tempState[cdim - 3]) } };
-		multiplyM(rotationC, rotationB, tempRot);
-		multiplyM(tempRot, rotationA, rotation);
-		inverseMatrix(rotation, invRot);
-		double transition[3] = { tempState[0], tempState[1], tempState[2] };
-		subtractM(cur_M, transition, tempM);
-		multiplyM(invRot, tempM, cur_inv_M);
+		inverseTransform(cur_M, tempState, cur_inv_M);
+		
 		// reject particles ourside of distance transform
 		if (cur_inv_M[0] > world_range[0][1] || cur_inv_M[0] < world_range[0][0] ||
 			cur_inv_M[1] > world_range[1][1] || cur_inv_M[1] < world_range[1][0] ||
@@ -359,4 +339,27 @@ int main()
 		cout << "Var: " <<  X_est_stat[1] << endl;
 		cout << "Time: " << diff.count() << " milliseconds." << endl << endl;
 	}
+}
+void inverseTransform(double measure[3], particleFilter::cspace src, double dest[3])
+{
+	double rotation[3][3];
+	double tempRot[3][3];
+	double invRot[3][3];
+	double tempM[3];
+	double rotationC[3][3] = { { cos(src[5]), -sin(src[5]), 0 },
+	{ sin(src[5]), cos(src[5]), 0 },
+	{ 0, 0, 1 } };
+	double rotationB[3][3] = { { cos(src[4]), 0 , sin(src[4]) },
+	{ 0, 1, 0 },
+	{ -sin(src[4]), 0, cos(src[4]) } };
+	double rotationA[3][3] = { { 1, 0, 0 },
+	{ 0, cos(src[3]), -sin(src[3]) },
+	{ 0, sin(src[3]), cos(src[3]) } };
+	multiplyM(rotationC, rotationB, tempRot);
+	multiplyM(tempRot, rotationA, rotation);
+	inverseMatrix(rotation, invRot);
+	double transition[3] = { src[0], src[1], src[2] };
+	subtractM(measure, transition, tempM);
+	multiplyM(invRot, tempM, dest);
+
 }

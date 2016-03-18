@@ -6,6 +6,8 @@
 <!-- gazebo_ray_trace/worlds/[localization_object_cad].world -->
   <arg name="localization_object" default="box"/>
 
+  <param name="localization_object" type="str"
+	 value="$(arg localization_object)"/>
   <param name="localization_object_cad" type="str" 
 	 value="package://gazebo_ray_trace/sdf/$(arg localization_object).stl"/>
   

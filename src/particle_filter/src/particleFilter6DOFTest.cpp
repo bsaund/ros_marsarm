@@ -19,6 +19,8 @@ private:
   
   distanceTransform dist_transform;
   PlotRayUtils plt;
+
+  bool getCube(std::vector<double> &cube);
 public:
   geometry_msgs::PoseArray getParticlePoseArray();
   particleFilter pFilter_;
@@ -103,12 +105,43 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
   geometry_msgs::Point obs = req.p;
   ROS_INFO("Adding Observation...");
   double obs2[3] = {obs.x, obs.y, obs.z};
-  double cube[3] = {.508, .508, .508};
-  pFilter_.addObservation(obs2, cube, &dist_transform, 0);
+
+  
+  std::vector<double> cube;
+  getCube(cube);
+
+
+  pFilter_.addObservation(obs2, &cube[0], &dist_transform, 0);
   ROS_INFO("...Done adding observation");
   pub_particles.publish(getParticlePoseArray());
 
 }
+
+
+bool PFilterTest::getCube(std::vector<double> &cube){
+  std::string localizationObject;
+  if(!n.getParam("/localization_object", localizationObject)){
+    ROS_INFO("Failed to get param");
+  }
+  ROS_INFO("Getting Cube params...");
+  if(localizationObject == "box"){
+    ROS_INFO("Box detected");
+    cube = {.508, .508, .508};
+    return true;
+  }
+  if(localizationObject == "real_plate"){
+    ROS_INFO("Real Plate detected");
+    cube = {.203, 0.114, .0025};
+    return true;
+  }
+  cube = {0,0,0};
+  ROS_INFO("INVALID OBJECT");
+  throw std::invalid_argument("localization object not recognized by particle filter: "
+			      + localizationObject);
+  return false;
+}
+
+
 
 
 

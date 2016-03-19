@@ -149,6 +149,10 @@ add_executable(run_full src/fullSystem.cpp)
 target_link_libraries(run_full
   ${catkin_LIBRARIES})
 
+add_executable(run_full_box src/fullSystemBox.cpp)
+target_link_libraries(run_full_box
+  ${catkin_LIBRARIES})
+
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above

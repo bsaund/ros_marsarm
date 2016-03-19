@@ -45,6 +45,7 @@ void generateRandomRay(std::mt19937 gen, tf::Pose &probePose, tf::Point &start, 
   tf::Transform rotate;
   rotate.setRotation(tf::createQuaternionFromRPY(0,0,M_PI/4));
   tf::Pose touchBase;
+    // [0.45, 0.31, 1.19, 0, 1.57, 0.7]
   touchBase.setOrigin(tf::Vector3(0.5, -0.1, 1.2));
   touchBase.setRotation(tf::createQuaternionFromRPY(0, M_PI/2, 0));
 
@@ -58,7 +59,7 @@ void generateRandomRay(std::mt19937 gen, tf::Pose &probePose, tf::Point &start, 
   probeZ.setRotation(tf::createQuaternionFromRPY(0,0,0));
   probeZ.setOrigin(tf::Vector3(0,0,0.1));
   start = probePose.getOrigin();
-  end = (probeZ * probePose).getOrigin();
+  end = (probePose * probeZ).getOrigin();
 }
 
 
@@ -97,7 +98,7 @@ void randomSelection(PlotRayUtils &plt, tf::Pose &probePose)
     }
   }
 
-  // plt.plotCylinder(best_start, best_end, 0.01, 0.002, true);
+  plt.plotCylinder(best_start, best_end, 0.01, 0.002, true);
   ROS_INFO("Ray is: %f, %f, %f.  %f, %f, %f", 
   	   best_start.getX(), best_start.getY(), best_start.getZ(),
   	   best_end.getX(), best_end.getY(), best_end.getZ());

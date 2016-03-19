@@ -167,11 +167,15 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
 }
 
 PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
-  pFilter_(n_particles, b_init, 0.003, 0.003, 0.01, 0.005),
+  pFilter_(n_particles, b_init, 0.0001, 0.0025, 0.0001, 0.0005),
   dist_transform(.1, 0.0005)
   // particleFilter (int n_particles,
   // 		  double Xstd_ob=0.0001, double Xstd_tran=0.0025,
   // 		  double Xstd_scatter=0.0001, double R=0.0005);
+  // particleFilter::particleFilter(int n_particles, cspace b_init[2],
+  // 			       double Xstd_ob, double Xstd_tran,
+  // 			       double Xstd_scatter, double R)
+
 
 {
   

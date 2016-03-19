@@ -136,6 +136,11 @@ bool PFilterTest::getCube(std::vector<double> &cube){
     cube = {.203, 0.114, .0025};
     return true;
   }
+  if(localizationObject == "real_box"){
+    ROS_INFO("Real Plate detected");
+    cube = {.152, .152, .610};
+    return true;
+  }
   cube = {0,0,0};
   ROS_INFO("INVALID OBJECT");
   throw std::invalid_argument("localization object not recognized by particle filter: "

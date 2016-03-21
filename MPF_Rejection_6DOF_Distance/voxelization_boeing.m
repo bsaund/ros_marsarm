@@ -31,7 +31,12 @@ for i = -1:2:1
 end
 plot3(c_touch(1),c_touch(2),c_touch(3),'.k','MarkerSize',20);
 for i=1:length(n(:,1))
-   
+%     v0 = v(3*i-2,:);
+%     v1 = v(3*i-1,:);
+%     v2 = v(3*i,:);
+%     plot3([v0(1),v1(1)],[v0(2),v1(2)],[v0(3),v1(3)], 'b');
+%     plot3([v1(1),v2(1)],[v1(2),v2(2)],[v1(3),v2(3)], 'b');
+%     plot3([v0(1),v2(1)],[v0(2),v2(2)],[v0(3),v2(3)], 'b');
     temp = min(v(3*i - 2:3*i,:), [], 1) - 2*R;
     bbox(1,:) = temp - mod(temp, voxel_size) - voxel_size / 2;
     temp = max(v(3*i - 2:3*i,:), [], 1) + 2*R;
@@ -53,9 +58,11 @@ for i=1:length(n(:,1))
     d11 = dot(w1,w1);
     denom = d00 *d11 - d01*d01;
     n(i,:) = cross(w0,w1)./norm(cross(w0,w1));
+    if (v0(1) > 1.115 || v1(1) > 1.115 || v2(1) > 1.115)
     plot3([v0(1),v1(1)],[v0(2),v1(2)],[v0(3),v1(3)], 'b');
     plot3([v1(1),v2(1)],[v1(2),v2(2)],[v1(3),v2(3)], 'b');
     plot3([v0(1),v2(1)],[v0(2),v2(2)],[v0(3),v2(3)], 'b');
+    end
     
     %triArea = norm(cross(v1 - v0, v2 - v0)) * 0.5;
     for ix = pstart(1):voxel_size:pend(1)

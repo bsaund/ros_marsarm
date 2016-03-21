@@ -1,21 +1,9 @@
-﻿#ifndef TRIBOX_H
-#define TRIBOX_H
-/********************************************************/
-/* AABB-triangle overlap test code                      */
-/* by Tomas Akenine-Möller                              */
-/* Function: int triBoxOverlap(double boxcenter[3],      */
-/*          double boxhalfsize[3],double triverts[3][3]); */
-/* History:                                             */
-/*   2001-03-05: released the code in its first version */
-/*   2001-06-18: changed the order of the tests, faster */
-/*                                                      */
-/* Acknowledgement: Many thanks to Pierre Terdiman for  */
-/* suggestions and discussions on how to optimize code. */
-/* Thanks to David Hunt for finding a ">="-bug!         */
-/********************************************************/
-
 #include <math.h>
 #include <stdio.h>
+
+/* Triangle-box intersection algorithm */
+/* triBoxOverlap(double boxcenter[3], double boxhalfsize[3], double triverts[3][3]) */
+/* return 1 if overlap, else return 0*/
 
 #define X 0
 #define Y 1
@@ -42,26 +30,26 @@
 
 
 
-int planeBoxOverlap(double normal[3], double vert[3], double maxbox[3])	// -NJMP-
+int planeBoxOverlap(double normal[3], double vert[3], double maxbox[3])
 {
 	int q;
 	double vmin[3], vmax[3], v;
 	for (q = X; q <= Z; q++)
 	{
-		v = vert[q];					// -NJMP-
+		v = vert[q];
 		if (normal[q]>0.0f)
 		{
-			vmin[q] = -maxbox[q] - v;	// -NJMP-
-			vmax[q] = maxbox[q] - v;	// -NJMP-
+			vmin[q] = -maxbox[q] - v;
+			vmax[q] = maxbox[q] - v;
 		}
 		else
 		{
-			vmin[q] = maxbox[q] - v;	// -NJMP-
-			vmax[q] = -maxbox[q] - v;	// -NJMP-
+			vmin[q] = maxbox[q] - v;
+			vmax[q] = -maxbox[q] - v;
 		}
 	}
-	if (DOT(normal, vmin)>0.0f) return 0;	// -NJMP-
-	if (DOT(normal, vmax) >= 0.0f) return 1;	// -NJMP-
+	if (DOT(normal, vmin)>0.0f) return 0;
+	if (DOT(normal, vmax) >= 0.0f) return 1;
 	return 0;
 }
 
@@ -115,7 +103,6 @@ int planeBoxOverlap(double normal[3], double vert[3], double maxbox[3])	// -NJMP
 
 int triBoxOverlap(double boxcenter[3], double boxhalfsize[3], double triverts[3][3])
 {
-
 	/*    use separating axis theorem to test overlap between triangle and box */
 	/*    need to test for overlap in these directions: */
 	/*    1) the {x,y,z}-directions (actually, since we use the AABB of the triangle */
@@ -125,7 +112,7 @@ int triBoxOverlap(double boxcenter[3], double boxhalfsize[3], double triverts[3]
 	/*       this gives 3x3=9 more tests */
 	double v0[3], v1[3], v2[3];
 	//   double axis[3];
-	double min, max, p0, p1, p2, rad, fex, fey, fez;		// -NJMP- "d" local variable removed
+	double min, max, p0, p1, p2, rad, fex, fey, fez;
 	double normal[3], e0[3], e1[3], e2[3];
 
 	/* This is the fastest branch on Sun */
@@ -138,26 +125,26 @@ int triBoxOverlap(double boxcenter[3], double boxhalfsize[3], double triverts[3]
 	SUB(e0, v1, v0);      /* tri edge 0 */
 	SUB(e1, v2, v1);      /* tri edge 1 */
 	SUB(e2, v0, v2);      /* tri edge 2 */
-				  
-	/* Bullet 3:  */
-    /*  test the 9 tests first (this was faster) */
-	fex = fabsf(e0[X]);
-	fey = fabsf(e0[Y]);
-	fez = fabsf(e0[Z]);
+
+						  /* Bullet 3:  */
+						  /*  test the 9 tests first (this was faster) */
+	fex = fabs(e0[X]);
+	fey = fabs(e0[Y]);
+	fez = fabs(e0[Z]);
 	AXISTEST_X01(e0[Z], e0[Y], fez, fey);
 	AXISTEST_Y02(e0[Z], e0[X], fez, fex);
 	AXISTEST_Z12(e0[Y], e0[X], fey, fex);
 
-	fex = fabsf(e1[X]);
-	fey = fabsf(e1[Y]);
-	fez = fabsf(e1[Z]);
+	fex = fabs(e1[X]);
+	fey = fabs(e1[Y]);
+	fez = fabs(e1[Z]);
 	AXISTEST_X01(e1[Z], e1[Y], fez, fey);
 	AXISTEST_Y02(e1[Z], e1[X], fez, fex);
 	AXISTEST_Z0(e1[Y], e1[X], fey, fex);
 
-	fex = fabsf(e2[X]);
-	fey = fabsf(e2[Y]);
-	fez = fabsf(e2[Z]);
+	fex = fabs(e2[X]);
+	fey = fabs(e2[Y]);
+	fez = fabs(e2[Z]);
 	AXISTEST_X2(e2[Z], e2[Y], fez, fey);
 	AXISTEST_Y1(e2[Z], e2[X], fez, fex);
 	AXISTEST_Z12(e2[Y], e2[X], fey, fex);
@@ -184,10 +171,8 @@ int triBoxOverlap(double boxcenter[3], double boxhalfsize[3], double triverts[3]
 	/*  test if the box intersects the plane of the triangle */
 	/*  compute plane equation of triangle: normal*x+d=0 */
 	CROSS(normal, e0, e1);
-	// -NJMP- (line removed here)
-	if (!planeBoxOverlap(normal, v0, boxhalfsize)) return 0;	// -NJMP-
+
+	if (!planeBoxOverlap(normal, v0, boxhalfsize)) return 0;
 
 	return 1;   /* box and triangle overlaps */
 }
-
-#endif // TRIBOX_H

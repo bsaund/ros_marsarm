@@ -1,5 +1,5 @@
-#ifndef MATRIX_H
-#define MATRIX_H_H
+#include <cmath>
+#include "particleFilter.h"
 
 void multiplyM(double matrixA[3][3], double matrixB[3][3], double resultM[3][3])
 {
@@ -53,17 +53,15 @@ void inverseMatrix(double matrix[3][3], double invMatrix[3][3])
 void rotationMatrix(particleFilter::cspace state, double rotationM[3][3])
 {
 	double rotationC[3][3] = { { cos(state[5]), -sin(state[5]), 0 },
-								{ sin(state[5]), cos(state[5]), 0 },
-								{ 0, 0, 1 } };
+	{ sin(state[5]), cos(state[5]), 0 },
+	{ 0, 0, 1 } };
 	double rotationB[3][3] = { { cos(state[4]), 0 , sin(state[4]) },
-								{ 0, 1, 0 },
-								{ -sin(state[4]), 0, cos(state[4]) } };
+	{ 0, 1, 0 },
+	{ -sin(state[4]), 0, cos(state[4]) } };
 	double rotationA[3][3] = { { 1, 0, 0 },
-								{ 0, cos(state[3]), -sin(state[3]) },
-								{ 0, sin(state[3]), cos(state[3]) } };
+	{ 0, cos(state[3]), -sin(state[3]) },
+	{ 0, sin(state[3]), cos(state[3]) } };
 	double tempRot[3][3];
 	multiplyM(rotationC, rotationB, tempRot);
 	multiplyM(tempRot, rotationA, rotationM);
 }
-
-#endif // MATRIX_H_H

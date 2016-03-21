@@ -239,4 +239,5 @@ pip-log.txt
 *.py
 toolbox/
 * - Copy/
+*Copy*/
 *副本*

@@ -4,13 +4,13 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Global Options1
-        - /Status1
+        - /Marker1
+        - /Marker1/Namespaces1
         - /TF1
         - /TF1/Frames1
         - /Marker2
       Splitter Ratio: 0.5
-    Tree Height: 747
+    Tree Height: 359
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -106,22 +106,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 5.36147
+      Distance: 1.67236
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.55051
-        Y: -0.616695
-        Z: 1.09512
+        X: 0.870211
+        Y: 0.453697
+        Z: 1.11819
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.535398
+      Pitch: 0.215398
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.8604
+      Yaw: 3.06537
     Saved: ~
 Window Geometry:
   Displays:

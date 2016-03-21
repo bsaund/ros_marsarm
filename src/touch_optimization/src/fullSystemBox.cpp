@@ -38,29 +38,69 @@ particle_filter::PFilterInit getInitialPoints(PlotRayUtils &plt)
   return init_points;
 }
 
-
-void generateRandomRay(std::mt19937 gen, tf::Pose &probePose, tf::Point &start, tf::Point &end)
+void generateRandomTouchWith(tf::Pose &probePose, double tbX, double tbY, double tbZ, double tbRR, double tbRP, double tbRY, double rotateR, double rotateP, double rotateY, double offX, double offY, double offZ)
 {
-  std::uniform_real_distribution<double> rand(-1.0,1.0);
+
   tf::Transform rotate;
-  rotate.setRotation(tf::createQuaternionFromRPY(0,0,M_PI/4));
+  rotate.setRotation(tf::createQuaternionFromRPY(rotateR, rotateP, rotateY));
   tf::Pose touchBase;
-    // [0.45, 0.31, 1.19, 0, 1.57, 0.7]
-  touchBase.setOrigin(tf::Vector3(0.5, -0.1, 1.2));
-  touchBase.setRotation(tf::createQuaternionFromRPY(0, M_PI/2, 0));
+  touchBase.setOrigin(tf::Vector3(tbX, tbY, tbZ));
+  touchBase.setRotation(tf::createQuaternionFromRPY(tbRR, tbRP, tbRY));
 
   tf::Pose offset;
-  offset.setOrigin(tf::Vector3(0,rand(gen)*.05, rand(gen)*.05));
-  // offset.setOrigin(tf::Vector3(0,0,0));
+  offset.setOrigin(tf::Vector3(offX, offY, offZ));
   offset.setRotation(tf::createQuaternionFromRPY(0,0,0));
 
   probePose = rotate*offset*touchBase;
+
+}
+
+    // [0.6, 0.6, -0.1, 0, 0, 0]
+void generateRandomTouchTop(std::mt19937, tf::Pose &probePose)
+{
+  std::uniform_real_distribution<double> rand(-1.0,1.0);
+  generateRandomTouchWith(probePose, 
+			  .53, .4, 1.0, M_PI, 0, 0, 
+			  0,0,0,
+			  0,0,0);
+}
+
+void generateRandomTouchFront(std::mt19937, tf::Pose &probePose)
+{
+  std::uniform_real_distribution<double> rand(-1.0,1.0);
+  generateRandomTouchWith(probePose, 
+  			  .24, .4, .66, -1*M_PI/2, 0, -1*M_PI/2,
+  			  0,0,0,
+  			  0,0,0);
+}
+
+void generateRandomTouchSide(std::mt19937, tf::Pose &probePose)
+{
+  std::uniform_real_distribution<double> rand(-1.0,1.0);
+  generateRandomTouchWith(probePose, 
+			  .55, .09, .66, M_PI/2, 0, M_PI, 
+			  0,0,0,
+			  0,0,0);
+
+}
+
+
+
+void generateRandomRay(std::mt19937 gen, tf::Pose &probePose, tf::Point &start, tf::Point &end)
+{
+
+  // generateRandomTouchTop(gen, probePose);
+  // generateRandomTouchSide(gen, probePose);
+  generateRandomTouchFront(gen, probePose);
+  
   tf::Transform probeZ;
   probeZ.setRotation(tf::createQuaternionFromRPY(0,0,0));
   probeZ.setOrigin(tf::Vector3(0,0,0.1));
   start = probePose.getOrigin();
   end = (probePose * probeZ).getOrigin();
 }
+
+
 
 
 
@@ -88,6 +128,7 @@ void randomSelection(PlotRayUtils &plt, tf::Pose &probePose)
     tf::Point start, end;
     tf::Pose probePoseTmp;
     generateRandomRay(gen, probePoseTmp, start, end);
+    // plt.plotRay(start, end);
     double IG = plt.getIG(start, end, 0.01, 0.002);
     if (IG > bestIG){
       

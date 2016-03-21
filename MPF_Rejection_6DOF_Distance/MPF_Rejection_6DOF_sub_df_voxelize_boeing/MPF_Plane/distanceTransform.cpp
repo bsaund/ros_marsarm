@@ -1,47 +1,46 @@
-#ifndef DISTANCE_TRANSFORM_H
-#define DISTANCE_TRANSFORM_H
 #include <limits>
+#include <vector>
 #include <Eigen/Dense>
+#include "distanceTransform.h"
+#include "tribox.h"
+
 #define max3(a,b,c) ((a>b?a:b)>c?(a>b?a:b):c)
 #define max2(a,b) (a>b?a:b)
 #define min3(a,b,c) ((a<b?a:b)<c?(a<b?a:b):c)
 #define min2(a,b) (a<b?a:b)
+
 using namespace std;
-typedef double vec4x3[4][3];
-class distanceTransform
-{
-public:
-	double voxel_size; //voxel size
-	double world_range[3][2]; //work space range
-	vector<vector<vector<double>>> *dist_transform;
-	vector<vector<vector<double>>> *obstacle_map;
-	distanceTransform(double range, double voxel_size);
-	void build();
-	void voxelizeSTL(vector<vec4x3> &mesh, double World_Range[3][2]);
-protected:
-	int voxel_nums[3]; // voxel number along each dimension
-	void distanceTransform_1D(vector<vector<vector<double>>> *dist_transform_1D, int range[3], 
-		                      vector<vector<vector<double>>> *cost_fun, int dir, int idx1, int idx2);
-};
+typedef float vec4x3[4][3];
+
 /*distanceTransform::distanceTransform(double World_Range[3][2], double Grid_Res) :voxel_size(Grid_Res) {
-	memcpy(world_range, World_Range, 6 * sizeof(double));
+memcpy(world_range, World_Range, 6 * sizeof(double));
 }*/
 
-distanceTransform::distanceTransform(double range, double grid_Res): voxel_size(grid_Res) {
+distanceTransform::distanceTransform(int n_voxels[3]) {
 	for (int i = 0; i < 3; i++) {
-		voxel_nums[i] = int(ceil(range / voxel_size));
+		num_voxels[i] = n_voxels[i];
 	}
 	const double LARGE_NUM = 10000000;
-	dist_transform = new vector<vector<vector<double>>>(voxel_nums[0], vector<vector<double>>(voxel_nums[1], vector<double>(voxel_nums[2])));
-	obstacle_map = new vector<vector<vector<double>>>(voxel_nums[0], vector<vector<double>>(voxel_nums[1], vector<double>(voxel_nums[2], LARGE_NUM)));
+	dist_transform = new vector<vector<vector<double>>>(num_voxels[0], vector<vector<double>>(num_voxels[1], vector<double>(num_voxels[2])));
+	obstacle_map = new vector<vector<vector<double>>>(num_voxels[0], vector<vector<double>>(num_voxels[1], vector<double>(num_voxels[2], LARGE_NUM)));
 }
 void distanceTransform::voxelizeSTL(vector<vec4x3> &mesh, double World_Range[3][2])
 {
 	const double LARGE_NUM = 10000000;
+	const double MIN_VOXEL_RES = 0.000001;
+	voxel_size = (World_Range[0][1] - World_Range[0][0]) / num_voxels[0];
+	voxel_size = voxel_size - fmod(voxel_size, MIN_VOXEL_RES) + MIN_VOXEL_RES;
+	/*cout << "DT Voxel Size: " << voxel_size << endl;*/
 	memcpy(world_range, World_Range, 6 * sizeof(double));
-	for (int i = 0; i < voxel_nums[0]; i++) {
-		for (int j = 0; j < voxel_nums[1]; j++) {
-			for (int k = 0; k < voxel_nums[2]; k++) {
+	for (int i = 0; i < 3; i++) {
+		//cout << "before: " << world_range[i][0] << "  " << world_range[i][1] << endl;
+		world_range[i][0] = world_range[i][0] - fmod(world_range[i][0], MIN_VOXEL_RES);
+		world_range[i][1] = world_range[i][0] + num_voxels[i] * voxel_size;
+		//cout << "now: " << world_range[i][0] << "  " << world_range[i][1] << endl;
+	}
+	for (int i = 0; i < num_voxels[0]; i++) {
+		for (int j = 0; j < num_voxels[1]; j++) {
+			for (int k = 0; k < num_voxels[2]; k++) {
 				(*obstacle_map)[i][j][k] = LARGE_NUM;
 			}
 		}
@@ -83,9 +82,6 @@ void distanceTransform::voxelizeSTL(vector<vec4x3> &mesh, double World_Range[3][
 		if ((bbox[0][0] >world_range[0][1]) || (bbox[1][0] > world_range[1][1]) || (bbox[2][0] > world_range[2][1])
 			|| (bbox[0][1] < world_range[0][0]) || (bbox[1][1] < world_range[1][0]) || (bbox[2][1] < world_range[2][0]))
 			continue;
-		cout << "current tria 1: " << triverts[0][0] << "  " << triverts[0][1] << "  " << triverts[0][2] << endl;
-		cout << "current tria 2: " << triverts[1][0] << "  " << triverts[1][1] << "  " << triverts[1][2] << endl;
-		cout << "current tria 2: " << triverts[2][0] << "  " << triverts[2][1] << "  " << triverts[2][2] << endl << endl;
 		xstart = max2(bbox[0][0], world_range[0][0]);
 		xstart = xstart - fmod(xstart - world_range[0][0], voxel_size) + voxel_size / 2;
 		ystart = max2(bbox[1][0], world_range[1][0]);
@@ -112,15 +108,18 @@ void distanceTransform::voxelizeSTL(vector<vec4x3> &mesh, double World_Range[3][
 						(*obstacle_map)[int(floor((ix - world_range[0][0]) / voxel_size))]
 							[int(floor((iy - world_range[1][0]) / voxel_size))]
 						[int(floor((iz - world_range[2][0]) / voxel_size))] = 0;
-						//cout << "gagaga " << ix << "   " << iy << "   " << iz << endl;
+						/*if (iy < 0.2) {
+						cout << ix << "   " << iy << "   " << iz << " norm " << mesh[i][0][0] << "   " << mesh[i][0][1] << "   " << mesh[i][0][2]
+						<< endl;
+						}*/
 					}
 				}
 			}
 		}
 	}
 }
-void distanceTransform::distanceTransform_1D(vector<vector<vector<double>>> *dist_transform_1D, int range[3], 
-										     vector<vector<vector<double>>> *cost_fun, int dir, int idx1, int idx2)
+void distanceTransform::distanceTransform_1D(vector<vector<vector<double>>> *dist_transform_1D, int range[3],
+	vector<vector<vector<double>>> *cost_fun, int dir, int idx1, int idx2)
 {
 	int k = 0;
 	int *envelope = new int[range[dir]];
@@ -201,23 +200,21 @@ void distanceTransform::distanceTransform_1D(vector<vector<vector<double>>> *dis
 }
 void distanceTransform::build()
 {
-	for (int i = 0; i < voxel_nums[0]; i++) {
-		for (int j = 0; j < voxel_nums[1]; j++) {
-			distanceTransform_1D(dist_transform, voxel_nums, obstacle_map, 2, i, j);
+	for (int i = 0; i < num_voxels[0]; i++) {
+		for (int j = 0; j < num_voxels[1]; j++) {
+			distanceTransform_1D(dist_transform, num_voxels, obstacle_map, 2, i, j);
 		}
-		for (int k = 0; k < voxel_nums[2]; k++) {
-			distanceTransform_1D(obstacle_map, voxel_nums, dist_transform, 1, i, k);
+		for (int k = 0; k < num_voxels[2]; k++) {
+			distanceTransform_1D(obstacle_map, num_voxels, dist_transform, 1, i, k);
 		}
 	}
 
-	for (int j = 0; j < voxel_nums[1]; j++) {
-		for (int k = 0; k < voxel_nums[2]; k++) {
-			distanceTransform_1D(dist_transform, voxel_nums, obstacle_map, 0, j, k);
-			for (int i = 0; i < voxel_nums[0]; i++) {
+	for (int j = 0; j < num_voxels[1]; j++) {
+		for (int k = 0; k < num_voxels[2]; k++) {
+			distanceTransform_1D(dist_transform, num_voxels, obstacle_map, 0, j, k);
+			for (int i = 0; i < num_voxels[0]; i++) {
 				(*dist_transform)[i][j][k] = sqrt((*dist_transform)[i][j][k]) * voxel_size;
 			}
 		}
 	}
 }
-
-#endif // DISTANCE_TRANSFORM_H

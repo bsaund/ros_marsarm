@@ -19,7 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="distanceTransform.cpp" />
+    <ClCompile Include="matrix.cpp" />
     <ClCompile Include="particleFilter.cpp" />
+    <ClCompile Include="raytri.cpp" />
+    <ClCompile Include="stlParser.cpp" />
+    <ClCompile Include="tribox.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="distanceTransform.h" />

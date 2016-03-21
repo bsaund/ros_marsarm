@@ -1,17 +1,20 @@
-#ifndef RAYTRI_H
-#define RAYTRI_H
-#include <math.h>
+
+/* Ray-Triangle intersection algorithm */
+/* intersect_triangle(double orig[3], double dir[3],
+double vert0[3], double vert1[3], double vert2[3],
+double *t, double *u, double *v) */
+/* return 1 if intersects, else return 0 */
 
 #define EPSILON 0.000001
-//#define CROSS(dest,v1,v2) \
-//          dest[0]=v1[1]*v2[2]-v1[2]*v2[1]; \
-//          dest[1]=v1[2]*v2[0]-v1[0]*v2[2]; \
-//          dest[2]=v1[0]*v2[1]-v1[1]*v2[0];
+#define CROSS(dest,v1,v2) \
+          dest[0]=v1[1]*v2[2]-v1[2]*v2[1]; \
+          dest[1]=v1[2]*v2[0]-v1[0]*v2[2]; \
+          dest[2]=v1[0]*v2[1]-v1[1]*v2[0];
 #define DOT(v1,v2) (v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2])
-//#define SUB(dest,v1,v2) \
-//          dest[0]=v1[0]-v2[0]; \
-//          dest[1]=v1[1]-v2[1]; \
-//          dest[2]=v1[2]-v2[2]; 
+#define SUB(dest,v1,v2) \
+          dest[0]=v1[0]-v2[0]; \
+          dest[1]=v1[1]-v2[1]; \
+          dest[2]=v1[2]-v2[2]; 
 
 int intersect_triangle(double orig[3], double dir[3],
 	double vert0[3], double vert1[3], double vert2[3],
@@ -75,5 +78,3 @@ int intersect_triangle(double orig[3], double dir[3],
 
 	return 1;
 }
-
-#endif // RAYTRI_H

@@ -1,5 +1,9 @@
 #ifndef PARTICLE_FILTER_H
 #define PARTICLE_FILTER_H
+#include<vector>
+#include "distanceTransform.h"
+using namespace std;
+typedef float vec4x3[4][3];
 
 class particleFilter
 {
@@ -8,10 +12,10 @@ class particleFilter
   typedef double cspace[cdim]; // configuration space of the particles
 
   particleFilter (int n_particles, cspace b_init[2], 
-		  double Xstd_ob=0.0001, double Xstd_tran=0.0025,
-		  double Xstd_scatter=0.0001, double R=0.01);
+				double Xstd_ob=0.0001, double Xstd_tran=0.0025,
+				double Xstd_scatter=0.0001, double R=0.01);
 
-  void addObservation (double obs[3], double cube[3], distanceTransform *dist_transform, int idx_obs);
+  void addObservation (double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, int idx_obs);
   //void addObservation (double obs[3], double cube[3], int idx_obs);
   void estimatedDistribution (cspace x_est, double x_est_stat [2]) {
     memcpy(x_est, particles_est, sizeof(cspace));
@@ -40,13 +44,15 @@ class particleFilter
 
   // Local functions
   void createParticles(cspace *particles, cspace b_Xprior[2], int n_particles);
-  bool updateParticles(cspace *particles_1, cspace *particles0, cspace *particles, double cur_M[3],
-			double cube[3], int idx_Measure, distanceTransform *dist_transform,
+  bool updateParticles(cspace *particles_1, cspace *particles0, cspace *particles, double cur_M[2][3],
+			vector<vec4x3> &mesh, int idx_Measure, distanceTransform *dist_transform,
 			int n_particles, double R, double Xstd_ob, double Xstd_tran);
-  void calcWeight(double *W, int n_particles, double Xstd_tran, 
-		   cspace *particles0, cspace *particles);
-  void resampleParticles(cspace *particles0, cspace *particles, double *W, int n_particles);
+  //void calcWeight(double *W, int n_particles, double Xstd_tran, 
+		//   cspace *particles0, cspace *particles);
+  //void resampleParticles(cspace *particles0, cspace *particles, double *W, int n_particles);
 };
 void inverseTransform(double measure[3], particleFilter::cspace src, double dest[3]);
-
+int checkInObject(vector<vec4x3> &mesh, double voxel_center[3]);
+int getIntersection(vector<vec4x3> &mesh, double pstart[3], double dir[3], double intersection[3]);
+double testResult(vector<vec4x3> &mesh, double config[6], double touch[3], double dir[3]);
 #endif // PARTICLE_FILTER_H

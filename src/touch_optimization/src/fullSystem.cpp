@@ -39,7 +39,7 @@ particle_filter::PFilterInit getInitialPoints(PlotRayUtils &plt)
 }
 
 
-void generateRandomRay(std::mt19937 gen, tf::Pose &probePose, tf::Point &start, tf::Point &end)
+void generateRandomRay(std::mt19937 &gen, tf::Pose &probePose, tf::Point &start, tf::Point &end)
 {
   std::uniform_real_distribution<double> rand(-1.0,1.0);
   tf::Transform rotate;
@@ -50,7 +50,7 @@ void generateRandomRay(std::mt19937 gen, tf::Pose &probePose, tf::Point &start, 
   touchBase.setRotation(tf::createQuaternionFromRPY(0, M_PI/2, 0));
 
   tf::Pose offset;
-  offset.setOrigin(tf::Vector3(0,rand(gen)*.05, rand(gen)*.05));
+  offset.setOrigin(tf::Vector3(0,rand(gen)*.06, rand(gen)*.07));
   // offset.setOrigin(tf::Vector3(0,0,0));
   offset.setRotation(tf::createQuaternionFromRPY(0,0,0));
 
@@ -89,6 +89,10 @@ void randomSelection(PlotRayUtils &plt, tf::Pose &probePose)
     tf::Pose probePoseTmp;
     generateRandomRay(gen, probePoseTmp, start, end);
     double IG = plt.getIG(start, end, 0.01, 0.002);
+    // plt.plotRay(start, end, false);
+    // ros::Duration(.5).sleep();
+    // ROS_INFO("Start is: %f", start.getX());
+    
     if (IG > bestIG){
       
       bestIG = IG;
@@ -98,7 +102,9 @@ void randomSelection(PlotRayUtils &plt, tf::Pose &probePose)
     }
   }
 
-  plt.plotCylinder(best_start, best_end, 0.01, 0.002, true);
+  // plt.plotCylinder(best_start, best_end, 0.01, 0.002, true);
+  plt.plotRay(best_start, best_end);
+  plt.plotIntersections(best_start, best_end);
   ROS_INFO("Ray is: %f, %f, %f.  %f, %f, %f", 
   	   best_start.getX(), best_start.getY(), best_start.getZ(),
   	   best_end.getX(), best_end.getY(), best_end.getZ());

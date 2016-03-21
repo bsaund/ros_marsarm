@@ -4,8 +4,8 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Global Options1
-        - /Status1
+        - /Marker1
+        - /Marker1/Namespaces1
         - /TF1
         - /TF1/Frames1
         - /Marker2
@@ -108,22 +108,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.53412
+      Distance: 1.67236
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.33515
-        Y: 1.47863
-        Z: -0.0175892
+        X: 0.870211
+        Y: 0.453697
+        Z: 1.11819
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: -0.0446019
+      Pitch: 0.215398
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.3404
+      Yaw: 3.06537
     Saved: ~
 Window Geometry:
   Displays:

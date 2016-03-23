@@ -46,7 +46,8 @@ void generateRandomRay(std::mt19937 &gen, tf::Pose &probePose, tf::Point &start,
   rotate.setRotation(tf::createQuaternionFromRPY(0,0,M_PI/4));
   tf::Pose touchBase;
     // [0.45, 0.31, 1.19, 0, 1.57, 0.7]
-  touchBase.setOrigin(tf::Vector3(0.5, -0.1, 1.2));
+  // touchBase.setOrigin(tf::Vector3(0.5, -0.1, 1.2));
+  touchBase.setOrigin(tf::Vector3(.75, -0.1, 1.2));
   touchBase.setRotation(tf::createQuaternionFromRPY(0, M_PI/2, 0));
 
   tf::Pose offset;

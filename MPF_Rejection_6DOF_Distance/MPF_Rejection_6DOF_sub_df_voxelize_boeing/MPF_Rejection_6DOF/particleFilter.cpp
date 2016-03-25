@@ -25,6 +25,7 @@ using namespace std;
 #define min2(a,b) (a<b?a:b)
 typedef float vec4x3[4][3];
 typedef unordered_map<string, string> hashmap;
+#define epsilon 0.0001
 
 //vector<vec4x3> importSTL(string filename);
 
@@ -229,6 +230,7 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 	Eigen::Vector3d gradient;
 	Eigen::Vector3d touch_dir;
 	// sample particles
+	touch_dir << cur_M[1][0], cur_M[1][1], cur_M[1][2];
 	while (i < n_particles)
 	{
 		//if ((count >= 10000000 || (i > 0 && count / i > 5000)) && iffar == false)
@@ -255,24 +257,51 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 		int yind = int(floor((cur_inv_M[1] - dist_transform->world_range[1][0]) / dist_transform->voxel_size));
 		int zind = int(floor((cur_inv_M[2] - dist_transform->world_range[2][0]) / dist_transform->voxel_size));
 		D = (*dist_transform->dist_transform)[xind][yind][zind];
-		if (xind < 199 && yind < 199 && zind < 199)
-		{
-			gradient[0] = (*dist_transform->dist_transform)[xind + 1][yind][zind] - D;
-			gradient[1] = (*dist_transform->dist_transform)[xind][yind + 1][zind] - D;
-			gradient[2] = (*dist_transform->dist_transform)[xind][yind][zind + 1] - D;
-			//gradient /= gradient.norm();
-			touch_dir << cur_M[1][0], cur_M[1][1], cur_M[1][2];
-			if (gradient.dot(touch_dir) >= 0)
-				continue;
-		}
-		else
-			continue;
+		
+		double dist_adjacent[3] = { 0, 0, 0 };
 		if (D <= unsigned_dist_check)
 		{
-			if (checkInObject(mesh, cur_inv_M) == 1)
-				D = -D - R;
+			if (xind < (dist_transform->num_voxels[0] - 1) && yind < (dist_transform->num_voxels[1] - 1) && zind < (dist_transform->num_voxels[2] - 1))
+			{
+				dist_adjacent[0] = (*dist_transform->dist_transform)[xind + 1][yind][zind];
+				dist_adjacent[1] = (*dist_transform->dist_transform)[xind][yind + 1][zind];
+				dist_adjacent[2] = (*dist_transform->dist_transform)[xind][yind][zind + 1];
+				//gradient /= gradient.norm();
+			}
 			else
+				continue;
+			gradient[0] = dist_adjacent[0] - D;
+			gradient[1] = dist_adjacent[1] - D;
+			gradient[2] = dist_adjacent[2] - D;
+			if (checkInObject(mesh, cur_inv_M) == 1 && D != 0)
+			{
+				if (gradient.dot(touch_dir) <= epsilon)
+					continue;
+				D = -D - R;
+			}
+			else if (D == 0) 
+			{
+				double tmp[3] = { cur_inv_M[0] + dist_transform->voxel_size, cur_inv_M[1], cur_inv_M[2] };
+				if (checkInObject(mesh, tmp) == 1)
+					gradient[0] = -gradient[0];
+				tmp[0] -= dist_transform->voxel_size;
+				tmp[1] += dist_transform->voxel_size;
+				if (checkInObject(mesh, tmp) == 1)
+					gradient[1] = -gradient[1];
+				tmp[1] -= dist_transform->voxel_size;
+				tmp[2] += dist_transform->voxel_size;
+				if (checkInObject(mesh, tmp) == 1)
+					gradient[2] = -gradient[2];
+				if (gradient.dot(touch_dir) >= -epsilon)
+					continue;
+				D = - R;
+			}
+			else
+			{
+				if (gradient.dot(touch_dir) >= -epsilon)
+					continue;
 				D = D - R;
+			}	
 		}
 		else
 			continue;
@@ -288,7 +317,9 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 			{
 				particles[i][j] = tempState[j];
 			}
-			double d = testResult(mesh, particles[i], cur_M[0], cur_M[1]);
+			double d = testResult(mesh, particles[i], cur_M[0], cur_M[1], R);
+			if (d > 0.01)
+				cout << cur_inv_M[0] << "  " << cur_inv_M[1] << "  " << cur_inv_M[2] << "   " << d << "   " << D << "   " << gradient << endl;
 			i += 1;
 		}
 		count += 1;
@@ -360,7 +391,7 @@ int main()
 	//double voxel_size = 0.0005; // voxel size for distance transform.
 	int num_voxels[3] = { 200,200,200 };
 	//double range = 0.1; //size of the distance transform
-	double R = 0.01; // radius of the touch probe
+	double R = 0.001; // radius of the touch probe
 
 	double cube_para[3] = { 6, 4, 2 }; // cube size: 6m x 4m x 2m with center at the origin.
 	//double range[3][2] = { {-3.5, 3.5}, {-2.5, 2.5}, {-1.5, 1.5} };
@@ -431,7 +462,7 @@ int main()
 		M[1][2] = tempM[2];*/
 
 		cout << "Observation " << i << " : touch at " << M[0][0] << " " << M[0][1] << " " << M[0][2] << endl;
-		cout << "Theoretic distance: " << testResult(mesh, X_true, M[0], M[1]) << endl;
+		cout << "Theoretic distance: " << testResult(mesh, X_true, M[0], M[1], R) << endl;
 		auto tstart = chrono::high_resolution_clock::now();
 		pfilter.addObservation(M, mesh, dist_transform, i); // update particles
 		//pfilter.addObservation(M, cube_para, i);
@@ -448,7 +479,7 @@ int main()
 			cout << particles_est[k] << ' ';
 		}
 		cout << endl;
-		cout << "Real distance: " << testResult(mesh, particles_est, M[0], M[1]) << endl;
+		cout << "Real distance: " << testResult(mesh, particles_est, M[0], M[1], R) << endl;
 		cout << "Diff: " << particles_est_stat[0] << endl;
 		cout << "Var: " <<  particles_est_stat[1] << endl;
 		cout << "Time: " << diff.count() << " milliseconds." << endl << endl;
@@ -583,7 +614,7 @@ int getIntersection(vector<vec4x3> &mesh, double pstart[3], double dir[3], doubl
  *        dir: direction of the touch
  * Output: distance
  */
-double testResult(vector<vec4x3> &mesh, double config[6], double touch[3], double dir[3])
+double testResult(vector<vec4x3> &mesh, double config[6], double touch[3], double dir[3], double R)
 {
 	double inv_touch[3];
 	inverseTransform(touch, config, inv_touch);
@@ -613,7 +644,7 @@ double testResult(vector<vec4x3> &mesh, double config[6], double touch[3], doubl
 	if (tMin == 100000)
 		return 0;
 
-	return tMin - 0.01;
+	return tMin - R;
 }
 //void voxelizeSTL(vector<vec4x3> &mesh, hashmap &boundary_voxel, double voxel_size, double R, double Xstd_ob,
 //	double cube_center, double cube_size)

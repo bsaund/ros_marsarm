@@ -54,5 +54,5 @@ class particleFilter
 void inverseTransform(double measure[3], particleFilter::cspace src, double dest[3]);
 int checkInObject(vector<vec4x3> &mesh, double voxel_center[3]);
 int getIntersection(vector<vec4x3> &mesh, double pstart[3], double dir[3], double intersection[3]);
-double testResult(vector<vec4x3> &mesh, double config[6], double touch[3], double dir[3]);
+double testResult(vector<vec4x3> &mesh, double config[6], double touch[3], double dir[3], double R);
 #endif // PARTICLE_FILTER_H

@@ -1,8 +1,9 @@
 #ifndef STL_PARSER_H
 #define STL_PARSER_H
+#include <array>
 
 using namespace std;
-typedef float vec4x3[4][3];
+typedef array<array<float, 3>, 4> vec4x3;
 
 /*
 * Import binary STL file to arrays.

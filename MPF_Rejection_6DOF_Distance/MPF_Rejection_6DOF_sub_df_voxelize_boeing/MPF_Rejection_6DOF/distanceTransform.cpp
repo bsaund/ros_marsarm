@@ -1,6 +1,7 @@
 #include <limits>
 #include <vector>
 #include <Eigen/Dense>
+#include <array>
 #include "distanceTransform.h"
 #include "tribox.h"
 
@@ -10,7 +11,7 @@
 #define min2(a,b) (a<b?a:b)
 
 using namespace std;
-typedef float vec4x3[4][3];
+typedef array<array<float, 3>, 4> vec4x3;
 
 /*distanceTransform::distanceTransform(double World_Range[3][2], double Grid_Res) :voxel_size(Grid_Res) {
 memcpy(world_range, World_Range, 6 * sizeof(double));

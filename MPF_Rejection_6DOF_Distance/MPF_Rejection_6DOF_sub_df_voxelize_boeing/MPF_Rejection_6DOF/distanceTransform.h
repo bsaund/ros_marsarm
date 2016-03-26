@@ -1,9 +1,10 @@
 #ifndef DISTANCE_TRANSFORM_H
 #define DISTANCE_TRANSFORM_H
 #include <vector>
+#include <array>
 
 using namespace std;
-typedef float vec4x3[4][3];
+typedef array<array<float, 3>, 4> vec4x3;
 class distanceTransform
 {
 public:

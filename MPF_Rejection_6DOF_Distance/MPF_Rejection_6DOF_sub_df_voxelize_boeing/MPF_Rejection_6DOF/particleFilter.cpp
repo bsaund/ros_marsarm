@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <Eigen/Dense>
 #include <unordered_set>
+#include <array>
 #include "tribox.h"
 #include "raytri.h"
 #include "distanceTransform.h"
@@ -23,7 +24,7 @@ using namespace std;
 #define max2(a,b) (a>b?a:b)
 #define min3(a,b,c) ((a<b?a:b)<c?(a<b?a:b):c)
 #define min2(a,b) (a<b?a:b)
-typedef float vec4x3[4][3];
+typedef array<array<float, 3>, 4> vec4x3;
 typedef unordered_map<string, string> hashmap;
 #define epsilon 0.0001
 
@@ -319,7 +320,8 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 			}
 			double d = testResult(mesh, particles[i], cur_M[0], cur_M[1], R);
 			if (d > 0.01)
-				cout << cur_inv_M[0] << "  " << cur_inv_M[1] << "  " << cur_inv_M[2] << "   " << d << "   " << D << "   " << gradient << endl;
+				cout << cur_inv_M[0] << "  " << cur_inv_M[1] << "  " << cur_inv_M[2] << "   " << d << "   " << D << //"   " << gradient << "   " << gradient.dot(touch_dir) << 
+				     "   " << dist_adjacent[0] << "   " << dist_adjacent[1] << "   " << dist_adjacent[2] << "   " << particles[i][2] << endl;
 			i += 1;
 		}
 		count += 1;
@@ -396,17 +398,20 @@ int main()
 	double cube_para[3] = { 6, 4, 2 }; // cube size: 6m x 4m x 2m with center at the origin.
 	//double range[3][2] = { {-3.5, 3.5}, {-2.5, 2.5}, {-1.5, 1.5} };
 	particleFilter::cspace X_true = { 2.12, 1.388, 0.818, Pi / 6 + Pi / 400, Pi / 12 + Pi / 420, Pi / 18 - Pi / 380 }; // true state of configuration
+	//particleFilter::cspace X_true = { 0, 0, 0.818, 0, 0, 0 }; // true state of configuration
 	cout << "True state: " << X_true[0] << ' ' << X_true[1] << ' ' << X_true[2] << ' ' 
 		 << X_true[3] << ' ' << X_true[4] << ' ' << X_true[5] << endl;
-	particleFilter::cspace b_Xprior[2] = { { 2.11, 1.4, 0.8, Pi / 6, Pi / 12, Pi / 18 },
+	particleFilter::cspace b_Xprior[2] = { { 2.11, 1.4, 0.81, Pi / 6, Pi / 12, Pi / 18 },
 										   { 0.03, 0.03, 0.03, Pi / 360, Pi / 360, Pi / 360 } }; // our prior belief
+	//particleFilter::cspace b_Xprior[2] = { { 0, 0, 0.81, 0, 0, 0 },
+	//									 { 0.001, 0.001, 0.001, Pi / 3600, Pi / 3600, Pi / 3600 } }; // our prior belief
 
 	particleFilter pfilter(numParticles, b_Xprior, Xstd_ob, Xstd_tran, Xstd_scatter, R);
 	distanceTransform *dist_transform = new distanceTransform(num_voxels);
 	//dist_transform->build(cube_para);
 
 	int N_Measure = 60; // total number of measurements
-	double M_std = 0.0001; // measurement error
+	double M_std = 0.000; // measurement error
 	double M[2][3]; // measurement
 	double tempM[3];
 	particleFilter::cspace particles_est;
@@ -444,7 +449,7 @@ int main()
 		else
 		{
 			M[1][0] = 0; M[1][1] = 0; M[1][2] = -1;
-			pstart[0] = distribution(generator) * 0.2 + 1.2 + dist(generator);
+			pstart[0] = distribution(generator) * 1 + 0.2 + dist(generator);
 			pstart[1] = distribution(generator) * 0.03 + 0.02 + dist(generator);
 			pstart[2] = 1;
 			if (getIntersection(mesh, pstart, M[1], M[0]) == 0)

@@ -1,13 +1,17 @@
 #include <ros/ros.h>
-#include "particleFilter6DOF.h"
+#include "particleFilter.h"
 #include <tf/transform_broadcaster.h>
 #include <geometry_msgs/PoseArray.h>
 #include "particle_filter/PFilterInit.h"
 #include "particle_filter/AddObservation.h"
+#include "stlParser.h"
 #include "gazebo_ray_trace/plotRayUtils.h"
 #include <math.h>
+#include <string>
+#include <array>
 
-#define NUM_PARTICLES 1000
+#define NUM_PARTICLES 500
+typedef array<array<float, 3>, 4> vec4x3;
 
 class PFilterTest
 {
@@ -17,11 +21,13 @@ private:
   ros::ServiceServer srv_add_obs;
   ros::Publisher pub_particles;
   
-  distanceTransform dist_transform;
+  distanceTransform *dist_transform;
   PlotRayUtils plt;
 
-  bool getCube(std::vector<double> &cube);
+  bool getMesh(std::string filename);
 public:
+  vector<vec4x3> mesh;
+  int num_voxels[3];
   geometry_msgs::PoseArray getParticlePoseArray();
   particleFilter pFilter_;
   PFilterTest(int n_particles, particleFilter::cspace b_init[2]);
@@ -69,7 +75,6 @@ void computeInitialDistribution(particleFilter::cspace binit[2], ros::NodeHandle
   // binit[1][4] = 0;
   // binit[1][5] = 0;
 
-
 }
 
 double SQ(double d)
@@ -103,16 +108,11 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
 			 particle_filter::AddObservation::Response &resp)
 {
   geometry_msgs::Point obs = req.p;
+  geometry_msgs::Point dir = req.dir; 
   ROS_INFO("Adding Observation...");
-  double obs2[3] = {obs.x, obs.y, obs.z};
+  double obs2[2][3] = {{obs.x, obs.y, obs.z}, {dir.x, dir.y, dir.z}};
 
-
-  
-  std::vector<double> cube;
-  getCube(cube);
-
-
-  pFilter_.addObservation(obs2, &cube[0], &dist_transform, 0);
+  pFilter_.addObservation(obs2, mesh, dist_transform, 0);
 
   ROS_INFO("...Done adding observation");
   pub_particles.publish(getParticlePoseArray());
@@ -120,29 +120,17 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
 }
 
 
-bool PFilterTest::getCube(std::vector<double> &cube){
+bool PFilterTest::getMesh(std::string filename){
   std::string localizationObject;
   if(!n.getParam("/localization_object", localizationObject)){
     ROS_INFO("Failed to get param");
   }
-  ROS_INFO("Getting Cube params...");
-  if(localizationObject == "box"){
-    ROS_INFO("Box detected");
-    cube = {.508, .508, .508};
+  std::string filepath = "/home/shiyuan/Documents/ros_marsarm/src/gazebo_ray_trace/sdf/" + filename;
+  if(localizationObject == "boeing_part") {
+    
+    mesh = importSTL(filepath); 
     return true;
   }
-  if(localizationObject == "real_plate"){
-    ROS_INFO("Real Plate detected");
-    cube = {.203, 0.114, .0025};
-    return true;
-  }
-  if(localizationObject == "real_box"){
-    ROS_INFO("Real Plate detected");
-    cube = {.152, .152, .610};
-    return true;
-  }
-  cube = {0,0,0};
-  ROS_INFO("INVALID OBJECT");
   throw std::invalid_argument("localization object not recognized by particle filter: "
 			      + localizationObject);
   return false;
@@ -172,8 +160,9 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
 }
 
 PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
-  pFilter_(n_particles, b_init, 0.0001, 0.0025, 0.0001, 0.001),
-  dist_transform(.1, 0.0005)
+  pFilter_(n_particles, b_init, 0.0001, 0.0035, 0.0001, 0.001),
+  num_voxels{200, 200, 200}//,
+  //dist_transform(num_voxels)
   // particleFilter (int n_particles,
   // 		  double Xstd_ob=0.0001, double Xstd_tran=0.0025,
   // 		  double Xstd_scatter=0.0001, double R=0.0005);
@@ -187,7 +176,11 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
   // sub_init = n.subscribe("/particle_filter_init", 1, &PFilterTest::initDistribution, this);
   srv_add_obs = n.advertiseService("/particle_filter_add", &PFilterTest::addObs, this);
   pub_particles = n.advertise<geometry_msgs::PoseArray>("/particles_from_filter", 5);
-
+  ROS_INFO("Testing Boeing");
+  getMesh("boeing_part.stl");
+  //int num_voxels[3] = { 200,200,200 };
+  //dist_transform(num_voxels);
+  dist_transform = new distanceTransform(num_voxels);
 
 }
 
@@ -199,10 +192,10 @@ int main(int argc, char **argv)
 
   ROS_INFO("Testing particle filter");
   
-  particleFilter::cspace b_Xprior[2];
+  particleFilter::cspace b_Xprior[2];	
   computeInitialDistribution(b_Xprior, n);
   PFilterTest pFilterTest(NUM_PARTICLES, b_Xprior);
-
+  
   ros::spin();
 
 }

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
-# set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
-add_definitions(-std=c++11)
+# set(CMAKE_CXX_FLAGS "-std=c++0x -O3 ${CMAKE_CXX_FLAGS}")
+add_definitions(-std=c++11 -O3)
 project(particle_filter)
 
 ## Find catkin macros and libraries
@@ -131,12 +131,36 @@ include_directories(
 ## either from message generation or dynamic reconfigure
 # add_dependencies(particle_filter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-add_library(pfilter3D src/particleFilter3DOF.cpp)
-target_link_libraries(pfilter3D
+#add_library(pfilter3D src/particleFilter3DOF.cpp)
+#target_link_libraries(pfilter3D
+#  ${catkin_LIBRARIES})
+
+#add_library(pfilter6D src/particleFilter6DOF.cpp)
+#target_link_libraries(pfilter6D
+#  ${catkin_LIBRARIES})
+
+add_library(pfilterBoeing src/particleFilter.cpp)
+target_link_libraries(pfilterBoeing
   ${catkin_LIBRARIES})
 
-add_library(pfilter6D src/particleFilter6DOF.cpp)
-target_link_libraries(pfilter6D
+add_library(Matrix src/matrix.cpp)
+target_link_libraries(Matrix
+  ${catkin_LIBRARIES})
+
+add_library(stlParser src/stlParser.cpp)
+target_link_libraries(stlParser
+  ${catkin_LIBRARIES})
+
+add_library(distanceTransformNew src/distanceTransformNew.cpp)
+target_link_libraries(distanceTransformNew
+  ${catkin_LIBRARIES})
+
+add_library(rayTri src/raytri.cpp)
+target_link_libraries(rayTri
+  ${catkin_LIBRARIES})
+
+add_library(triBox src/tribox.cpp)
+target_link_libraries(triBox
   ${catkin_LIBRARIES})
 
 ## Declare a C++ executable
@@ -145,19 +169,29 @@ target_link_libraries(first_node
   ${catkin_LIBRARIES})
 
 
-add_executable(pfilterTest src/particleFilterTest.cpp)
-target_link_libraries(pfilterTest
-  ${catkin_LIBRARIES}
-  pfilter3D
-)
+#add_executable(pfilterTest src/particleFilterTest.cpp)
+#target_link_libraries(pfilterTest
+#  ${catkin_LIBRARIES}
+#  pfilter3D
+#)
 
-add_executable(pfilter6DOFTest src/particleFilter6DOFTest.cpp)
-target_link_libraries(pfilter6DOFTest
-  ${catkin_LIBRARIES}
-  pfilter6D
-)
+#add_executable(pfilter6DOFTest src/particleFilter6DOFTest.cpp)
+#target_link_libraries(pfilter6DOFTest
+#  ${catkin_LIBRARIES}
+#  pfilter6D
+#)
   
 
+add_executable(pfilterBoeingTest src/particleFilterBoeingTest.cpp)
+target_link_libraries(pfilterBoeingTest
+  ${catkin_LIBRARIES}
+  pfilterBoeing
+  Matrix
+  stlParser
+  distanceTransformNew
+  rayTri
+  triBox
+)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above

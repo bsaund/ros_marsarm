@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="particle_filter" type="pfilterBoeingTest" name="particle_filter_test2" output="screen"/>
+</launch>

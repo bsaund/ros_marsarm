@@ -146,6 +146,10 @@ add_executable(cube_localization src/cubeLocalization.cpp)
 target_link_libraries(cube_localization
   ${catkin_LIBRARIES})
 
+add_executable(boeing_localization src/boeingLocalization.cpp)
+target_link_libraries(boeing_localization
+  ${catkin_LIBRARIES})
+
 add_executable(run_full src/fullSystem.cpp)
 target_link_libraries(run_full
   ${catkin_LIBRARIES})

@@ -1,3 +1,4 @@
 geometry_msgs/Point p
+geometry_msgs/Point dir
 ---
 bool success

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+# set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+add_definitions(-std=c++11)
 project(touch_optimization)
 
 ## Find catkin macros and libraries
@@ -143,6 +144,10 @@ target_link_libraries(particle_test
 
 add_executable(cube_localization src/cubeLocalization.cpp)
 target_link_libraries(cube_localization
+  ${catkin_LIBRARIES})
+
+add_executable(boeing_localization src/boeingLocalization.cpp)
+target_link_libraries(boeing_localization
   ${catkin_LIBRARIES})
 
 add_executable(run_full src/fullSystem.cpp)

@@ -103,7 +103,7 @@ int main(int argc, char **argv)
   // pub_init.publish(getInitialPoints(plt));
  
   geometry_msgs::Point obs;
- 
+  geometry_msgs::Point dir;
   for(int i=0; i<10; i++){
     ros::Duration(1).sleep();
     // tf::Point start(1,1.4,.5);
@@ -115,9 +115,14 @@ int main(int argc, char **argv)
       ROS_INFO("NO INTERSECTION, Skipping");
       continue;
     }
+    tf::Point ray_dir(end.x()-start.x(),end.y()-start.y(),end.z()-start.z());
+    ray_dir = ray_dir.normalize();
     obs.x=intersection.getX() + randn(gen); 
     obs.y=intersection.getY() + randn(gen); 
     obs.z=intersection.getZ() + randn(gen);
+    dir.x=ray_dir.x();
+    dir.y=ray_dir.y();
+    dir.z=ray_dir.z();
     // obs.x=intersection.getX(); 
     // obs.y=intersection.getY(); 
     // obs.z=intersection.getZ();
@@ -129,6 +134,7 @@ int main(int argc, char **argv)
 
     particle_filter::AddObservation pfilter_obs;
     pfilter_obs.request.p = obs;
+    pfilter_obs.request.dir = dir;
     if(!srv_add.call(pfilter_obs)){
       ROS_INFO("Failed to call add observation");
     }

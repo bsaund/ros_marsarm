@@ -56,29 +56,35 @@ void generateRandomTouchWith(tf::Pose &probePose, double tbX, double tbY, double
 }
 
     // [0.6, 0.6, -0.1, 0, 0, 0]
-void generateRandomTouchTop(std::mt19937, tf::Pose &probePose)
+void generateRandomTouchTop(std::mt19937 &gen, tf::Pose &probePose)
 {
   std::uniform_real_distribution<double> rand(-1.0,1.0);
+  double x_width = 0.05*rand(gen);
+  double y_width = 0.05*rand(gen);
   generateRandomTouchWith(probePose, 
-			  .53, .4, 1.0, M_PI, 0, 0, 
+			  .53 + x_width, .4 + y_width, .687, M_PI, 0, 0, 
 			  0,0,0,
 			  0,0,0);
 }
 
-void generateRandomTouchFront(std::mt19937, tf::Pose &probePose)
+void generateRandomTouchFront(std::mt19937 &gen, tf::Pose &probePose)
 {
   std::uniform_real_distribution<double> rand(-1.0,1.0);
+  double y_width = 0.05*rand(gen);
+  double z_width = 0.05*rand(gen);
   generateRandomTouchWith(probePose, 
-  			  .24, .4, .66, -1*M_PI/2, 0, -1*M_PI/2,
+  			  .45, .4 + y_width, .56 + z_width, -1*M_PI/2, 0, -1*M_PI/2,
   			  0,0,0,
   			  0,0,0);
 }
 
-void generateRandomTouchSide(std::mt19937, tf::Pose &probePose)
+void generateRandomTouchSide(std::mt19937 &gen, tf::Pose &probePose)
 {
   std::uniform_real_distribution<double> rand(-1.0,1.0);
+  double x_width = 0.05*rand(gen);
+  double z_width = 0.05*rand(gen);
   generateRandomTouchWith(probePose, 
-			  .55, .09, .66, M_PI/2, 0, M_PI, 
+			  .55 + x_width, .3, .56 + z_width, -M_PI/2, -M_PI, 0, 
 			  0,0,0,
 			  0,0,0);
 
@@ -86,12 +92,17 @@ void generateRandomTouchSide(std::mt19937, tf::Pose &probePose)
 
 
 
-void generateRandomRay(std::mt19937 gen, tf::Pose &probePose, tf::Point &start, tf::Point &end)
+void generateRandomRay(std::mt19937 &gen, tf::Pose &probePose, tf::Point &start, tf::Point &end)
 {
-
-  // generateRandomTouchTop(gen, probePose);
-  // generateRandomTouchSide(gen, probePose);
-  generateRandomTouchFront(gen, probePose);
+  std::uniform_real_distribution<double> rand(0.0, 3.0);
+  double faceNum = rand(gen);
+  if(faceNum < 1.0)
+    generateRandomTouchTop(gen, probePose);
+  else if(faceNum < 2.0)
+    generateRandomTouchFront(gen, probePose);
+  else
+    generateRandomTouchSide(gen, probePose);
+  
   
   tf::Transform probeZ;
   probeZ.setRotation(tf::createQuaternionFromRPY(0,0,0));
@@ -138,8 +149,9 @@ void randomSelection(PlotRayUtils &plt, tf::Pose &probePose)
       probePose = probePoseTmp;
     }
   }
-
-  plt.plotCylinder(best_start, best_end, 0.01, 0.002, true);
+  plt.plotRay(best_start, best_end);
+  plt.plotIntersections(best_start, best_end);
+  // plt.plotCylinder(best_start, best_end, 0.01, 0.002, true);
   ROS_INFO("Ray is: %f, %f, %f.  %f, %f, %f", 
   	   best_start.getX(), best_start.getY(), best_start.getZ(),
   	   best_end.getX(), best_end.getY(), best_end.getZ());
@@ -222,7 +234,7 @@ int main(int argc, char **argv)
     randomSelection(plt, probePose);
     tf::poseTFToMsg(probePose, probe_msg);
     probe_pub.publish(probe_msg);
-    ros::Duration(30.0).sleep();
+    ros::Duration(70.0).sleep();
   }
 
 

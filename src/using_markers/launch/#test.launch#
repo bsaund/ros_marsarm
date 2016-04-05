@@ -1,0 +1,8 @@
+<launch>
+  <!-- Test launch file for launching plotting and rviz -->
+
+  <node pkg="rviz" type="rviz" name="SpinnyViz" 
+	args="-d /home/bsaund/Documents/Work/ROS/RVizTutorial/src/using_markers/src/rviz_config.rviz"/>
+  <node pkg="using_markers" type="plotShape" name="plotter"/>
+
+</launch>

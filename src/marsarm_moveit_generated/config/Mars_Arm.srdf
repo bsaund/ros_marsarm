@@ -1,0 +1,77 @@
+<?xml version="1.0" ?>
+<!--This does not replace URDF, and is not an extension of URDF.
+    This is a format for representing semantic information about the robot structure.
+    A URDF file must exist for this robot as well, where the joints and the links that are referenced are defined
+-->
+<robot name="Mars_Arm">
+    <!--GROUPS: Representation of a set of joints and links. This can be useful for specifying DOF to plan for, defining arms, end effectors, etc-->
+    <!--LINKS: When a link is specified, the parent joint of that link (if it exists) is automatically included-->
+    <!--JOINTS: When a joint is specified, the child link of that joint (which will always exist) is automatically included-->
+    <!--CHAINS: When a chain is specified, all the links along the chain (including endpoints) are included in the group. Additionally, all the joints that are parents to included links are also included. This means that joints along the chain and the parent joint of the base link are included in the group-->
+    <!--SUBGROUPS: Groups can also be formed by referencing to already defined group names-->
+    <group name="arm">
+        <joint name="base_plate_to_base" />
+        <joint name="base_to_shoulder" />
+        <joint name="shoulder_to_main_arm" />
+        <joint name="main_arm_to_elbow" />
+        <joint name="elbow_to_forearm" />
+        <joint name="forearm_to_wrist" />
+        <joint name="wrist_to_hand" />
+        <joint name="hand_to_probe" />
+        <joint name="probe_to_probe_tip" />
+    </group>
+    <group name="probe">
+        <link name="probe_body" />
+        <link name="probe_tip" />
+    </group>
+    <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
+    <end_effector name="probe" parent_link="hand" group="probe" />
+    <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
+    <virtual_joint name="virtual_joint" type="fixed" parent_frame="world_frame" child_link="base_plate" />
+    <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
+    <disable_collisions link1="base" link2="base_plate" reason="Adjacent" />
+    <disable_collisions link1="base" link2="elbow" reason="Never" />
+    <disable_collisions link1="base" link2="forearm" reason="Never" />
+    <disable_collisions link1="base" link2="hand" reason="Never" />
+    <disable_collisions link1="base" link2="probe_body" reason="Never" />
+    <disable_collisions link1="base" link2="probe_tip" reason="Never" />
+    <disable_collisions link1="base" link2="shoulder" reason="Adjacent" />
+    <disable_collisions link1="base" link2="wrist" reason="Never" />
+    <disable_collisions link1="base" link2="main_arm" reason="Never" />
+    <disable_collisions link1="base_plate" link2="elbow" reason="Never" />
+    <disable_collisions link1="base_plate" link2="forearm" reason="Never" />
+    <disable_collisions link1="base_plate" link2="hand" reason="Never" />
+    <disable_collisions link1="base_plate" link2="main_arm" reason="Never" />
+    <disable_collisions link1="base_plate" link2="probe_body" reason="Never" />
+    <disable_collisions link1="base_plate" link2="probe_tip" reason="Never" />
+    <disable_collisions link1="base_plate" link2="shoulder" reason="Never" />
+    <disable_collisions link1="base_plate" link2="wrist" reason="Never" />
+    <disable_collisions link1="elbow" link2="forearm" reason="Adjacent" />
+    <disable_collisions link1="elbow" link2="hand" reason="Never" />
+    <disable_collisions link1="elbow" link2="main_arm" reason="Adjacent" />
+    <disable_collisions link1="elbow" link2="probe_body" reason="Never" />
+    <disable_collisions link1="elbow" link2="probe_tip" reason="Never" />
+    <disable_collisions link1="elbow" link2="shoulder" reason="Never" />
+    <disable_collisions link1="elbow" link2="wrist" reason="Never" />
+    <disable_collisions link1="forearm" link2="probe_body" reason="Never" />
+    <disable_collisions link1="forearm" link2="probe_tip" reason="Never" />
+    <disable_collisions link1="forearm" link2="shoulder" reason="Never" />
+    <disable_collisions link1="forearm" link2="wrist" reason="Adjacent" />
+    <disable_collisions link1="forearm" link2="hand" reason="Never" />
+    <disable_collisions link1="hand" link2="main_arm" reason="Never" />
+    <disable_collisions link1="hand" link2="probe_body" reason="Adjacent" />
+    <disable_collisions link1="hand" link2="probe_tip" reason="Never" />
+    <disable_collisions link1="hand" link2="shoulder" reason="Never" />
+    <disable_collisions link1="hand" link2="wrist" reason="Adjacent" />
+    <disable_collisions link1="main_arm" link2="probe_body" reason="Never" />
+    <disable_collisions link1="main_arm" link2="probe_tip" reason="Never" />
+    <disable_collisions link1="main_arm" link2="shoulder" reason="Adjacent" />
+    <disable_collisions link1="main_arm" link2="wrist" reason="Never" />
+    <disable_collisions link1="main_arm" link2="forearm" reason="Never" />
+    <disable_collisions link1="probe_body" link2="probe_tip" reason="Adjacent" />
+    <disable_collisions link1="probe_body" link2="shoulder" reason="Never" />
+    <disable_collisions link1="probe_body" link2="wrist" reason="Never" />
+    <disable_collisions link1="probe_tip" link2="shoulder" reason="Never" />
+    <disable_collisions link1="probe_tip" link2="wrist" reason="Never" />
+    <disable_collisions link1="shoulder" link2="wrist" reason="Never" />
+</robot>

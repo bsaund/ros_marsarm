@@ -1,0 +1,8 @@
+<launch>
+  <!-- Test launch file for launching plotting and rviz -->
+
+  <node pkg="rviz" type="rviz" name="SpinnyViz" 
+	args="-d $(find using_markers)/src/rviz_config.rviz" required="true"/>
+  <node pkg="using_markers" type="plotParticles" name="particlePlotter"/>
+
+</launch>

@@ -47,7 +47,7 @@ particleFilter::particleFilter(int n_particles, cspace b_init[2],
 	Xstd_scatter(Xstd_scatter), R(R), firstObs(true)
 {
 	memcpy(b_Xprior, b_init, 2 * sizeof(cspace));
-	memcpy(b_Xpre, b_Xprior, 2 * sizeof(cspace));
+	//memcpy(b_Xpre, b_Xprior, 2 * sizeof(cspace));
 
 	particles = new cspace[numParticles];
 	bzero(particles, numParticles*sizeof(cspace));
@@ -57,7 +57,7 @@ particleFilter::particleFilter(int n_particles, cspace b_init[2],
 	createParticles(particles0, b_Xprior, numParticles);
 
 	particles_1 = new cspace[numParticles];
-	W = new double[numParticles];
+	//W = new double[numParticles];
 }
 void particleFilter::getAllParticles(cspace *particles_dest)
 {
@@ -81,17 +81,17 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 	normal_distribution<double> dist2(0, Xstd_scatter);
 
 	if (!firstObs) {
-		bzero(b_Xpre, 2 * sizeof(cspace));
+		//bzero(b_Xpre, 2 * sizeof(cspace));
 		for (int k = 0; k < cdim; k++) {
 			for (int j = 0; j < numParticles; j++) {
 				particles0[j][k] += dist2(generator);
-				b_Xpre[0][k] += particles0[j][k];
+				//b_Xpre[0][k] += particles0[j][k];
 			}
-			b_Xpre[0][k] /= numParticles;
+			/*b_Xpre[0][k] /= numParticles;
 			for (int j = 0; j < numParticles; j++) {
 				b_Xpre[1][k] += SQ(particles0[j][k] - b_Xpre[0][k]);
 			}
-			b_Xpre[1][k] = sqrt(b_Xpre[1][k] / numParticles);
+			b_Xpre[1][k] = sqrt(b_Xpre[1][k] / numParticles);*/
 		}
 	}
 	bool iffar = updateParticles(particles_1, particles0, particles, obs, mesh, idx_obs, dist_transform, numParticles, R, Xstd_ob, Xstd_tran);
@@ -101,10 +101,10 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 		memcpy(particles0, particles, numParticles*sizeof(cspace));
 		memcpy(particles_1, particles, numParticles*sizeof(cspace));
 	}
-	else if (iffar == true)
+	/*else if (iffar == true)
 	{
 		memcpy(particles0, particles_1, numParticles*sizeof(cspace));
-	}
+	}*/
 	//calcWeight(W, numParticles, Xstd_tran, particles0, particles);
 	memcpy(particles_1, particles0, numParticles*sizeof(cspace));
 	//resampleParticles(particles0, particles, W, numParticles);
@@ -126,7 +126,7 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 	}
 	particles_est_stat[1] = sqrt(particles_est_stat[1] / numParticles);
 
-	if (particles_est_stat[1] < 0.005 && (abs(particles_est[0] - b_Xpre[0][0])>0.001 ||
+	/*if (particles_est_stat[1] < 0.005 && (abs(particles_est[0] - b_Xpre[0][0])>0.001 ||
 		abs(particles_est[1] - b_Xpre[0][1])>0.001 ||
 		abs(particles_est[2] - b_Xpre[0][2])>0.001 ||
 		abs(particles_est[3] - b_Xpre[0][3])>0.001 ||
@@ -134,7 +134,7 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 		abs(particles_est[5] - b_Xpre[0][5]) > 0.001))
 		Xstd_scatter = 0.01;
 	else
-		Xstd_scatter = 0.0001;
+		Xstd_scatter = 0.0001;*/
 }
 
 /*
@@ -144,7 +144,7 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
  *        n_partcles: number of particles
  * output: none
  */
-void particleFilter::createParticles(cspace *particles, cspace b_Xprior[2],
+void particleFilter::createParticles(cspace *particles_dest, cspace b_Xprior[2],
 	int n_particles)
 {
 	random_device rd;
@@ -155,7 +155,7 @@ void particleFilter::createParticles(cspace *particles, cspace b_Xprior[2],
 	{
 		for (int j = 0; j < cdim; j++)
 		{
-			particles[i][j] = b_Xprior[0][j] + b_Xprior[1][j] * (dist(e2));
+			particles_dest[i][j] = b_Xprior[0][j] + b_Xprior[1][j] * (dist(e2));
 		}
 	}
 };

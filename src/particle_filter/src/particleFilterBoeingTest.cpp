@@ -147,7 +147,7 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   tf::Transform trans = plt.getTrans();
 
   geometry_msgs::PoseArray poseArray;
-  for(int i=0; i<50; i++){
+  for(int i=0; i<500; i++){
     tf::Pose pose = poseAt(particles[i]);
     geometry_msgs::Pose pose_msg;
     tf::poseTFToMsg(trans*pose, pose_msg);
@@ -160,7 +160,7 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
 }
 
 PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
-  pFilter_(n_particles, b_init, 0.0001, 0.0035, 0.0001, 0.001),
+  pFilter_(n_particles, b_init, 0.002, 0.0035, 0.0001, 0.001),
   num_voxels{200, 200, 200}//,
   //dist_transform(num_voxels)
   // particleFilter (int n_particles,

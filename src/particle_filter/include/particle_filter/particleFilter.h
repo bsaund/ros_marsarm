@@ -37,13 +37,13 @@ class particleFilter
 
   // internal variables
   cspace b_Xprior[2]; // Initial distribution (mean and variance)
-  cspace b_Xpre[2];   // Previous (estimated) distribution (mean and variance)
+  //cspace b_Xpre[2];   // Previous (estimated) distribution (mean and variance)
   cspace *particles;  // Current set of particles
   cspace *particles0; // Previous set of particles
   cspace *particles_1; // Previous previous set of particles
   cspace particles_est; // Estimated distribution
   double particles_est_stat[2];
-  double *W;
+  //double *W;
 
   // Local functions
   void createParticles(cspace *particles, cspace b_Xprior[2], int n_particles);

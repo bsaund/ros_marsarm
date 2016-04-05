@@ -106,10 +106,11 @@ int main(int argc, char **argv)
   geometry_msgs::Point dir;
   for(int i=0; i<10; i++){
     ros::Duration(1).sleep();
-    // tf::Point start(1,1.4,.5);
-    // tf::Point end(-1,-.6,.5);
+    //tf::Point start(0.95,0,-0.15);
+    //tf::Point end(0.95,2,-0.15);
     tf::Point start, end;
     randomSelection(plt, start, end);
+
     tf::Point intersection;
     if(!getIntersection(plt, start, end, intersection)){
       ROS_INFO("NO INTERSECTION, Skipping");

@@ -189,7 +189,7 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   particleFilter::cspace particles_est;
   pFilter_.estimatedDistribution(particles_est, particles_est_stat);
   geometry_msgs::PoseArray poseArray;
-  for(int i=0; i<50; i++){
+  for(int i=0; i<500; i++){
     tf::Pose pose = poseAt(particles[i]);
     geometry_msgs::Pose pose_msg;
     tf::poseTFToMsg(trans*pose, pose_msg);

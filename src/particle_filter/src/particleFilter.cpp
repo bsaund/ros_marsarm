@@ -216,6 +216,32 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 }
 
 /*
+<<<<<<< HEAD
+=======
+ * Create initial particles at start
+ * Input: particles
+ *        b_Xprior: prior belief
+ *        n_partcles: number of particles
+ * output: none
+ */
+void particleFilter::createParticles(cspace *particles_dest, cspace b_Xprior[2],
+	int n_particles)
+{
+	random_device rd;
+	mt19937 e2(rd());
+	normal_distribution<double> dist(0, 1);
+	int cdim = sizeof(cspace) / sizeof(double);
+	for (int i = 0; i < n_particles; i++)
+	{
+		for (int j = 0; j < cdim; j++)
+		{
+			particles_dest[i][j] = b_Xprior[0][j] + b_Xprior[1][j] * (dist(e2));
+		}
+	}
+};
+
+/*
+>>>>>>> Increase transform size, change to plot 500 particles
  * Update particles (Build distance transform and sampling)
  * Input: particles_1: estimated particles before previous ones (not used here)
  *        particles0: previous estimated particles

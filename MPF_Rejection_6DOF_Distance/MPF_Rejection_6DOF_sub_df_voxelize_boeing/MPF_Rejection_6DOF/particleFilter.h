@@ -2,6 +2,7 @@
 #define PARTICLE_FILTER_H
 #include <vector>
 #include <array>
+#include <cstring>
 #include "distanceTransform.h"
 using namespace std;
 typedef array<array<float, 3>, 4> vec4x3;
@@ -52,8 +53,10 @@ class particleFilter
 		//   cspace *particles0, cspace *particles);
   //void resampleParticles(cspace *particles0, cspace *particles, double *W, int n_particles);
 };
+void Transform(double measure[2][3], particleFilter::cspace src, double dest[2][3]);
 void inverseTransform(double measure[3], particleFilter::cspace src, double dest[3]);
+void inverseTransform(double measure[2][3], particleFilter::cspace src, double dest[2][3]);
 int checkInObject(vector<vec4x3> &mesh, double voxel_center[3]);
 int getIntersection(vector<vec4x3> &mesh, double pstart[3], double dir[3], double intersection[3]);
-double testResult(vector<vec4x3> &mesh, double config[6], double touch[3], double dir[3], double R);
+double testResult(vector<vec4x3> &mesh, double config[6], double touch[2][3], double R);
 #endif // PARTICLE_FILTER_H

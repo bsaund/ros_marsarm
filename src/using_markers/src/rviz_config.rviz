@@ -79,7 +79,8 @@ Visualization Manager:
       Marker Topic: ray_trace_markers
       Name: Marker
       Namespaces:
-        {}
+        ray: true
+        ray_intersection: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -106,22 +107,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.67236
+      Distance: 0.882558
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.870211
-        Y: 0.453697
-        Z: 1.11819
+        X: 0.121323
+        Y: 0.169808
+        Z: 0.0119602
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.215398
+      Pitch: 0.200398
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.06537
+      Yaw: 4.03038
     Saved: ~
 Window Geometry:
   Displays:

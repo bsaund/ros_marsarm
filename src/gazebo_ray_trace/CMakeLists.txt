@@ -66,6 +66,7 @@ target_link_libraries(plot_ray_utils
   ${catkin_LIBRARIES}
   calc_entropy
 )
+add_dependencies(plot_ray_utils gazebo_ray_trace_gencpp)
 
 add_library(ray_tracer src/rayTracePluginUtils.cpp)
 target_link_libraries(ray_tracer
@@ -75,6 +76,8 @@ target_link_libraries(ray_tracer
   ${SDF_LIBRARIES}
   calc_entropy
 )
+add_dependencies(ray_tracer gazebo_ray_trace_gencpp)
+# add_dependencies(ray_tracer gazebo_ray_tracer_generate_messages_cpp)
 
 add_library(touch_optimizer src/touchOptimizationUtils.cpp)
 target_link_libraries(touch_optimizer
@@ -104,6 +107,8 @@ target_link_libraries(gazebo_rayTrace_grid
   calc_entropy
   plot_ray_utils
 )
+
+
 
 add_dependencies(gazebo_rayTrace_test gazebo_ray_trace_gencpp)
 add_dependencies(gazebo_rayTrace_plot gazebo_ray_trace_gencpp)

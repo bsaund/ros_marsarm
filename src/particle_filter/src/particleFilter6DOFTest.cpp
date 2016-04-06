@@ -116,7 +116,7 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
 
   ROS_INFO("...Done adding observation");
   pub_particles.publish(getParticlePoseArray());
-
+  return true;
 }
 
 

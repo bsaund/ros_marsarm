@@ -5,7 +5,7 @@
 #include <chrono>
 
 #include "particleFilter6DOF.h"
-#include "matrix.h"
+#include "matrix6DOF.h"
 using namespace std;
 
 # define Pi          3.141592653589793238462643383279502884L

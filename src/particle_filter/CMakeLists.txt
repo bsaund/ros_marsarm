@@ -139,9 +139,9 @@ add_definitions(${PCL_DEFINITIONS})
 #target_link_libraries(pfilter3D
 #  ${catkin_LIBRARIES})
 
-#add_library(pfilter6D src/particleFilter6DOF.cpp)
-#target_link_libraries(pfilter6D
-#  ${catkin_LIBRARIES})
+add_library(pfilter6D src/particleFilter6DOF.cpp)
+target_link_libraries(pfilter6D
+ ${catkin_LIBRARIES})
 
 add_library(pfilterBoeing src/particleFilter.cpp)
 target_link_libraries(pfilterBoeing
@@ -169,9 +169,9 @@ target_link_libraries(triBox
   ${catkin_LIBRARIES})
 
 ## Declare a C++ executable
-add_executable(first_node src/BradDemo.cpp)
-target_link_libraries(first_node
-  ${catkin_LIBRARIES})
+# add_executable(first_node src/BradDemo.cpp)
+# target_link_libraries(first_node
+#   ${catkin_LIBRARIES})
 
 
 #add_executable(pfilterTest src/particleFilterTest.cpp)
@@ -180,11 +180,11 @@ target_link_libraries(first_node
 #  pfilter3D
 #)
 
-#add_executable(pfilter6DOFTest src/particleFilter6DOFTest.cpp)
-#target_link_libraries(pfilter6DOFTest
-#  ${catkin_LIBRARIES}
-#  pfilter6D
-#)
+add_executable(pfilter6DOFTest src/particleFilter6DOFTest.cpp)
+target_link_libraries(pfilter6DOFTest
+ ${catkin_LIBRARIES}
+ pfilter6D
+)
   
 
 add_executable(pfilterBoeingTest src/particleFilterBoeingTest.cpp)

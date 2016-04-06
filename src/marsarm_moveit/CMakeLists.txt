@@ -121,7 +121,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
-
+include_directories(include/${PROJECT_NAME})
 include_directories(SYSTEM ${Boost_INCLUDE_DIR} ${EIGEN_INCLUDE_DIRS})
 include_directories(${catkin_INCLUDE_DIRS})
 link_directories(${catkin_LIBRARY_DIRS})
@@ -140,6 +140,7 @@ link_directories(${catkin_LIBRARY_DIRS})
 ## Declare a C++ executable
 add_executable(marsarm_basic_moveit src/marsarm_basic_moveit.cpp)
 target_link_libraries(marsarm_basic_moveit ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+add_dependencies(marsarm_basic_moveit marsarm_moveit_gencpp)
 
 add_executable(joint_testing_client src/joint_testing_client.cpp)
 target_link_libraries(joint_testing_client ${catkin_LIBRARIES})

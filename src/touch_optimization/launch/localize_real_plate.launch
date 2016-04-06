@@ -13,19 +13,20 @@
 
   
   <rosparam param="initial_uncertainties">
-    [.03, .03, .03, 0.2, 0.2, 0.2]
+    [.01, .01, .01, 0.2, 0.2, 0.2]
     <!-- [.1, .1, .1, 0.2, 0.2, 0.2] -->
     <!-- [.05, .05, .05, 0,0,0] -->
   </rosparam>
 
   <rosparam param="particle_frame">
     <!-- [0.45, 0.31, 1.19, 0, 1.57, 0.7] -->
-    [0.62, 0.48, 1.19, 0, 1.57, 0.7]
+    <!-- [0.62, 0.48, 1.19, 0, 1.57, 0.7] -->
+    [0, 0, 0, 0, 0, 0]
     <!-- [0.49, 0.35, 1.19, 0, 1.57, 0.7] -->
   </rosparam>
 
 
-  <node pkg="ipc_ros_bridge" type="ipc_ros_bridge_test" name="ipc_ros_bridge" output="screen"/>
+  <!-- <node pkg="ipc_ros_bridge" type="ipc_ros_bridge_test" name="ipc_ros_bridge" output="screen"/> -->
 
 <!-- Temporary file used to generate particles and send images to RViz -->
   <include file="$(find using_markers)/launch/particles.launch"/>

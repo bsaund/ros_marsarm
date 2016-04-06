@@ -25,7 +25,7 @@ void generateRandomRay(std::mt19937 &gen, tf::Pose &probePose, tf::Point &start,
   touchBase.setRotation(tf::createQuaternionFromRPY(0, 0, 0));
 
   tf::Pose offset;
-  offset.setOrigin(tf::Vector3(rand(gen)*.1, rand(gen)*.2, 0));
+  offset.setOrigin(tf::Vector3(-.25 + rand(gen)*.05, rand(gen)*.05, 0.05));
 
   offset.setRotation(tf::createQuaternionFromRPY(0,0,0));
 
@@ -118,7 +118,7 @@ int main(int argc, char **argv)
     randomSelection(plt, probePose);
     tf::poseTFToMsg(probePose, probe_msg);
     probe_pub.publish(probe_msg);
-    ros::Duration(5.0).sleep();
+    ros::Duration(10.0).sleep();
   }
 
 

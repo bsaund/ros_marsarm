@@ -186,7 +186,7 @@ visualization_msgs::Marker PlotRayUtils::createRayMarker(tf::Point start, tf::Po
   tf::pointTFToMsg(end, marker.points[1]);
  
   marker.scale.x = 0.005;
-  marker.scale.y = 0.1;
+  marker.scale.y = 0.04; //Head Width
   // marker.scale.z = 1.0;
  
   // Set the color -- be sure to set alpha to something non-zero!

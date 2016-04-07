@@ -48,7 +48,7 @@ void randomSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_e
   double bestIG;
   bestIG = 0;
   std::random_device rd;
-  std::uniform_real_distribution<double> rand(-1.0,1.0);
+  std::uniform_real_distribution<double> rand(-2.0,2.0);
 
 
   for(int i=0; i<500; i++){
@@ -74,7 +74,7 @@ void randomSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_e
 
 bool getIntersection(PlotRayUtils &plt, tf::Point start, tf::Point end, tf::Point &intersection){
   bool intersectionExists = plt.getIntersectionWithPart(start, end, intersection);
-  double radius = 0.001;
+  double radius = 0.000;
   intersection = intersection - (end-start).normalize() * radius;
   return intersectionExists;
 }

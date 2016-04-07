@@ -33,7 +33,7 @@ class ShapePlotter
   geometry_msgs::PoseArray particles_;
   
 
-  int numParticles = 500;
+  int numParticles = 50;
 
   void externalParticleUpdate(geometry_msgs::PoseArray p);
 

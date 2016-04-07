@@ -228,14 +228,13 @@ void particleFilter::createParticles(cspace *particles_dest, cspace b_Xprior[2],
 	int n_particles)
 {
 	random_device rd;
-	mt19937 e2(rd());
 	normal_distribution<double> dist(0, 1);
 	int cdim = sizeof(cspace) / sizeof(double);
 	for (int i = 0; i < n_particles; i++)
 	{
 		for (int j = 0; j < cdim; j++)
 		{
-			particles_dest[i][j] = b_Xprior[0][j] + b_Xprior[1][j] * (dist(e2));
+			particles_dest[i][j] = b_Xprior[0][j] + b_Xprior[1][j] * (dist(rd));
 		}
 	}
 };

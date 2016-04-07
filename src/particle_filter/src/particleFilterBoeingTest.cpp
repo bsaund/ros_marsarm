@@ -21,6 +21,10 @@
 //#define POINT_CLOUD
 #define NUM_PARTICLES 500
 typedef array<array<float, 3>, 4> vec4x3;
+pcl::PointCloud<pcl::PointXYZ>::Ptr basic_cloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
+bool update;
+boost::mutex updateModelMutex;
+void visualize();
 
 #ifdef POINT_CLOUD
 pcl::PointCloud<pcl::PointXYZ>::Ptr basic_cloud_ptr1(new pcl::PointCloud<pcl::PointXYZ>);
@@ -317,5 +321,4 @@ int main(int argc, char **argv)
   workerThread.interrupt();
   workerThread.join();
   #endif
-
 }

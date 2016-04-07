@@ -17,7 +17,7 @@
   </rosparam>
 
   <rosparam param="particle_frame">
-    [0.3, 0.3, 0.3, 0.5, 0.7, 0.5]
+    [0.03, 0.03, 0.03, 0.5, 0.7, 0.5]
   </rosparam>
 
 <!-- Temporary file used to generate particles and send images to RViz -->

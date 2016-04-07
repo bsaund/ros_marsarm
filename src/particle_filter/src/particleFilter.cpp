@@ -27,6 +27,7 @@ using namespace std;
 typedef array<array<float, 3>, 4> vec4x3;
 typedef unordered_map<string, string> hashmap;
 #define epsilon 0.0001
+#define ARM_LENGTH 0.3
 
 //vector<vec4x3> importSTL(string filename);
 

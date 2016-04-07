@@ -13,6 +13,8 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   message_generation
 )
+find_package(PCL 1.2 REQUIRED)
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -120,7 +122,9 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   include/${PROJECT_NAME}
 )
-
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 ## Declare a C++ library
 # add_library(particle_filter
 #   src/${PROJECT_NAME}/particle_filter.cpp
@@ -141,7 +145,8 @@ include_directories(
 
 add_library(pfilterBoeing src/particleFilter.cpp)
 target_link_libraries(pfilterBoeing
-  ${catkin_LIBRARIES})
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES})
 
 add_library(Matrix src/matrix.cpp)
 target_link_libraries(Matrix
@@ -191,6 +196,7 @@ target_link_libraries(pfilterBoeingTest
   distanceTransformNew
   rayTri
   triBox
+  ${PCL_LIBRARIES}
 )
 
 ## Add cmake target dependencies of the executable

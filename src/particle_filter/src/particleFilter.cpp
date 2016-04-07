@@ -63,7 +63,7 @@ void particleFilter::getAllParticles(cspace *particles_dest)
 {
   for(int i=0; i<numParticles; i++){
     for(int j=0; j<cdim; j++){
-      particles_dest[i][j] = particles[i][j];
+      particles_dest[i][j] = particles0[i][j];
     }
   }
 }
@@ -148,14 +148,13 @@ void particleFilter::createParticles(cspace *particles_dest, cspace b_Xprior[2],
 	int n_particles)
 {
 	random_device rd;
-	mt19937 e2(rd());
 	normal_distribution<double> dist(0, 1);
 	int cdim = sizeof(cspace) / sizeof(double);
 	for (int i = 0; i < n_particles; i++)
 	{
 		for (int j = 0; j < cdim; j++)
 		{
-			particles_dest[i][j] = b_Xprior[0][j] + b_Xprior[1][j] * (dist(e2));
+			particles_dest[i][j] = b_Xprior[0][j] + b_Xprior[1][j] * (dist(rd));
 		}
 	}
 };
@@ -179,7 +178,6 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 		double R, double Xstd_ob, double Xstd_tran)
 {
 	random_device rd;
-	mt19937 e2(rd());
 	normal_distribution<double> dist(0, 1);
 	uniform_real_distribution<double> distribution(0, n_particles);
 	int cdim = sizeof(cspace) / sizeof(double);
@@ -203,7 +201,7 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 	double mean_inv_M[3];
 	for (int t = 0; t < num_Mean; t++) {
 		measure_workspace[t] = new double[3];
-		int index = int(floor(distribution(e2)));
+		int index = int(floor(distribution(rd)));
 		//memcpy(sampleConfig[t], b_X[index], sizeof(cspace));
 		for (int m = 0; m < cdim; m++) {
 			meanConfig[m] += b_X[index][m] / num_Mean;
@@ -221,7 +219,7 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 	var_measure[1] /= num_Mean;
 	var_measure[2] /= num_Mean;
 	distTransSize = 4 * max3(sqrt(var_measure[0]), sqrt(var_measure[1]), sqrt(var_measure[2]));
-	distTransSize = 150 * 0.0005;
+	distTransSize = 150 * 0.001;
 	cout << "Touch Std: " << sqrt(var_measure[0]) << "  " << sqrt(var_measure[1]) << "  " << sqrt(var_measure[2]) << endl;
 	double world_range[3][2];
 	cout << "Current Inv_touch: " << mean_inv_M[0] << "    " << mean_inv_M[1] << "    " << mean_inv_M[2] << endl;
@@ -248,10 +246,10 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 		//	//count = 0;
 		//	i = 0;
 		//}
-		idx = int(floor(distribution(e2)));
+		idx = int(floor(distribution(rd)));
 		for (int j = 0; j < cdim; j++)
 		{
-			tempState[j] = b_X[idx][j] + Xstd_tran * dist(e2);
+			tempState[j] = b_X[idx][j] + Xstd_tran * dist(rd);
 		}
 		inverseTransform(cur_M, tempState, cur_inv_M);
 		touch_dir << cur_inv_M[1][0], cur_inv_M[1][1], cur_inv_M[1][2];

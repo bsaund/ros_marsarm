@@ -48,14 +48,13 @@ void randomSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_e
   double bestIG;
   bestIG = 0;
   std::random_device rd;
-  std::mt19937 gen(rd());
   std::uniform_real_distribution<double> rand(-1.0,1.0);
 
 
   for(int i=0; i<500; i++){
-    tf::Point start(rand(gen), rand(gen), rand(gen));
+    tf::Point start(rand(rd), rand(rd), rand(rd));
     start = start.normalize();
-    tf::Point end(rand(gen), rand(gen), rand(gen));
+    tf::Point end(rand(rd), rand(rd), rand(rd));
     end.normalized();
     double IG = plt.getIG(start, end, 0.01, 0.002);
     if (IG > bestIG){
@@ -87,7 +86,6 @@ int main(int argc, char **argv)
   PlotRayUtils plt;
 
   std::random_device rd;
-  std::mt19937 gen(rd());
   std::normal_distribution<double> randn(0.0,0.003);
 
   ROS_INFO("Running...");
@@ -104,7 +102,7 @@ int main(int argc, char **argv)
  
   geometry_msgs::Point obs;
   geometry_msgs::Point dir;
-  for(int i=0; i<10; i++){
+  for(int i=0; i<20; i++){
     ros::Duration(1).sleep();
     //tf::Point start(0.95,0,-0.15);
     //tf::Point end(0.95,2,-0.15);
@@ -118,9 +116,9 @@ int main(int argc, char **argv)
     }
     tf::Point ray_dir(end.x()-start.x(),end.y()-start.y(),end.z()-start.z());
     ray_dir = ray_dir.normalize();
-    obs.x=intersection.getX() + randn(gen); 
-    obs.y=intersection.getY() + randn(gen); 
-    obs.z=intersection.getZ() + randn(gen);
+    obs.x=intersection.getX() + randn(rd); 
+    obs.y=intersection.getY() + randn(rd); 
+    obs.z=intersection.getZ() + randn(rd);
     dir.x=ray_dir.x();
     dir.y=ray_dir.y();
     dir.z=ray_dir.z();

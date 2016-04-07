@@ -221,7 +221,7 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 	var_measure[1] /= num_Mean;
 	var_measure[2] /= num_Mean;
 	distTransSize = 4 * max3(sqrt(var_measure[0]), sqrt(var_measure[1]), sqrt(var_measure[2]));
-	distTransSize = 100 * 0.0005;
+	distTransSize = 150 * 0.0005;
 	cout << "Touch Std: " << sqrt(var_measure[0]) << "  " << sqrt(var_measure[1]) << "  " << sqrt(var_measure[2]) << endl;
 	double world_range[3][2];
 	cout << "Current Inv_touch: " << mean_inv_M[0] << "    " << mean_inv_M[1] << "    " << mean_inv_M[2] << endl;
@@ -230,7 +230,7 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 		world_range[t][1] = mean_inv_M[t] + distTransSize;
 		/*cout << world_range[t][0] << " to " << world_range[t][1] << endl;*/
 	}
-	voxel_size = distTransSize / 100;
+	voxel_size = distTransSize / 150;
 	cout << "Voxel Size: " << voxel_size << endl;
 	dist_transform->voxelizeSTL(mesh, world_range);
 	dist_transform->build();
@@ -398,18 +398,18 @@ int main()
 	double Xstd_tran = 0.0035;
 	double Xstd_scatter = 0.0001;
 	//double voxel_size = 0.0005; // voxel size for distance transform.
-	int num_voxels[3] = { 200,200,200 };
+	int num_voxels[3] = { 300,300,300 };
 	//double range = 0.1; //size of the distance transform
 	double R = 0.001; // radius of the touch probe
 
 	double cube_para[3] = { 6, 4, 2 }; // cube size: 6m x 4m x 2m with center at the origin.
 	//double range[3][2] = { {-3.5, 3.5}, {-2.5, 2.5}, {-1.5, 1.5} };
-	particleFilter::cspace X_true = { 2.12, 1.388, 0.818, Pi / 6 + Pi / 400, Pi / 12 + Pi / 420, Pi / 18 - Pi / 380 }; // true state of configuration
+	particleFilter::cspace X_true = { 2.12, 1.388, 0.818, Pi / 6 + Pi / 400, Pi / 12 + Pi / 220, Pi / 18 - Pi / 180 }; // true state of configuration
 	//particleFilter::cspace X_true = { 0, 0, 0.818, 0, 0, 0 }; // true state of configuration
 	cout << "True state: " << X_true[0] << ' ' << X_true[1] << ' ' << X_true[2] << ' ' 
 		 << X_true[3] << ' ' << X_true[4] << ' ' << X_true[5] << endl;
 	particleFilter::cspace b_Xprior[2] = { { 2.11, 1.4, 0.81, Pi / 6, Pi / 12, Pi / 18 },
-										   { 0.03, 0.03, 0.03, Pi / 360, Pi / 360, Pi / 360 } }; // our prior belief
+										   { 0.03, 0.03, 0.03, Pi / 180, Pi / 180, Pi / 180 } }; // our prior belief
 	//particleFilter::cspace b_Xprior[2] = { { 0, 0, 0.81, 0, 0, 0 },
 	//									 { 0.001, 0.001, 0.001, Pi / 3600, Pi / 3600, Pi / 3600 } }; // our prior belief
 

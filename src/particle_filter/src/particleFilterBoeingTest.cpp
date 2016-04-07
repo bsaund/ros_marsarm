@@ -52,12 +52,12 @@ void computeInitialDistribution(particleFilter::cspace binit[2], ros::NodeHandle
   }
 
 
-  binit[0][0] = pFrame[0];
-  binit[0][1] = pFrame[1];
-  binit[0][2] = pFrame[2];
-  binit[0][3] = pFrame[3];
-  binit[0][4] = pFrame[4];
-  binit[0][5] = pFrame[5];
+  binit[0][0] = pFrame[0] + 0.01;
+  binit[0][1] = pFrame[1] + 0.005;
+  binit[0][2] = pFrame[2] - 0.005;
+  binit[0][3] = pFrame[3] - 0.02;
+  binit[0][4] = pFrame[4] + 0.01;
+  binit[0][5] = pFrame[5] + 0.03;
 
   binit[1][0] = uncertainties[0];
   binit[1][1] = uncertainties[1];
@@ -147,7 +147,7 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   tf::Transform trans = plt.getTrans();
 
   geometry_msgs::PoseArray poseArray;
-  for(int i=0; i<500; i++){
+  for(int i=0; i<50; i++){
     tf::Pose pose = poseAt(particles[i]);
     geometry_msgs::Pose pose_msg;
     tf::poseTFToMsg(trans*pose, pose_msg);

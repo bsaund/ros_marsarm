@@ -27,7 +27,7 @@ using namespace std;
 typedef array<array<float, 3>, 4> vec4x3;
 typedef unordered_map<string, string> hashmap;
 #define epsilon 0.0001
-#define ARM_LENGTH 0.3
+#define ARM_LENGTH 0.2
 
 //vector<vec4x3> importSTL(string filename);
 
@@ -200,6 +200,7 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 	double voxel_size;
 	double distTransSize;
 	double mean_inv_M[3];
+	double safe_point[2][3];
 	for (int t = 0; t < num_Mean; t++) {
 		measure_workspace[t] = new double[3];
 		int index = int(floor(distribution(rd)));
@@ -320,6 +321,15 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 		}*/
 		if (D >= -Xstd_ob && D <= Xstd_ob)
 		{
+			
+			safe_point[1][0] = cur_M[1][0];
+			safe_point[1][1] = cur_M[1][1];
+			safe_point[1][2] = cur_M[1][2];
+			safe_point[0][0] = cur_M[0][0] - cur_M[1][0] * ARM_LENGTH;
+			safe_point[0][1] = cur_M[0][1] - cur_M[1][1] * ARM_LENGTH;
+			safe_point[0][2] = cur_M[0][2] - cur_M[1][2] * ARM_LENGTH;
+			if (checkObstacles(mesh, tempState, safe_point , D + R) == 1)
+				continue;
 			for (int j = 0; j < cdim; j++)
 			{
 				particles[i][j] = tempState[j];
@@ -636,7 +646,7 @@ int getIntersection(vector<vec4x3> &mesh, double pstart[3], double dir[3], doubl
  * Input: mesh: mesh arrays
  *        config: estimated mean configuration
  *        touch: touch point in particle frame
- *        dir: direction of the touch
+ *        R: radius of the touch probe
  * Output: distance
  */
 double testResult(vector<vec4x3> &mesh, double config[6], double touch[2][3], double R)
@@ -670,6 +680,60 @@ double testResult(vector<vec4x3> &mesh, double config[6], double touch[2][3], do
 		return 0;
 
 	return tMin - R;
+}
+
+/*
+ * Raytrace checker. Check obstacle along the ray
+ * Input: mesh: mesh arrays
+ *        config: estimated mean configuration
+ *        start: safepoint of the joint
+ *        dist: distance between center of touch probe and object
+ * Output: 1 if obstacle exists
+ */
+int checkObstacles(vector<vec4x3> &mesh, double config[6], double start[2][3], double dist)
+{
+	double inv_start[2][3];
+	inverseTransform(start, config, inv_start);
+	int num_mesh = int(mesh.size());
+	double vert0[3], vert1[3], vert2[3]; 
+	double *t = new double;
+	double *u = new double;
+	double *v = new double;
+	double tMin = 100000;
+	Eigen::Vector3d normal_dir;
+	Eigen::Vector3d ray_length;
+	double length;
+	for (int i = 0; i < num_mesh; i++)
+	{
+		vert0[0] = mesh[i][1][0];
+		vert0[1] = mesh[i][1][1];
+		vert0[2] = mesh[i][1][2];
+		vert1[0] = mesh[i][2][0];
+		vert1[1] = mesh[i][2][1];
+		vert1[2] = mesh[i][2][2];
+		vert2[0] = mesh[i][3][0];
+		vert2[1] = mesh[i][3][1];
+		vert2[2] = mesh[i][3][2];
+		if (intersect_triangle(inv_start[0], inv_start[1], vert0, vert1, vert2, t, u, v) == 1 && *t < tMin)
+		{
+			tMin = *t;
+			normal_dir << mesh[i][0][0], mesh[i][0][1], mesh[i][0][2];
+			length = ARM_LENGTH - tMin;
+			ray_length << length * inv_start[1][0], length * inv_start[1][1], length * inv_start[1][2];
+		}
+	}
+	delete t, u, v;
+	if (tMin >= ARM_LENGTH)
+		return 0;
+	else if (dist < 0)
+	{
+		double inter_dist = normal_dir.dot(ray_length);
+		cout << "inter_dist: " << inter_dist << endl;
+		if (inter_dist >= dist - epsilon && inter_dist <= dist + epsilon)
+			return 0;
+	}
+		
+	return 1;
 }
 //void voxelizeSTL(vector<vec4x3> &mesh, hashmap &boundary_voxel, double voxel_size, double R, double Xstd_ob,
 //	double cube_center, double cube_size)

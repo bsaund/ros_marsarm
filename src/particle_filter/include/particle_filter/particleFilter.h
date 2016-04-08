@@ -60,6 +60,6 @@ void inverseTransform(double measure[2][3], particleFilter::cspace src, double d
 int checkInObject(vector<vec4x3> &mesh, double voxel_center[3]);
 int getIntersection(vector<vec4x3> &mesh, double pstart[3], double dir[3], double intersection[3]);
 double testResult(vector<vec4x3> &mesh, double config[6], double touch[2][3], double R);
-int checkObstacles(vector<vec4x3> &mesh, double config[6], double touch[2][3], double R);
+int checkObstacles(vector<vec4x3> &mesh, double config[6], double touch[2][3], double dist);
 #endif // PARTICLE_FILTER_H
 

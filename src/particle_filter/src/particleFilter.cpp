@@ -728,7 +728,7 @@ int checkObstacles(vector<vec4x3> &mesh, double config[6], double start[2][3], d
 	else if (dist < 0)
 	{
 		double inter_dist = normal_dir.dot(ray_length);
-		cout << "inter_dist: " << inter_dist << endl;
+		//cout << "inter_dist: " << inter_dist << endl;
 		if (inter_dist >= dist - epsilon && inter_dist <= dist + epsilon)
 			return 0;
 	}

@@ -65,12 +65,12 @@ void computeInitialDistribution(particleFilter::cspace binit[2], ros::NodeHandle
   }
 
 
-  binit[0][0] = pFrame[0] + 0.01;
-  binit[0][1] = pFrame[1] + 0.015;
-  binit[0][2] = pFrame[2] - 0.015;
-  binit[0][3] = pFrame[3] - 0.02;
-  binit[0][4] = pFrame[4] + 0.01;
-  binit[0][5] = pFrame[5] + 0.03;
+  binit[0][0] = pFrame[0];
+  binit[0][1] = pFrame[1];
+  binit[0][2] = pFrame[2];
+  binit[0][3] = pFrame[3];
+  binit[0][4] = pFrame[4];
+  binit[0][5] = pFrame[5];
 
   binit[1][0] = uncertainties[0];
   binit[1][1] = uncertainties[1];
@@ -180,6 +180,14 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   update = true;
   updateLock.unlock();
 
+  double particles_est_stat[2];
+  particleFilter::cspace particles_est;
+  pFilter_.estimatedDistribution(particles_est, particles_est_stat);
+  std::cout << "est: ";
+        for (int k = 0; k < particleFilter::cdim; k++) {
+            cout << particles_est[k] << ' ';
+        }
+  std::cout << std::endl;
 
   geometry_msgs::PoseArray poseArray;
   for(int i=0; i<500; i++){
@@ -238,7 +246,7 @@ void visualize()
 
 
 PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
-  pFilter_(n_particles, b_init, 0.002, 0.0035, 0.0001, 0.00),
+  pFilter_(n_particles, b_init, 0.001, 0.0035, 0.0001, 0.00),
   num_voxels{200, 200, 200}//,
   //dist_transform(num_voxels)
   // particleFilter (int n_particles,

@@ -75,7 +75,6 @@ void ShapePlotter::externalParticleUpdate(geometry_msgs::PoseArray p)
 void ShapePlotter::generateTransforms()
 {
   std::random_device rd;
-  std::mt19937 gen(rd());
   std::normal_distribution<> randn(0, 1);
   
   particles_.poses.resize(numParticles);
@@ -93,14 +92,14 @@ void ShapePlotter::generateTransforms()
     // particleTransform.position.z = randn(gen)/50;
 
 
-    particleTransform.position.x = randn(gen)*uncertainties[0];
-    particleTransform.position.y = randn(gen)*uncertainties[1];
-    particleTransform.position.z = randn(gen)*uncertainties[2];
+    particleTransform.position.x = randn(rd)*uncertainties[0];
+    particleTransform.position.y = randn(rd)*uncertainties[1];
+    particleTransform.position.z = randn(rd)*uncertainties[2];
 
     particleTransform.orientation = 
-      tf::createQuaternionMsgFromRollPitchYaw(randn(gen)*uncertainties[3], 
-					      randn(gen)*uncertainties[4], 
-					      randn(gen)*uncertainties[5]);
+      tf::createQuaternionMsgFromRollPitchYaw(randn(rd)*uncertainties[3], 
+					      randn(rd)*uncertainties[4], 
+					      randn(rd)*uncertainties[5]);
 					      
       // tf::createQuaternionMsgFromRollPitchYaw(0, randn(gen)/20, 0);
     
@@ -168,7 +167,7 @@ void ShapePlotter::updateTrueMarker()
     part.ns = "true_part";
     part.action = visualization_msgs::Marker::ADD;
 
-    tf::Pose pose;
+    //tf::Pose pose;
     part.pose.position.x = 0;
     part.pose.position.y = 0;
     part.pose.position.z = 0;

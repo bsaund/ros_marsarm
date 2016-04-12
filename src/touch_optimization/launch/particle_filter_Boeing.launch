@@ -17,7 +17,7 @@
   </rosparam>
 
   <rosparam param="particle_frame">
-    [0.31, 0.315, 0.315, 0.52, 0.71, 0.53]
+    [0.31, 0.315, 0.315, 0.54, 0.74, 0.46]
   </rosparam>
   
   <rosparam param="true_frame">

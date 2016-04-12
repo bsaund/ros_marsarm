@@ -4,7 +4,7 @@
  *   This node is made to work with a particle filter node, a node that 
  *    publishes visualization messages, and RViz.
  */
-
+#include <iostream>
 #include <ros/ros.h>
 #include "particle_filter/PFilterInit.h"
 #include "particle_filter/AddObservation.h"
@@ -114,6 +114,7 @@ int main(int argc, char **argv)
       ROS_INFO("NO INTERSECTION, Skipping");
       continue;
     }
+	std::cout << "Intersection at: " << intersection.getX() << "  " << intersection.getY() << "   " << intersection.getZ() << std::endl;
     tf::Point ray_dir(end.x()-start.x(),end.y()-start.y(),end.z()-start.z());
     ray_dir = ray_dir.normalize();
     obs.x=intersection.getX() + randn(rd); 

@@ -20,7 +20,7 @@ class PlotRayUtils{
   ros::ServiceClient client_optimize_;
   tf::TransformListener tf_listener_;
   tf::StampedTransform trans_;
-
+  tf::StampedTransform true_trans_;
   int intersect_index_;
   int ray_index_;
 
@@ -38,6 +38,7 @@ class PlotRayUtils{
  public:
   PlotRayUtils();
   tf::StampedTransform getTrans();
+  tf::StampedTransform getTrueTrans();
   void plotIntersections(tf::Point rayStart, tf::Point rayEnd, bool overwrite = true);
   void plotIntersections(std::vector<double> dist, tf::Point rayStart, tf::Point rayEnd,
 			 bool overwrite = true);

@@ -29,6 +29,8 @@ PlotRayUtils::PlotRayUtils()
 
   tf_listener_.waitForTransform("/my_frame", "/particle_frame", ros::Time(0), ros::Duration(10.0));
   tf_listener_.lookupTransform("/particle_frame", "/my_frame", ros::Time(0), trans_);
+  tf_listener_.waitForTransform("/my_frame", "/true_frame", ros::Time(0), ros::Duration(10.0));
+  tf_listener_.lookupTransform("/true_frame", "/my_frame", ros::Time(0), true_trans_);
 
   intersect_index_ = 0;
   ray_index_ = 0;
@@ -38,6 +40,11 @@ tf::StampedTransform PlotRayUtils::getTrans()
 {
   //TODO: Update when new transform becomes available
   return trans_;
+}
+tf::StampedTransform PlotRayUtils::getTrueTrans()
+{
+  //TODO: Update when new transform becomes available
+  return true_trans_;
 }
 
 /** 
@@ -326,7 +333,7 @@ void PlotRayUtils::transformRayToParticleFrame(tf::Point start, tf::Point end,
 					       geometry_msgs::Point &startTransformed,
 					       geometry_msgs::Point &endTransformed)
 {
-  tf::StampedTransform trans = getTrans();
+  tf::StampedTransform trans = getTrueTrans();
   tf::pointTFToMsg(trans * start, startTransformed);
   tf::pointTFToMsg(trans * end, endTransformed);
 }

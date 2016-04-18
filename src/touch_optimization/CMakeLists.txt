@@ -158,6 +158,10 @@ add_executable(run_full_box src/fullSystemBox.cpp)
 target_link_libraries(run_full_box
   ${catkin_LIBRARIES})
 
+add_executable(run_full_wood src/fullSystemWood.cpp)
+target_link_libraries(run_full_wood
+  ${catkin_LIBRARIES})
+
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above

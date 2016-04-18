@@ -693,6 +693,7 @@ double testResult(vector<vec4x3> &mesh, double config[6], double touch[2][3], do
 int checkObstacles(vector<vec4x3> &mesh, double config[6], double start[2][3], double dist)
 {
 	double inv_start[2][3];
+	int countIntersections = 0;
 	inverseTransform(start, config, inv_start);
 	int num_mesh = int(mesh.size());
 	double vert0[3], vert1[3], vert2[3]; 
@@ -703,6 +704,7 @@ int checkObstacles(vector<vec4x3> &mesh, double config[6], double start[2][3], d
 	Eigen::Vector3d normal_dir;
 	Eigen::Vector3d ray_length;
 	double length;
+	std::unordered_set<double> hashset;
 	for (int i = 0; i < num_mesh; i++)
 	{
 		vert0[0] = mesh[i][1][0];
@@ -714,15 +716,27 @@ int checkObstacles(vector<vec4x3> &mesh, double config[6], double start[2][3], d
 		vert2[0] = mesh[i][3][0];
 		vert2[1] = mesh[i][3][1];
 		vert2[2] = mesh[i][3][2];
-		if (intersect_triangle(inv_start[0], inv_start[1], vert0, vert1, vert2, t, u, v) == 1 && *t < tMin)
+		if (intersect_triangle(inv_start[0], inv_start[1], vert0, vert1, vert2, t, u, v) == 1)
 		{
-			tMin = *t;
-			normal_dir << mesh[i][0][0], mesh[i][0][1], mesh[i][0][2];
-			length = ARM_LENGTH - tMin;
-			ray_length << length * inv_start[1][0], length * inv_start[1][1], length * inv_start[1][2];
+			if (*t < tMin)
+			{
+				tMin = *t;
+				normal_dir << mesh[i][0][0], mesh[i][0][1], mesh[i][0][2];
+				length = ARM_LENGTH - tMin;
+				ray_length << length * inv_start[1][0], length * inv_start[1][1], length * inv_start[1][2];
+			}
+			if (hashset.find(*t) == hashset.end())
+			{
+				hashset.insert(*t);
+				countIntersections++;
+			}
 		}
 	}
 	delete t, u, v;
+	if (countIntersections % 2 == 1)
+	{
+		return 1;
+	}
 	if (tMin >= ARM_LENGTH)
 		return 0;
 	else if (dist < 0)
@@ -735,78 +749,3 @@ int checkObstacles(vector<vec4x3> &mesh, double config[6], double start[2][3], d
 		
 	return 1;
 }
-//void voxelizeSTL(vector<vec4x3> &mesh, hashmap &boundary_voxel, double voxel_size, double R, double Xstd_ob,
-//	double cube_center, double cube_size)
-//{
-//	int num_mesh = mesh.size();
-//	//double bbox[3][2];
-//	Eigen::Matrix<double, 3, 2> bbox;
-//	double ix, iy, iz = 0;
-//	double xstart, ystart, zstart, xend, yend, zend = 0;
-//	Eigen::vec4x3d voxel_center, point_a, point_b, point_c, norm;
-//	double dist;
-//	string key, value = "";
-//	for (int i = 0; i < num_mesh; i++)
-//	{
-//		point_a(0) = mesh[i][1][0];
-//		point_a(1) = mesh[i][1][1];
-//		point_a(2) = mesh[i][1][2];
-//		point_b(0) = mesh[i][2][0];
-//		point_b(1) = mesh[i][2][1];
-//		point_b(2) = mesh[i][2][2];
-//		point_c(0) = mesh[i][3][0];
-//		point_c(1) = mesh[i][3][1];
-//		point_c(2) = mesh[i][3][2];
-//		//norm = (point_b - point_a).cross(point_c - point_a);
-//		//norm /= norm.norm();
-//		norm << mesh[i][0][0], mesh[i][0][1], mesh[i][0][2];
-//		for (int j = 0; j < 3; j++)
-//		{
-//			double temp_val = min(mesh[i][1][j], mesh[i][2][j], mesh[i][3][j]) - 2 * R;
-//			bbox(j, 0) = temp_val - fmod(temp_val, voxel_size) - voxel_size / 2;
-//			temp_val = max(mesh[i][1][j], mesh[i][2][j], mesh[i][3][j]) + 2 * R;
-//			bbox(j, 1) = temp_val - fmod(temp_val, voxel_size) + 3 * voxel_size / 2;
-//		}
-//		xstart = bbox[0][0];
-//		ystart = bbox[1][0];
-//		zstart = bbox[2][0];
-//		xend = bbox[0][1];
-//		yend = bbox[1][1];
-//		zend = bbox[2][1];
-//		ix = xstart;
-//		while (ix <= xend)
-//		{
-//			iy = ystart;
-//			while (iy <= yend)
-//			{
-//				iz = zstart;
-//				while (iz <= zend)
-//				{
-//					voxel_center << ix, iy, iz;
-//					dist = norm.dot(voxel_center - point_a);
-//					if (dist >= R - Xstd_ob && dist <= R + Xstd_ob)
-//					{
-//						key = to_string(ix - voxel_size / 2) + " " + to_string(iy - voxel_size / 2) + " " + to_string(iz - voxel_size / 2);
-//						value = boundary_voxel[key];
-//						if (value == "-1")
-//						{
-//							iz += voxel_size;
-//							continue;
-//						}
-//						else if (value != "")
-//							boundary_voxel[key] = value + " " + to_string(i);
-//						else
-//							boundary_voxel[key] = to_string(i);
-//					}
-//					else if (dist < R - Xstd_ob)
-//					{
-//
-//					}
-//					iz += voxel_size;
-//				}
-//				iy += voxel_size;
-//			}
-//			ix += voxel_size;
-//		}
-//	}
-//}

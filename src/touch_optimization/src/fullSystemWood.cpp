@@ -63,15 +63,16 @@ void generateRandomTouchWith(tf::Pose &probePose, double tbX, double tbY, double
     // [0.6, 0.6, -0.1, 0, 0, 0]
 void generateRandomTouchTop(std::mt19937 &gen, tf::Pose &probePose)
 {
-  std::uniform_real_distribution<double> rand(-1.0,1.0);
-  double x_width = 0.05*rand(gen);
-  double y_width = 0.05*rand(gen);
+  std::uniform_real_distribution<double> rand(0,1.0);
+  double x_width = 0.2*rand(gen);
+  double y_width = 0.7*rand(gen);
   // generateRandomTouchWith(probePose, 
   // 			  .53 + x_width, .4 + y_width, .687, M_PI, 0, 0, 
   // 			  0,0,0,
   // 			  0,0,0);
   generateRandomTouchWith(probePose, 
-  			  0.8, -0.21, 0.45, M_PI, 0, M_PI, 
+  			  // 0.8, -0.21, 0.45, M_PI, 0, M_PI, 
+  			  0.6 + x_width, -0.41 + y_width, 0.45, M_PI, 0, M_PI, 
   			  0,0,0,
   			  0,0,0);
 
@@ -89,6 +90,21 @@ void generateRandomTouchFront(std::mt19937 &gen, tf::Pose &probePose)
   			  0,0,0,
   			  0,0,0);
 }
+
+
+
+void generateRandomTouchFrontRight(std::mt19937 &gen, tf::Pose &probePose)
+{
+  std::uniform_real_distribution<double> rand(-1.0,1.0);
+  double y_width = 0.05*rand(gen);
+  double z_width = 0.05*rand(gen);
+
+  generateRandomTouchWith(probePose, 
+			  .577, -.611, .360, .398, -1.532, 2.387,
+  			  0,0,0,
+  			  0,0,0);
+}
+
 
 void generateRandomTouchSide(std::mt19937 &gen, tf::Pose &probePose)
 {
@@ -115,8 +131,10 @@ void generateRandomRay(std::mt19937 &gen, tf::Pose &probePose, tf::Point &start,
   
   if(faceNum < 1.0)
     generateRandomTouchTop(gen, probePose);
-  else if(faceNum < 2.0)
+  else if(faceNum < 1.5)
     generateRandomTouchFront(gen, probePose);
+  else if(faceNum < 2.0)
+    generateRandomTouchFrontRight(gen, probePose);
   else
     generateRandomTouchSide(gen, probePose);
   
@@ -235,7 +253,7 @@ int main(int argc, char **argv)
 
 
 
-  for(int i=0; i<5; i++){
+  for(int i=0; i<7; i++){
     randomSelection(plt, probePose);
     tf::poseTFToMsg(probePose, probe_msg);
     probe_pub.publish(probe_msg);

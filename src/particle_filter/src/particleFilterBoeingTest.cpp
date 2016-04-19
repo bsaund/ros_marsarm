@@ -255,12 +255,12 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
   pFilter_(n_particles, b_init, 0.001, 0.0035, 0.0001, 0.00),
   num_voxels{200, 200, 200}//,
   //dist_transform(num_voxels)
-  // particleFilter (int n_particles,
-  // 		  double Xstd_ob=0.0001, double Xstd_tran=0.0025,
-  // 		  double Xstd_scatter=0.0001, double R=0.0005);
-  // particleFilter::particleFilter(int n_particles, cspace b_init[2],
-  // 			       double Xstd_ob, double Xstd_tran,
-  // 			       double Xstd_scatter, double R)
+  // particleFilter (int n_particles, cspace b_init[2], 
+  // 				double Xstd_ob=0.0001 (measurement error), 
+  //                            double Xstd_tran=0.0025, (gausian kernel sampling std
+  // 				double Xstd_scatter=0.0001, (scatter particles a little before computing mean of distance transform
+  //                            double R=0.01) (probe radius);
+
 
 
 {

@@ -73,10 +73,10 @@ void particleFilter::getAllParticles(cspace *particles_dest)
  * Input: obs: observation
  *        mesh: object mesh arrays
  *        dist_transform: distance transform class instance
- *        idx_obs: not used
+ *        miss: if it is a miss touch
  * output: none
  */
-void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, int idx_obs)
+void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss)
 {
 	std::default_random_engine generator;
 	normal_distribution<double> dist2(0, Xstd_scatter);
@@ -95,12 +95,10 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 			b_Xpre[1][k] = sqrt(b_Xpre[1][k] / numParticles);*/
 		}
 	}
-	bool iffar = updateParticles(particles_1, particles0, particles, obs, mesh, idx_obs, dist_transform, numParticles, R, Xstd_ob, Xstd_tran);
+	bool iffar = updateParticles(particles_1, particles0, particles, obs, miss, mesh, dist_transform, numParticles, R, Xstd_ob, Xstd_tran);
 	if (firstObs)
 	{
 		firstObs = false;
-		memcpy(particles0, particles, numParticles*sizeof(cspace));
-		memcpy(particles_1, particles, numParticles*sizeof(cspace));
 	}
 	/*else if (iffar == true)
 	{
@@ -175,7 +173,7 @@ void particleFilter::createParticles(cspace *particles_dest, cspace b_Xprior[2],
  * output: return whether previous estimate is bad (not used here)
  */
 bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cspace *particles, double cur_M[2][3], 
-		vector<vec4x3> &mesh, int idx_Measure, distanceTransform *dist_transform, int n_particles,
+		bool miss, vector<vec4x3> &mesh, distanceTransform *dist_transform, int n_particles,
 		double R, double Xstd_ob, double Xstd_tran)
 {
 	random_device rd;
@@ -186,7 +184,6 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 	int count = 0;
 	bool iffar = false;
 	cspace *b_X = particles0;
-	int dir = idx_Measure % 3;
 	int idx = 0;
 	double tempState[6];
 	double D;
@@ -201,147 +198,174 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 	double distTransSize;
 	double mean_inv_M[3];
 	double safe_point[2][3];
-	for (int t = 0; t < num_Mean; t++) {
-		measure_workspace[t] = new double[3];
-		int index = int(floor(distribution(rd)));
-		//memcpy(sampleConfig[t], b_X[index], sizeof(cspace));
-		for (int m = 0; m < cdim; m++) {
-			meanConfig[m] += b_X[index][m] / num_Mean;
-		}
-		inverseTransform(cur_M[0], b_X[index], measure_workspace[t]);
-	}
-	// inverse-transform using sampled configuration
-	inverseTransform(cur_M[0], meanConfig, mean_inv_M);
-	for (int t = 0; t < num_Mean; t++) {
-		var_measure[0] += SQ(measure_workspace[t][0] - mean_inv_M[0]);
-		var_measure[1] += SQ(measure_workspace[t][1] - mean_inv_M[1]);
-		var_measure[2] += SQ(measure_workspace[t][2] - mean_inv_M[2]);
-	}
-	var_measure[0] /= num_Mean;
-	var_measure[1] /= num_Mean;
-	var_measure[2] /= num_Mean;
-	distTransSize = 4 * max3(sqrt(var_measure[0]), sqrt(var_measure[1]), sqrt(var_measure[2]));
-	distTransSize = 150 * 0.0005;
-	cout << "Touch Std: " << sqrt(var_measure[0]) << "  " << sqrt(var_measure[1]) << "  " << sqrt(var_measure[2]) << endl;
-	double world_range[3][2];
-	cout << "Current Inv_touch: " << mean_inv_M[0] << "    " << mean_inv_M[1] << "    " << mean_inv_M[2] << endl;
-	for (int t = 0; t < 3; t++) {
-		world_range[t][0] = mean_inv_M[t] - distTransSize;
-		world_range[t][1] = mean_inv_M[t] + distTransSize;
-		/*cout << world_range[t][0] << " to " << world_range[t][1] << endl;*/
-	}
-	voxel_size = distTransSize / 150;
-	cout << "Voxel Size: " << voxel_size << endl;
-	dist_transform->voxelizeSTL(mesh, world_range);
-	dist_transform->build();
-	double cube[3] = { 6,4,2 };
 	Eigen::Vector3d gradient;
 	Eigen::Vector3d touch_dir;
-	// sample particles
-	//touch_dir << cur_M[1][0], cur_M[1][1], cur_M[1][2];
-	while (i < n_particles)
-	{
-		//if ((count >= 10000000 || (i > 0 && count / i > 5000)) && iffar == false)
-		//{
-		//	iffar = true;
-		//	b_X = particles_1;
-		//	//count = 0;
-		//	i = 0;
-		//}
-		idx = int(floor(distribution(rd)));
-		for (int j = 0; j < cdim; j++)
-		{
-			tempState[j] = b_X[idx][j] + Xstd_tran * dist(rd);
+	if (!miss) {
+		for (int t = 0; t < num_Mean; t++) {
+			measure_workspace[t] = new double[3];
+			int index = int(floor(distribution(rd)));
+			//memcpy(sampleConfig[t], b_X[index], sizeof(cspace));
+			for (int m = 0; m < cdim; m++) {
+				meanConfig[m] += b_X[index][m] / num_Mean;
+			}
+			inverseTransform(cur_M[0], b_X[index], measure_workspace[t]);
 		}
-		inverseTransform(cur_M, tempState, cur_inv_M);
-		touch_dir << cur_inv_M[1][0], cur_inv_M[1][1], cur_inv_M[1][2];
-		// reject particles ourside of distance transform
-		if (cur_inv_M[0][0] > dist_transform->world_range[0][1] || cur_inv_M[0][0] < dist_transform->world_range[0][0] ||
-			cur_inv_M[0][1] > dist_transform->world_range[1][1] || cur_inv_M[0][1] < dist_transform->world_range[1][0] ||
-			cur_inv_M[0][2] > dist_transform->world_range[2][1] || cur_inv_M[0][2] < dist_transform->world_range[2][0]) {
-			continue;
+		// inverse-transform using sampled configuration
+		inverseTransform(cur_M[0], meanConfig, mean_inv_M);
+		for (int t = 0; t < num_Mean; t++) {
+			var_measure[0] += SQ(measure_workspace[t][0] - mean_inv_M[0]);
+			var_measure[1] += SQ(measure_workspace[t][1] - mean_inv_M[1]);
+			var_measure[2] += SQ(measure_workspace[t][2] - mean_inv_M[2]);
 		}
-		int xind = int(floor((cur_inv_M[0][0] - dist_transform->world_range[0][0]) / dist_transform->voxel_size));
-		int yind = int(floor((cur_inv_M[0][1] - dist_transform->world_range[1][0]) / dist_transform->voxel_size));
-		int zind = int(floor((cur_inv_M[0][2] - dist_transform->world_range[2][0]) / dist_transform->voxel_size));
-		D = (*dist_transform->dist_transform)[xind][yind][zind];
+		var_measure[0] /= num_Mean;
+		var_measure[1] /= num_Mean;
+		var_measure[2] /= num_Mean;
+		distTransSize = 4 * max3(sqrt(var_measure[0]), sqrt(var_measure[1]), sqrt(var_measure[2]));
+		distTransSize = 150 * 0.0005;
+		cout << "Touch Std: " << sqrt(var_measure[0]) << "  " << sqrt(var_measure[1]) << "  " << sqrt(var_measure[2]) << endl;
+		double world_range[3][2];
+		cout << "Current Inv_touch: " << mean_inv_M[0] << "    " << mean_inv_M[1] << "    " << mean_inv_M[2] << endl;
+		for (int t = 0; t < 3; t++) {
+			world_range[t][0] = mean_inv_M[t] - distTransSize;
+			world_range[t][1] = mean_inv_M[t] + distTransSize;
+			/*cout << world_range[t][0] << " to " << world_range[t][1] << endl;*/
+		}
+		voxel_size = distTransSize / 150;
+		cout << "Voxel Size: " << voxel_size << endl;
+		dist_transform->voxelizeSTL(mesh, world_range);
+		dist_transform->build();
 		
-		double dist_adjacent[3] = { 0, 0, 0 };
-		if (D <= unsigned_dist_check)
+		// sample particles
+		//touch_dir << cur_M[1][0], cur_M[1][1], cur_M[1][2];
+		while (i < n_particles)
 		{
-			if (xind < (dist_transform->num_voxels[0] - 1) && yind < (dist_transform->num_voxels[1] - 1) && zind < (dist_transform->num_voxels[2] - 1))
+			idx = int(floor(distribution(rd)));
+			for (int j = 0; j < cdim; j++)
 			{
-				dist_adjacent[0] = (*dist_transform->dist_transform)[xind + 1][yind][zind];
-				dist_adjacent[1] = (*dist_transform->dist_transform)[xind][yind + 1][zind];
-				dist_adjacent[2] = (*dist_transform->dist_transform)[xind][yind][zind + 1];
-				//gradient /= gradient.norm();
+				tempState[j] = b_X[idx][j] + Xstd_tran * dist(rd);
+			}
+			inverseTransform(cur_M, tempState, cur_inv_M);
+			touch_dir << cur_inv_M[1][0], cur_inv_M[1][1], cur_inv_M[1][2];
+			// reject particles ourside of distance transform
+			if (cur_inv_M[0][0] > dist_transform->world_range[0][1] || cur_inv_M[0][0] < dist_transform->world_range[0][0] ||
+				cur_inv_M[0][1] > dist_transform->world_range[1][1] || cur_inv_M[0][1] < dist_transform->world_range[1][0] ||
+				cur_inv_M[0][2] > dist_transform->world_range[2][1] || cur_inv_M[0][2] < dist_transform->world_range[2][0]) {
+				continue;
+			}
+			int xind = int(floor((cur_inv_M[0][0] - dist_transform->world_range[0][0]) / dist_transform->voxel_size));
+			int yind = int(floor((cur_inv_M[0][1] - dist_transform->world_range[1][0]) / dist_transform->voxel_size));
+			int zind = int(floor((cur_inv_M[0][2] - dist_transform->world_range[2][0]) / dist_transform->voxel_size));
+			D = (*dist_transform->dist_transform)[xind][yind][zind];
+			
+			double dist_adjacent[3] = { 0, 0, 0 };
+			if (D <= unsigned_dist_check)
+			{
+				if (xind < (dist_transform->num_voxels[0] - 1) && yind < (dist_transform->num_voxels[1] - 1) && zind < (dist_transform->num_voxels[2] - 1))
+				{
+					dist_adjacent[0] = (*dist_transform->dist_transform)[xind + 1][yind][zind];
+					dist_adjacent[1] = (*dist_transform->dist_transform)[xind][yind + 1][zind];
+					dist_adjacent[2] = (*dist_transform->dist_transform)[xind][yind][zind + 1];
+					//gradient /= gradient.norm();
+				}
+				else
+					continue;
+				gradient[0] = dist_adjacent[0] - D;
+				gradient[1] = dist_adjacent[1] - D;
+				gradient[2] = dist_adjacent[2] - D;
+				if (checkInObject(mesh, cur_inv_M[0]) == 1 && D != 0)
+				{
+					if (gradient.dot(touch_dir) <= epsilon)
+						continue;
+					D = -D - R;
+				}
+				else if (D == 0) 
+				{
+					double tmp[3] = { cur_inv_M[0][0] + dist_transform->voxel_size, cur_inv_M[0][1], cur_inv_M[0][2] };
+					if (checkInObject(mesh, tmp) == 1)
+						gradient[0] = -gradient[0];
+					tmp[0] -= dist_transform->voxel_size;
+					tmp[1] += dist_transform->voxel_size;
+					if (checkInObject(mesh, tmp) == 1)
+						gradient[1] = -gradient[1];
+					tmp[1] -= dist_transform->voxel_size;
+					tmp[2] += dist_transform->voxel_size;
+					if (checkInObject(mesh, tmp) == 1)
+						gradient[2] = -gradient[2];
+					if (gradient.dot(touch_dir) >= -epsilon)
+						continue;
+					D = - R;
+				}
+				else
+				{
+					if (gradient.dot(touch_dir) >= -epsilon)
+						continue;
+					D = D - R;
+				}	
 			}
 			else
 				continue;
-			gradient[0] = dist_adjacent[0] - D;
-			gradient[1] = dist_adjacent[1] - D;
-			gradient[2] = dist_adjacent[2] - D;
-			if (checkInObject(mesh, cur_inv_M[0]) == 1 && D != 0)
+			if (D >= -Xstd_ob && D <= Xstd_ob)
 			{
-				if (gradient.dot(touch_dir) <= epsilon)
+				
+				safe_point[1][0] = cur_M[1][0];
+				safe_point[1][1] = cur_M[1][1];
+				safe_point[1][2] = cur_M[1][2];
+				safe_point[0][0] = cur_M[0][0] - cur_M[1][0] * ARM_LENGTH;
+				safe_point[0][1] = cur_M[0][1] - cur_M[1][1] * ARM_LENGTH;
+				safe_point[0][2] = cur_M[0][2] - cur_M[1][2] * ARM_LENGTH;
+				if (checkObstacles(mesh, tempState, safe_point , D + R) == 1)
 					continue;
-				D = -D - R;
+				for (int j = 0; j < cdim; j++)
+				{
+					particles[i][j] = tempState[j];
+				}
+				double d = testResult(mesh, particles[i], cur_M, R);
+				//if (d > 0.01)
+				//	cout << cur_inv_M[0][0] << "  " << cur_inv_M[0][1] << "  " << cur_inv_M[0][2] << "   " << d << "   " << D << //"   " << gradient << "   " << gradient.dot(touch_dir) << 
+				//	     "   " << dist_adjacent[0] << "   " << dist_adjacent[1] << "   " << dist_adjacent[2] << "   " << particles[i][2] << endl;
+				i += 1;
 			}
-			else if (D == 0) 
-			{
-				double tmp[3] = { cur_inv_M[0][0] + dist_transform->voxel_size, cur_inv_M[0][1], cur_inv_M[0][2] };
-				if (checkInObject(mesh, tmp) == 1)
-					gradient[0] = -gradient[0];
-				tmp[0] -= dist_transform->voxel_size;
-				tmp[1] += dist_transform->voxel_size;
-				if (checkInObject(mesh, tmp) == 1)
-					gradient[1] = -gradient[1];
-				tmp[1] -= dist_transform->voxel_size;
-				tmp[2] += dist_transform->voxel_size;
-				if (checkInObject(mesh, tmp) == 1)
-					gradient[2] = -gradient[2];
-				if (gradient.dot(touch_dir) >= -epsilon)
-					continue;
-				D = - R;
-			}
-			else
-			{
-				if (gradient.dot(touch_dir) >= -epsilon)
-					continue;
-				D = D - R;
-			}	
+			count += 1;			
 		}
-		else
-			continue;
-		/*if (abs(D2 - D) > voxel_size)
+	}
+	else {
+		// cast multiple rays to check intersections
+		double touch_mnt;
+		while (i < n_particles)
 		{
-			cout << D2 + R<< endl;
-			cout << D + R<< endl << endl;
-			cout << "AT " << cur_inv_M[0] << "  " << cur_inv_M[1] << "  " << cur_inv_M[2] << endl << endl;;
-		}*/
-		if (D >= -Xstd_ob && D <= Xstd_ob)
-		{
+			idx = int(floor(distribution(rd)));
+			for (int j = 0; j < cdim; j++)
+			{
+				tempState[j] = b_X[idx][j] + Xstd_tran * dist(rd);
+			}
+			// inverseTransform(cur_M[0], tempState, cur_inv_M[0]);
+			// inverseTransform(cur_M[1], tempState, cur_inv_M[1]);
+			touch_dir << cur_M[0][0] - cur_M[1][0],
+						 cur_M[0][1] - cur_M[1][1],
+						 cur_M[0][2] - cur_M[1][2];
+			touch_mnt = touch_dir.norm();
+			touch_dir = touch_dir / touch_mnt;
+			// reject particles ourside of distance transform
 			
-			safe_point[1][0] = cur_M[1][0];
-			safe_point[1][1] = cur_M[1][1];
-			safe_point[1][2] = cur_M[1][2];
-			safe_point[0][0] = cur_M[0][0] - cur_M[1][0] * ARM_LENGTH;
-			safe_point[0][1] = cur_M[0][1] - cur_M[1][1] * ARM_LENGTH;
-			safe_point[0][2] = cur_M[0][2] - cur_M[1][2] * ARM_LENGTH;
-			if (checkObstacles(mesh, tempState, safe_point , D + R) == 1)
+			safe_point[1][0] = touch_dir[0];
+			safe_point[1][1] = touch_dir[1];
+			safe_point[1][2] = touch_dir[2];
+			safe_point[0][0] = cur_M[1][0] - touch_dir[0] * ARM_LENGTH;
+			safe_point[0][1] = cur_M[1][1] - touch_dir[1] * ARM_LENGTH;
+			safe_point[0][2] = cur_M[1][2] - touch_dir[2] * ARM_LENGTH;
+			if (checkObstacles(mesh, tempState, safe_point, touch_mnt + ARM_LENGTH, 0) == 1)
 				continue;
 			for (int j = 0; j < cdim; j++)
 			{
 				particles[i][j] = tempState[j];
 			}
-			double d = testResult(mesh, particles[i], cur_M, R);
+			//double d = testResult(mesh, particles[i], cur_M, R);
 			//if (d > 0.01)
 			//	cout << cur_inv_M[0][0] << "  " << cur_inv_M[0][1] << "  " << cur_inv_M[0][2] << "   " << d << "   " << D << //"   " << gradient << "   " << gradient.dot(touch_dir) << 
 			//	     "   " << dist_adjacent[0] << "   " << dist_adjacent[1] << "   " << dist_adjacent[2] << "   " << particles[i][2] << endl;
 			i += 1;
+			std::cout << "Miss!" << endl;
 		}
-		count += 1;
-		
 	}
 	return iffar;
 };
@@ -690,7 +714,11 @@ double testResult(vector<vec4x3> &mesh, double config[6], double touch[2][3], do
  *        dist: distance between center of touch probe and object
  * Output: 1 if obstacle exists
  */
-int checkObstacles(vector<vec4x3> &mesh, double config[6], double start[2][3], double dist)
+ int checkObstacles(vector<vec4x3> &mesh, double config[6], double start[2][3], double dist)
+{
+	return checkObstacles(mesh, config, start, ARM_LENGTH, dist);
+}
+int checkObstacles(vector<vec4x3> &mesh, double config[6], double start[2][3], double check_length, double dist)
 {
 	double inv_start[2][3];
 	int countIntersections = 0;
@@ -703,7 +731,7 @@ int checkObstacles(vector<vec4x3> &mesh, double config[6], double start[2][3], d
 	double tMin = 100000;
 	Eigen::Vector3d normal_dir;
 	Eigen::Vector3d ray_length;
-	double length;
+	double inside_length;
 	std::unordered_set<double> hashset;
 	for (int i = 0; i < num_mesh; i++)
 	{
@@ -722,8 +750,8 @@ int checkObstacles(vector<vec4x3> &mesh, double config[6], double start[2][3], d
 			{
 				tMin = *t;
 				normal_dir << mesh[i][0][0], mesh[i][0][1], mesh[i][0][2];
-				length = ARM_LENGTH - tMin;
-				ray_length << length * inv_start[1][0], length * inv_start[1][1], length * inv_start[1][2];
+				inside_length = check_length - tMin;
+				ray_length << inside_length * inv_start[1][0], inside_length * inv_start[1][1], inside_length * inv_start[1][2];
 			}
 			if (hashset.find(*t) == hashset.end())
 			{
@@ -737,7 +765,7 @@ int checkObstacles(vector<vec4x3> &mesh, double config[6], double start[2][3], d
 	{
 		return 1;
 	}
-	if (tMin >= ARM_LENGTH)
+	if (tMin >= check_length)
 		return 0;
 	else if (dist < 0)
 	{

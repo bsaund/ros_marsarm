@@ -9,6 +9,7 @@
 #include "particle_filter/PFilterInit.h"
 #include "particle_filter/AddObservation.h"
 #include "geometry_msgs/Point.h"
+#include "std_msgs/String.h"
 #include <tf/transform_broadcaster.h>
 #include "gazebo_ray_trace/plotRayUtils.h"
 # define M_PI       3.14159265358979323846  /* pi */
@@ -257,7 +258,7 @@ int main(int argc, char **argv)
     randomSelection(plt, probePose);
     tf::poseTFToMsg(probePose, probe_msg);
     probe_pub.publish(probe_msg);
-    ros::Duration(70.0).sleep();
+    ros::topic::waitForMessage<std_msgs::String>(std::string("/process_finished"));
   }
 
 

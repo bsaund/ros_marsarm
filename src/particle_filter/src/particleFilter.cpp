@@ -3,7 +3,6 @@
 #include <random>
 #include <chrono>
 #include <fstream>
-#include <unordered_map>
 #include <Eigen/Dense>
 #include <unordered_set>
 #include <array>
@@ -25,9 +24,10 @@ using namespace std;
 #define min3(a,b,c) ((a<b?a:b)<c?(a<b?a:b):c)
 #define min2(a,b) (a<b?a:b)
 typedef array<array<float, 3>, 4> vec4x3;
-typedef unordered_map<string, string> hashmap;
 #define epsilon 0.0001
 #define ARM_LENGTH 0.2
+#define N_MIN 10
+#define DISPLACE_INTERVAL 0.02
 
 //vector<vec4x3> importSTL(string filename);
 
@@ -176,9 +176,10 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 		bool miss, vector<vec4x3> &mesh, distanceTransform *dist_transform, int n_particles,
 		double R, double Xstd_ob, double Xstd_tran)
 {
-	random_device rd;
-	normal_distribution<double> dist(0, 1);
-	uniform_real_distribution<double> distribution(0, n_particles);
+	std::unordered_set<string> bins;
+	std::random_device rd;
+	std::normal_distribution<double> dist(0, 1);
+	std::uniform_real_distribution<double> distribution(0, n_particles);
 	int cdim = sizeof(cspace) / sizeof(double);
 	int i = 0;
 	int count = 0;
@@ -200,6 +201,7 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 	double safe_point[2][3];
 	Eigen::Vector3d gradient;
 	Eigen::Vector3d touch_dir;
+	int num_bins = 0;
 	if (!miss) {
 		for (int t = 0; t < num_Mean; t++) {
 			measure_workspace[t] = new double[3];
@@ -319,6 +321,13 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 				{
 					particles[i][j] = tempState[j];
 				}
+				if (checkEmptyBin(&bins, particles[i]) == 1) {
+					num_bins++;
+					/*if (i >= N_MIN) {
+						int numBins = bins.size();
+						numParticles = prevNumParticles * (numBins - 1)
+					}*/
+				}
 				double d = testResult(mesh, particles[i], cur_M, R);
 				//if (d > 0.01)
 				//	cout << cur_inv_M[0][0] << "  " << cur_inv_M[0][1] << "  " << cur_inv_M[0][2] << "   " << d << "   " << D << //"   " << gradient << "   " << gradient.dot(touch_dir) << 
@@ -327,6 +336,7 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 			}
 			count += 1;			
 		}
+		cout << "Number of occupied bins: " << num_bins << endl;
 	}
 	else {
 		// cast multiple rays to check intersections
@@ -424,7 +434,6 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 
 int main()
 {
-	hashmap boundary_voxel;
 	vector<vec4x3> mesh = importSTL("boeing_part_binary.stl");
 	int numParticles = 500; // number of particles
 	double Xstd_ob = 0.001;
@@ -704,6 +713,27 @@ double testResult(vector<vec4x3> &mesh, double config[6], double touch[2][3], do
 		return 0;
 
 	return tMin - R;
+}
+
+/* 
+ * Check if the configuration falls into an empty bin
+ * Input: set: Set to store non-empty bins
+ *        config: Sampled particle
+ * Output: 1 if empty
+ *         0 if not, and then add the bin to set
+ */
+int checkEmptyBin(std::unordered_set<string> *set, particleFilter::cspace config)
+{
+	string s = "";
+	for (int i = 0; i < particleFilter::cdim; i++) {
+		s += floor(config[i] / DISPLACE_INTERVAL);
+		s += ":";
+	}
+	if (set->find(s) == set->end()) {
+		set->insert(s);
+		return 1;
+	}
+	return 0;
 }
 
 /*

@@ -3,6 +3,7 @@
 #include <vector>
 #include <array>
 #include <cstring>
+#include <unordered_set>
 #include "distanceTransformNew.h"
 using namespace std;
 typedef array<array<float, 3>, 4> vec4x3;
@@ -62,5 +63,6 @@ int getIntersection(vector<vec4x3> &mesh, double pstart[3], double dir[3], doubl
 double testResult(vector<vec4x3> &mesh, double config[6], double touch[2][3], double R);
 int checkObstacles(vector<vec4x3> &mesh, double config[6], double touch[2][3], double dist);
 int checkObstacles(vector<vec4x3> &mesh, double config[6], double start[2][3], double check_length, double dist);
+int checkEmptyBin(std::unordered_set<string> *set, particleFilter::cspace config);
 #endif // PARTICLE_FILTER_H
 

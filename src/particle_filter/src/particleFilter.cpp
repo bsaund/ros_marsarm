@@ -26,8 +26,8 @@ using namespace std;
 typedef array<array<float, 3>, 4> vec4x3;
 #define epsilon 0.0001
 #define ARM_LENGTH 0.2
-#define N_MIN 10
-#define DISPLACE_INTERVAL 0.02
+#define N_MIN 50
+#define DISPLACE_INTERVAL 0.015
 
 //vector<vec4x3> importSTL(string filename);
 
@@ -44,12 +44,11 @@ typedef array<array<float, 3>, 4> vec4x3;
 particleFilter::particleFilter(int n_particles, cspace b_init[2],
 							   double Xstd_ob, double Xstd_tran,
 							   double Xstd_scatter, double R)
-	: numParticles(n_particles), Xstd_ob(Xstd_ob), Xstd_tran(Xstd_tran),
-	Xstd_scatter(Xstd_scatter), R(R), firstObs(true)
+	: numParticles(n_particles), maxNumParticles(n_particles), Xstd_ob(Xstd_ob),
+	  Xstd_tran(Xstd_tran), Xstd_scatter(Xstd_scatter), R(R), firstObs(true)
 {
 	memcpy(b_Xprior, b_init, 2 * sizeof(cspace));
 	//memcpy(b_Xpre, b_Xprior, 2 * sizeof(cspace));
-
 	particles = new cspace[numParticles];
 	bzero(particles, numParticles*sizeof(cspace));
 	particles0 = new cspace[numParticles];
@@ -68,6 +67,29 @@ void particleFilter::getAllParticles(cspace *particles_dest)
     }
   }
 }
+
+/*
+ * Create initial particles at start
+ * Input: particles
+ *        b_Xprior: prior belief
+ *        n_partcles: number of particles
+ * output: none
+ */
+void particleFilter::createParticles(cspace *particles_dest, cspace b_Xprior[2],
+	int n_particles)
+{
+	random_device rd;
+	normal_distribution<double> dist(0, 1);
+	int cdim = sizeof(cspace) / sizeof(double);
+	for (int i = 0; i < n_particles; i++)
+	{
+		for (int j = 0; j < cdim; j++)
+		{
+			particles_dest[i][j] = b_Xprior[0][j] + b_Xprior[1][j] * (dist(rd));
+		}
+	}
+}
+
 /*
  * Add new observation and call updateParticles() to update the particles
  * Input: obs: observation
@@ -95,7 +117,7 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 			b_Xpre[1][k] = sqrt(b_Xpre[1][k] / numParticles);*/
 		}
 	}
-	bool iffar = updateParticles(particles_1, particles0, particles, obs, miss, mesh, dist_transform, numParticles, R, Xstd_ob, Xstd_tran);
+	bool iffar = updateParticles(particles_1, particles0, particles, obs, miss, mesh, dist_transform, R, Xstd_ob, Xstd_tran);
 	if (firstObs)
 	{
 		firstObs = false;
@@ -137,28 +159,6 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 }
 
 /*
- * Create initial particles at start
- * Input: particles
- *        b_Xprior: prior belief
- *        n_partcles: number of particles
- * output: none
- */
-void particleFilter::createParticles(cspace *particles_dest, cspace b_Xprior[2],
-	int n_particles)
-{
-	random_device rd;
-	normal_distribution<double> dist(0, 1);
-	int cdim = sizeof(cspace) / sizeof(double);
-	for (int i = 0; i < n_particles; i++)
-	{
-		for (int j = 0; j < cdim; j++)
-		{
-			particles_dest[i][j] = b_Xprior[0][j] + b_Xprior[1][j] * (dist(rd));
-		}
-	}
-};
-
-/*
  * Update particles (Build distance transform and sampling)
  * Input: particles_1: estimated particles before previous ones (not used here)
  *        particles0: previous estimated particles
@@ -166,20 +166,18 @@ void particleFilter::createParticles(cspace *particles_dest, cspace b_Xprior[2],
  *        cur_M: current observation
  *        mesh: object mesh arrays
  *        dist_transform: distance transform class instance
- *        n_particles: number of particles
  *        R: radius of the touch probe
  *        Xstd_ob: observation error
  *        Xstd_tran: gaussian kernel standard deviation when sampling
  * output: return whether previous estimate is bad (not used here)
  */
 bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cspace *particles, double cur_M[2][3], 
-		bool miss, vector<vec4x3> &mesh, distanceTransform *dist_transform, int n_particles,
-		double R, double Xstd_ob, double Xstd_tran)
+		bool miss, vector<vec4x3> &mesh, distanceTransform *dist_transform, double R, double Xstd_ob, double Xstd_tran)
 {
 	std::unordered_set<string> bins;
 	std::random_device rd;
 	std::normal_distribution<double> dist(0, 1);
-	std::uniform_real_distribution<double> distribution(0, n_particles);
+	std::uniform_real_distribution<double> distribution(0, numParticles);
 	int cdim = sizeof(cspace) / sizeof(double);
 	int i = 0;
 	int count = 0;
@@ -239,7 +237,7 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 		
 		// sample particles
 		//touch_dir << cur_M[1][0], cur_M[1][1], cur_M[1][2];
-		while (i < n_particles)
+		while (i < numParticles && i < maxNumParticles)
 		{
 			idx = int(floor(distribution(rd)));
 			for (int j = 0; j < cdim; j++)
@@ -323,10 +321,10 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 				}
 				if (checkEmptyBin(&bins, particles[i]) == 1) {
 					num_bins++;
-					/*if (i >= N_MIN) {
-						int numBins = bins.size();
-						numParticles = prevNumParticles * (numBins - 1)
-					}*/
+					if (i >= N_MIN) {
+						//int numBins = bins.size();
+						numParticles = min2(maxNumParticles, max2((num_bins - 1) * 2, N_MIN));
+					}
 				}
 				double d = testResult(mesh, particles[i], cur_M, R);
 				//if (d > 0.01)
@@ -341,7 +339,7 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 	else {
 		// cast multiple rays to check intersections
 		double touch_mnt;
-		while (i < n_particles)
+		while (i < numParticles)
 		{
 			idx = int(floor(distribution(rd)));
 			for (int j = 0; j < cdim; j++)

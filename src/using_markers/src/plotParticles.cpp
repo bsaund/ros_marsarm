@@ -33,7 +33,7 @@ class ShapePlotter
   geometry_msgs::PoseArray particles_;
   
 
-  int numParticles = 500;
+  int numParticles = 50;
 
   void externalParticleUpdate(geometry_msgs::PoseArray p);
 
@@ -120,6 +120,7 @@ void ShapePlotter::generateTransforms()
 void ShapePlotter::updateMarkers()
 {
   points.markers.resize(particles_.poses.size());
+  ROS_INFO("Receive poseArray Size: %d", (int)particles_.poses.size());
   for(int i=0; i<particles_.poses.size(); i++){
     points.markers[i].header.frame_id = "particle_frame";
     points.markers[i].header.stamp = ros::Time::now();

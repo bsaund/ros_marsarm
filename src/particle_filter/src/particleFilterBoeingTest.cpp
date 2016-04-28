@@ -162,7 +162,7 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   boost::mutex::scoped_lock updateLock(updateModelMutex);	
   basic_cloud_ptr1->points.clear();
   basic_cloud_ptr2->points.clear();
-  for (int j = 0; j < NUM_PARTICLES; j++ ) {
+  for (int j = 0; j < pFilter_.numParticles; j++ ) {
 	pcl::PointXYZ basic_point;
 	basic_point.x = particles[j][0] * 2;
 	basic_point.y = particles[j][1] * 2;
@@ -190,7 +190,7 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   std::cout << std::endl;
 
   geometry_msgs::PoseArray poseArray;
-  for(int i=0; i<500; i++){
+  for(int i=0; i<50; i++){
     tf::Pose pose = poseAt(particles[i]);
     geometry_msgs::Pose pose_msg;
     tf::poseTFToMsg(trans*pose, pose_msg);
@@ -199,6 +199,7 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   ROS_INFO("Pose 1: %f%f%f", poseArray.poses[0].position.x,
 	   poseArray.poses[0].position.y, 
 	   poseArray.poses[0].position.z);
+  ROS_INFO("PoseArray Size: %d", (int) poseArray.poses.size());
   return poseArray;
 }
 

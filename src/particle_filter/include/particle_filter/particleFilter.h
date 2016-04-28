@@ -13,6 +13,8 @@ class particleFilter
  public:
   static const int cdim = 6;
   typedef double cspace[cdim]; // configuration space of the particles
+  int numParticles; // number of particles
+  int maxNumParticles;
 
   particleFilter (int n_particles, cspace b_init[2], 
 				double Xstd_ob=0.0001, double Xstd_tran=0.0025,
@@ -29,7 +31,7 @@ class particleFilter
 
  protected:
   // Parameters of filter
-  int numParticles; // number of particles
+  
   double Xstd_ob; // observation measurement error
   double Xstd_tran;
   double Xstd_scatter; // default scattering of particles
@@ -50,7 +52,7 @@ class particleFilter
   void createParticles(cspace *particles, cspace b_Xprior[2], int n_particles);
   bool updateParticles(cspace *particles_1, cspace *particles0, cspace *particles, double cur_M[2][3],
 			bool miss, vector<vec4x3> &mesh, distanceTransform *dist_transform,
-			int n_particles, double R, double Xstd_ob, double Xstd_tran);
+			double R, double Xstd_ob, double Xstd_tran);
   //void calcWeight(double *W, int n_particles, double Xstd_tran, 
 		//   cspace *particles0, cspace *particles);
   //void resampleParticles(cspace *particles0, cspace *particles, double *W, int n_particles);

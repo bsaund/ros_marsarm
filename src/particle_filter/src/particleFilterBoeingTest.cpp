@@ -142,14 +142,15 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
 
 
 bool PFilterTest::getMesh(std::string filename){
-  std::string localizationObject;
-  if(!n.getParam("/localization_object", localizationObject)){
+  std::string stlFilePath;
+  if(!n.getParam("/localization_object_filepath", stlFilePath)){
     ROS_INFO("Failed to get param");
   }
 
-  std::string filepath = "/home/bsaund/ros/ros_marsarm/src/gazebo_ray_trace/sdf/" + localizationObject + ".stl";
+  // std::string filepath = "/home/bsaund/ros/ros_marsarm/src/gazebo_ray_trace/sdf/" + localizationObject + ".stl";
+
   // if(localizationObject == "boeing_part") {
-  mesh = importSTL(filepath);
+  mesh = importSTL(stlFilePath);
     // return true;
   // }
   // throw std::invalid_argument("localization object not recognized by particle filter: "

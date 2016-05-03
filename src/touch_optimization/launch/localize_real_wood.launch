@@ -8,6 +8,8 @@
 
   <param name="localization_object_cad" type="str" 
 	 value="package://gazebo_ray_trace/sdf/$(arg localization_object).stl"/>
+  <param name="localization_object_filepath" type="str"
+	 value="$(find gazebo_ray_trace)/sdf/$(arg localization_object).stl"/>
   <param name="localization_object" type="str"
 	 value="$(arg localization_object)"/>
 

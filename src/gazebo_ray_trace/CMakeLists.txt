@@ -108,6 +108,13 @@ target_link_libraries(gazebo_rayTrace_grid
   plot_ray_utils
 )
 
+add_executable(gazebo_ig_manual src/igManual.cpp)
+target_link_libraries(gazebo_ig_manual
+  ${catkin_LIBRARIES}
+  calc_entropy
+  plot_ray_utils
+)
+
 
 
 add_dependencies(gazebo_rayTrace_test gazebo_ray_trace_gencpp)

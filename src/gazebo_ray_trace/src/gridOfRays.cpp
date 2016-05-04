@@ -55,13 +55,14 @@ int main(int argc, char **argv){
 	// ros::Duration(0.1).sleep();
 
 	myfile << x << ", " << y << ", " << plt.getIG(start, end, 0.01, 0.002) << std::endl;
-	y += .01;
+	y += .001;
       }
       std::cout << "x, y: " << x << ", " << y << std::endl;
-      x += .01;
+      x += .001;
     }
     
-    angle += .1;
+    // angle += .1;
+    angle += 2;
     myfile.close();
   }
 

@@ -48,7 +48,7 @@ void randomSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_e
   double bestIG;
   bestIG = 0;
   std::random_device rd;
-  std::uniform_real_distribution<double> rand(-2.0,2.0);
+  std::uniform_real_distribution<double> rand(-3.0,3.0);
 
 
   for(int i=0; i<500; i++){
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
   PlotRayUtils plt;
 
   std::random_device rd;
-  std::normal_distribution<double> randn(0.0,0.003);
+  std::normal_distribution<double> randn(0.0,0.001);
 
   ROS_INFO("Running...");
 

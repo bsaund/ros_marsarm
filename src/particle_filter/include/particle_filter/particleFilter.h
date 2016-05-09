@@ -4,6 +4,7 @@
 #include <array>
 #include <cstring>
 #include <unordered_set>
+#include <Eigen/Dense>
 #include "distanceTransformNew.h"
 using namespace std;
 typedef array<array<float, 3>, 4> vec4x3;
@@ -22,10 +23,9 @@ class particleFilter
 
   void addObservation (double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss = false);
   //void addObservation (double obs[3], double cube[3], int idx_obs);
-  void estimatedDistribution (cspace x_est, double x_est_stat [2]) {
-    memcpy(x_est, particles_est, sizeof(cspace));
-	x_est_stat[0] = particles_est_stat[0];
-	x_est_stat[1] = particles_est_stat[1];
+  void estimatedDistribution (cspace x_mean, cspace x_est_stat) {
+    memcpy(x_mean, particles_mean, sizeof(cspace));
+    memcpy(x_est_stat, particles_est_stat, sizeof(cspace));
   }
   void getAllParticles(cspace *particles_dest);
 
@@ -44,8 +44,9 @@ class particleFilter
   cspace *particles;  // Current set of particles
   cspace *particles0; // Previous set of particles
   cspace *particles_1; // Previous previous set of particles
-  cspace particles_est; // Estimated distribution
-  double particles_est_stat[2];
+  cspace particles_mean; // Estimated distribution
+  cspace particles_est_stat;
+  Eigen::MatrixXd cov_mat;
   //double *W;
 
   // Local functions

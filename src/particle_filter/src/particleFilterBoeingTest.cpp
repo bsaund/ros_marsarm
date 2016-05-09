@@ -180,15 +180,9 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   update = true;
   updateLock.unlock();
 
-  double particles_est_stat[2];
+  particleFilter::cspace particles_est_stat;
   particleFilter::cspace particles_est;
   pFilter_.estimatedDistribution(particles_est, particles_est_stat);
-  std::cout << "est: ";
-        for (int k = 0; k < particleFilter::cdim; k++) {
-            cout << particles_est[k] << ' ';
-        }
-  std::cout << std::endl;
-
   geometry_msgs::PoseArray poseArray;
   for(int i=0; i<50; i++){
     tf::Pose pose = poseAt(particles[i]);
@@ -248,7 +242,7 @@ void visualize()
 
 PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
   pFilter_(n_particles, b_init, 0.001, 0.0035, 0.0001, 0.00),
-  num_voxels{300, 300, 300}//,
+  num_voxels{200, 200, 200}//,
   //dist_transform(num_voxels)
   // particleFilter (int n_particles,
   // 		  double Xstd_ob=0.0001, double Xstd_tran=0.0025,

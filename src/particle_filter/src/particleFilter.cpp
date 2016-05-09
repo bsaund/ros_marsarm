@@ -28,6 +28,7 @@ typedef array<array<float, 3>, 4> vec4x3;
 #define ARM_LENGTH 0.2
 #define N_MIN 50
 #define DISPLACE_INTERVAL 0.015
+#define SAMPLE_RATE 0.50
 
 //vector<vec4x3> importSTL(string filename);
 
@@ -188,7 +189,7 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 	double D;
 	//double D2;
 	double cur_inv_M[2][3];
-	int num_Mean = 1000;
+	int num_Mean = SAMPLE_RATE * numParticles;
 	double **measure_workspace = new double*[num_Mean];
 	double var_measure[3] = { 0, 0, 0 };
 	cspace meanConfig = { 0, 0, 0, 0, 0, 0 };
@@ -216,7 +217,9 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 			var_measure[0] += SQ(measure_workspace[t][0] - mean_inv_M[0]);
 			var_measure[1] += SQ(measure_workspace[t][1] - mean_inv_M[1]);
 			var_measure[2] += SQ(measure_workspace[t][2] - mean_inv_M[2]);
+			delete [] measure_workspace[t];
 		}
+		delete [] measure_workspace;
 		var_measure[0] /= num_Mean;
 		var_measure[1] /= num_Mean;
 		var_measure[2] /= num_Mean;

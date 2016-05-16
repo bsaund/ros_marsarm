@@ -38,8 +38,11 @@ static std::vector<Bin> histogram(std::vector<CalcEntropy::ConfigDist> c, double
 
   int i=0;
   while(i < c.size()){
-    if(c[i].dist < binValue || c[i].dist > 999){
+    if(c[i].dist < binValue){
       hist[binNum].id.push_back(c[i].id);
+      i++;
+    } else if(c[i].dist > 999){
+      hist[nbins-1].id.push_back(c[i].id);
       i++;
     } else {
       binNum++;
@@ -163,10 +166,11 @@ namespace CalcEntropy{
 
 
     for(int binId = 0; binId < hist.size(); binId++){
-      // std::cout << "Bin " << binId << std::endl;
+      // std::cout << "Bin " << binId << ": ";
       for(int j=0; j<hist[binId].id.size(); j++){
 	// std::cout << hist[binId].id[j] << ", ";
       }
+      // std::cout << std::endl;
 
       Bin bin = hist[binId];
 

@@ -6,12 +6,14 @@
 #include <Eigen/Dense>
 #include <unordered_set>
 #include <array>
+#include <chrono>
 #include "tribox.h"
 #include "raytri.h"
 #include "distanceTransformNew.h"
 #include "particleFilter.h"
 #include "matrix.h"
 #include "stlParser.h"
+
 
 using namespace std;
 
@@ -29,6 +31,8 @@ typedef array<array<float, 3>, 4> vec4x3;
 #define N_MIN 50
 #define DISPLACE_INTERVAL 0.015
 #define SAMPLE_RATE 0.50
+#define MAX_ITERATION 500000
+#define COV_MULTIPLIER 10.0
 
 //vector<vec4x3> importSTL(string filename);
 
@@ -104,6 +108,7 @@ void particleFilter::createParticles(cspace *particles_dest, cspace b_Xprior[2],
  */
 void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss)
 {
+	auto timer_begin = std::chrono::high_resolution_clock::now();
 	std::default_random_engine generator;
 	normal_distribution<double> dist2(0, Xstd_scatter);
 
@@ -159,6 +164,9 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 		cout << particles_est_stat[k] << "  ";
 	}
 	cout << endl;
+	auto timer_end = std::chrono::high_resolution_clock::now();
+	auto timer_dur = timer_end - timer_begin;
+	cout << "Elapsed time: " << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << endl << endl;
 	//Eigen::MatrixXd centered = mat.rowwise() - mat.colwise().mean();
 	//Eigen::MatrixXd cov = (centered.adjoint() * centered) / double(mat.rows() - 1);
 	/*if (particles_est_stat[1] < 0.005 && (abs(particles_est[0] - b_Xpre[0][0])>0.001 ||
@@ -195,6 +203,8 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 	int cdim = sizeof(cspace) / sizeof(double);
 	int i = 0;
 	int count = 0;
+	int count2 = 0;
+	int count3 = 0;
 	bool iffar = false;
 	cspace *b_X = particles0;
 	int idx = 0;
@@ -251,11 +261,13 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 		}
 		voxel_size = distTransSize / 100;
 		cout << "Voxel Size: " << voxel_size << endl;
+		
 		dist_transform->voxelizeSTL(mesh, world_range);
 		dist_transform->build();
+		
 		double coeff = pow(numParticles, -0.2)/1.2155;
 		Eigen::MatrixXd H_cov = coeff * cov_mat;
-		cout << " H  : " << H_cov << endl;
+		//cout << " H  : " << H_cov << endl;
 		Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigenSolver(H_cov);
 		Eigen::MatrixXd rot = eigenSolver.eigenvectors(); 
 		Eigen::VectorXd scl = eigenSolver.eigenvalues();
@@ -265,12 +277,28 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 		}
 		Eigen::VectorXd samples(cdim, 1);
 		Eigen::VectorXd rot_sample(cdim, 1);
-		cout << "Sampled Co_std_deviation: " << scl << endl;
+		//cout << "Sampled Co_std_deviation: " << scl << endl;
 		// sample particles
 		//touch_dir << cur_M[1][0], cur_M[1][1], cur_M[1][2];
 		while (i < numParticles && i < maxNumParticles)
 		{
+			if(count > MAX_ITERATION || count2 > 6000 || count3 > 3000)
+			{
+				H_cov = COV_MULTIPLIER * H_cov;
+				Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigenSolver(H_cov);
+				rot = eigenSolver.eigenvectors(); 
+				scl = eigenSolver.eigenvalues();
+
+				for (int j = 0; j < cdim; j++) {
+				  scl(j, 0) = sqrt(scl(j, 0));
+				}
+				count = 0;
+				//cout << "Oops, increase cov_mat" << endl << endl;
+				//cout << " H  : " << H_cov << endl;
+				//cout << "Sampled Co_std_deviation: " << scl << endl;
+			}
 			
+			count += 1;
 			idx = int(floor(distribution(rd)));
 			for (int j = 0; j < cdim; j++)
 			{
@@ -310,6 +338,7 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 				gradient[0] = dist_adjacent[0] - D;
 				gradient[1] = dist_adjacent[1] - D;
 				gradient[2] = dist_adjacent[2] - D;
+				count2 ++;
 				if (checkInObject(mesh, cur_inv_M[0]) == 1 && D != 0)
 				{
 					if (gradient.dot(touch_dir) <= epsilon)
@@ -351,6 +380,7 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 				safe_point[0][0] = cur_M[0][0] - cur_M[1][0] * ARM_LENGTH;
 				safe_point[0][1] = cur_M[0][1] - cur_M[1][1] * ARM_LENGTH;
 				safe_point[0][2] = cur_M[0][2] - cur_M[1][2] * ARM_LENGTH;
+				count3 ++;
 				if (checkObstacles(mesh, tempState, safe_point , D + R) == 1)
 					continue;
 				for (int j = 0; j < cdim; j++)
@@ -369,9 +399,11 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 				//	cout << cur_inv_M[0][0] << "  " << cur_inv_M[0][1] << "  " << cur_inv_M[0][2] << "   " << d << "   " << D << //"   " << gradient << "   " << gradient.dot(touch_dir) << 
 				//	     "   " << dist_adjacent[0] << "   " << dist_adjacent[1] << "   " << dist_adjacent[2] << "   " << particles[i][2] << endl;
 				i += 1;
-			}
-			count += 1;			
+			}			
 		}
+		cout << "Number of total iterations: " << count << endl;
+		cout << "Number of iterations after unsigned_dist_check: " << count2 << endl;
+		cout << "Number of iterations before safepoint check: " << count3 << endl;
 		cout << "Number of occupied bins: " << num_bins << endl;
 	}
 	else {

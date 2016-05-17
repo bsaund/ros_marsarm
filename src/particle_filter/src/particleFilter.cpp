@@ -221,7 +221,7 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 	double distTransSize;
 	double mean_inv_M[3];
 	double safe_point[2][3];
-	Eigen::Vector3d gradient;
+	//Eigen::Vector3d gradient;
 	Eigen::Vector3d touch_dir;
 	int num_bins = 0;
 	if (!miss) {
@@ -326,46 +326,46 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 			double dist_adjacent[3] = { 0, 0, 0 };
 			if (D <= unsigned_dist_check)
 			{
-				if (xind < (dist_transform->num_voxels[0] - 1) && yind < (dist_transform->num_voxels[1] - 1) && zind < (dist_transform->num_voxels[2] - 1))
-				{
-					dist_adjacent[0] = (*dist_transform->dist_transform)[xind + 1][yind][zind];
-					dist_adjacent[1] = (*dist_transform->dist_transform)[xind][yind + 1][zind];
-					dist_adjacent[2] = (*dist_transform->dist_transform)[xind][yind][zind + 1];
-					//gradient /= gradient.norm();
-				}
-				else
-					continue;
-				gradient[0] = dist_adjacent[0] - D;
-				gradient[1] = dist_adjacent[1] - D;
-				gradient[2] = dist_adjacent[2] - D;
+				// if (xind < (dist_transform->num_voxels[0] - 1) && yind < (dist_transform->num_voxels[1] - 1) && zind < (dist_transform->num_voxels[2] - 1))
+				// {
+				// 	dist_adjacent[0] = (*dist_transform->dist_transform)[xind + 1][yind][zind];
+				// 	dist_adjacent[1] = (*dist_transform->dist_transform)[xind][yind + 1][zind];
+				// 	dist_adjacent[2] = (*dist_transform->dist_transform)[xind][yind][zind + 1];
+				// 	//gradient /= gradient.norm();
+				// }
+				// else
+				// 	continue;
+				// gradient[0] = dist_adjacent[0] - D;
+				// gradient[1] = dist_adjacent[1] - D;
+				// gradient[2] = dist_adjacent[2] - D;
 				count2 ++;
 				if (checkInObject(mesh, cur_inv_M[0]) == 1 && D != 0)
 				{
-					if (gradient.dot(touch_dir) <= epsilon)
-						continue;
+					// if (gradient.dot(touch_dir) <= epsilon)
+					// 	continue;
 					D = -D - R;
 				}
 				else if (D == 0) 
 				{
-					double tmp[3] = { cur_inv_M[0][0] + dist_transform->voxel_size, cur_inv_M[0][1], cur_inv_M[0][2] };
-					if (checkInObject(mesh, tmp) == 1)
-						gradient[0] = -gradient[0];
-					tmp[0] -= dist_transform->voxel_size;
-					tmp[1] += dist_transform->voxel_size;
-					if (checkInObject(mesh, tmp) == 1)
-						gradient[1] = -gradient[1];
-					tmp[1] -= dist_transform->voxel_size;
-					tmp[2] += dist_transform->voxel_size;
-					if (checkInObject(mesh, tmp) == 1)
-						gradient[2] = -gradient[2];
-					if (gradient.dot(touch_dir) >= -epsilon)
-						continue;
+					// double tmp[3] = { cur_inv_M[0][0] + dist_transform->voxel_size, cur_inv_M[0][1], cur_inv_M[0][2] };
+					// if (checkInObject(mesh, tmp) == 1)
+					// 	gradient[0] = -gradient[0];
+					// tmp[0] -= dist_transform->voxel_size;
+					// tmp[1] += dist_transform->voxel_size;
+					// if (checkInObject(mesh, tmp) == 1)
+					// 	gradient[1] = -gradient[1];
+					// tmp[1] -= dist_transform->voxel_size;
+					// tmp[2] += dist_transform->voxel_size;
+					// if (checkInObject(mesh, tmp) == 1)
+					// 	gradient[2] = -gradient[2];
+					// if (gradient.dot(touch_dir) >= -epsilon)
+					// 	continue;
 					D = - R;
 				}
 				else
 				{
-					if (gradient.dot(touch_dir) >= -epsilon)
-						continue;
+					// if (gradient.dot(touch_dir) >= -epsilon)
+					// 	continue;
 					D = D - R;
 				}	
 			}

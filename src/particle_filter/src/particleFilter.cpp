@@ -5,6 +5,7 @@
 #include <fstream>
 #include <Eigen/Dense>
 #include <unordered_set>
+#include <unordered_map>
 #include <array>
 #include <chrono>
 #include "tribox.h"
@@ -339,50 +340,53 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 				// gradient[1] = dist_adjacent[1] - D;
 				// gradient[2] = dist_adjacent[2] - D;
 				count2 ++;
-				if (checkInObject(mesh, cur_inv_M[0]) == 1 && D != 0)
-				{
-					// if (gradient.dot(touch_dir) <= epsilon)
-					// 	continue;
-					D = -D - R;
-				}
-				else if (D == 0) 
-				{
-					// double tmp[3] = { cur_inv_M[0][0] + dist_transform->voxel_size, cur_inv_M[0][1], cur_inv_M[0][2] };
-					// if (checkInObject(mesh, tmp) == 1)
-					// 	gradient[0] = -gradient[0];
-					// tmp[0] -= dist_transform->voxel_size;
-					// tmp[1] += dist_transform->voxel_size;
-					// if (checkInObject(mesh, tmp) == 1)
-					// 	gradient[1] = -gradient[1];
-					// tmp[1] -= dist_transform->voxel_size;
-					// tmp[2] += dist_transform->voxel_size;
-					// if (checkInObject(mesh, tmp) == 1)
-					// 	gradient[2] = -gradient[2];
-					// if (gradient.dot(touch_dir) >= -epsilon)
-					// 	continue;
-					D = - R;
-				}
-				else
-				{
-					// if (gradient.dot(touch_dir) >= -epsilon)
-					// 	continue;
-					D = D - R;
-				}	
+				if (checkIntersections(mesh, cur_inv_M[0], cur_inv_M[1], ARM_LENGTH, D))
+					continue;
+				D -= R;
+				// if (checkInObject(mesh, cur_inv_M[0]) == 1 && D != 0)
+				// {
+				// 	// if (gradient.dot(touch_dir) <= epsilon)
+				// 	// 	continue;
+				// 	D = -D - R;
+				// }
+				// else if (D == 0) 
+				// {
+				// 	// double tmp[3] = { cur_inv_M[0][0] + dist_transform->voxel_size, cur_inv_M[0][1], cur_inv_M[0][2] };
+				// 	// if (checkInObject(mesh, tmp) == 1)
+				// 	// 	gradient[0] = -gradient[0];
+				// 	// tmp[0] -= dist_transform->voxel_size;
+				// 	// tmp[1] += dist_transform->voxel_size;
+				// 	// if (checkInObject(mesh, tmp) == 1)
+				// 	// 	gradient[1] = -gradient[1];
+				// 	// tmp[1] -= dist_transform->voxel_size;
+				// 	// tmp[2] += dist_transform->voxel_size;
+				// 	// if (checkInObject(mesh, tmp) == 1)
+				// 	// 	gradient[2] = -gradient[2];
+				// 	// if (gradient.dot(touch_dir) >= -epsilon)
+				// 	// 	continue;
+				// 	D = - R;
+				// }
+				// else
+				// {
+				// 	// if (gradient.dot(touch_dir) >= -epsilon)
+				// 	// 	continue;
+				// 	D = D - R;
+				// }	
 			}
 			else
 				continue;
 			if (D >= -Xstd_ob && D <= Xstd_ob)
 			{
 				
-				safe_point[1][0] = cur_M[1][0];
-				safe_point[1][1] = cur_M[1][1];
-				safe_point[1][2] = cur_M[1][2];
-				safe_point[0][0] = cur_M[0][0] - cur_M[1][0] * ARM_LENGTH;
-				safe_point[0][1] = cur_M[0][1] - cur_M[1][1] * ARM_LENGTH;
-				safe_point[0][2] = cur_M[0][2] - cur_M[1][2] * ARM_LENGTH;
-				count3 ++;
-				if (checkObstacles(mesh, tempState, safe_point , D + R) == 1)
-					continue;
+				// safe_point[1][0] = cur_M[1][0];
+				// safe_point[1][1] = cur_M[1][1];
+				// safe_point[1][2] = cur_M[1][2];
+				// safe_point[0][0] = cur_M[0][0] - cur_M[1][0] * ARM_LENGTH;
+				// safe_point[0][1] = cur_M[0][1] - cur_M[1][1] * ARM_LENGTH;
+				// safe_point[0][2] = cur_M[0][2] - cur_M[1][2] * ARM_LENGTH;
+				// count3 ++;
+				// if (checkObstacles(mesh, tempState, safe_point , D + R) == 1)
+				// 	continue;
 				for (int j = 0; j < cdim; j++)
 				{
 					particles[i][j] = tempState[j];
@@ -881,3 +885,66 @@ int checkObstacles(vector<vec4x3> &mesh, double config[6], double start[2][3], d
 	return 1;
 }
 
+int checkIntersections(vector<vec4x3> &mesh, double voxel_center[3], double dir[3], double check_length, double &dist)
+{
+	int countIntersections = 0;
+	int countIntRod = 0;
+	int num_mesh = int(mesh.size());
+	double vert0[3], vert1[3], vert2[3];
+	double *t = new double; 
+	double *u = new double; 
+	double *v = new double;
+	double tMax = 0;
+	double ray_dir[3] = {-dir[0], -dir[1], -dir[2]};
+	Eigen::Vector3d normal_dir;
+	Eigen::Vector3d ray_length;
+	double inside_length;
+	std::unordered_set<double> hashset;
+	//std::unordered_map<double, int> hashmap;
+	for (int i = 0; i < num_mesh; i++)
+	{
+		vert0[0] = mesh[i][1][0];
+		vert0[1] = mesh[i][1][1];
+		vert0[2] = mesh[i][1][2];
+		vert1[0] = mesh[i][2][0];
+		vert1[1] = mesh[i][2][1];
+		vert1[2] = mesh[i][2][2];
+		vert2[0] = mesh[i][3][0];
+		vert2[1] = mesh[i][3][1];
+		vert2[2] = mesh[i][3][2];
+		if (intersect_triangle(voxel_center, ray_dir, vert0, vert1, vert2, t, u, v) == 1)
+		{
+			if (hashset.find(*t) == hashset.end())
+			{
+				if (*t < check_length && *t > tMax)
+				{
+					countIntRod++;
+					tMax = *t;
+					normal_dir << mesh[i][0][0], mesh[i][0][1], mesh[i][0][2];
+				}
+				else if (*t < check_length)
+					countIntRod++;
+				hashset.insert(*t);
+				countIntersections++;
+			}
+		}
+			
+	}
+	delete t, u, v;
+	if (countIntersections % 2 == 0)
+	{
+		if (tMax > 0)
+			return 1;
+		return 0;
+	}
+	else {
+		dist = -dist;
+		if (tMax > 0 && countIntRod % 2 == 1) {
+			ray_length << tMax * dir[0], tMax * dir[1], tMax * dir[2];
+			double inter_dist = normal_dir.dot(ray_length);
+			if (inter_dist >= dist - epsilon && inter_dist <= dist + epsilon)
+				return 0;
+		}
+		return 1;
+	}
+}

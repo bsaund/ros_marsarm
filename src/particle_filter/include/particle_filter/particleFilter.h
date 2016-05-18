@@ -66,6 +66,7 @@ int getIntersection(vector<vec4x3> &mesh, double pstart[3], double dir[3], doubl
 double testResult(vector<vec4x3> &mesh, double config[6], double touch[2][3], double R);
 int checkObstacles(vector<vec4x3> &mesh, double config[6], double touch[2][3], double dist);
 int checkObstacles(vector<vec4x3> &mesh, double config[6], double start[2][3], double check_length, double dist);
+int checkIntersections(vector<vec4x3> &mesh, double voxel_center[3], double dir[3], double check_length, double &dist);
 int checkEmptyBin(std::unordered_set<string> *set, particleFilter::cspace config);
 #endif // PARTICLE_FILTER_H
 

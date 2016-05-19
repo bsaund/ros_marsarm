@@ -314,16 +314,18 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 			inverseTransform(cur_M, tempState, cur_inv_M);
 			touch_dir << cur_inv_M[1][0], cur_inv_M[1][1], cur_inv_M[1][2];
 			// reject particles ourside of distance transform
-			if (cur_inv_M[0][0] > dist_transform->world_range[0][1] || cur_inv_M[0][0] < dist_transform->world_range[0][0] ||
-				cur_inv_M[0][1] > dist_transform->world_range[1][1] || cur_inv_M[0][1] < dist_transform->world_range[1][0] ||
-				cur_inv_M[0][2] > dist_transform->world_range[2][1] || cur_inv_M[0][2] < dist_transform->world_range[2][0]) {
+			if (cur_inv_M[0][0] >= dist_transform->world_range[0][1] || cur_inv_M[0][0] <= dist_transform->world_range[0][0] ||
+				cur_inv_M[0][1] >= dist_transform->world_range[1][1] || cur_inv_M[0][1] <= dist_transform->world_range[1][0] ||
+				cur_inv_M[0][2] >= dist_transform->world_range[2][1] || cur_inv_M[0][2] <= dist_transform->world_range[2][0]) {
 				continue;
 			}
 			int xind = int(floor((cur_inv_M[0][0] - dist_transform->world_range[0][0]) / dist_transform->voxel_size));
 			int yind = int(floor((cur_inv_M[0][1] - dist_transform->world_range[1][0]) / dist_transform->voxel_size));
 			int zind = int(floor((cur_inv_M[0][2] - dist_transform->world_range[2][0]) / dist_transform->voxel_size));
 			D = (*dist_transform->dist_transform)[xind][yind][zind];
-			
+			// if (xind >= (dist_transform->num_voxels[0] - 1) || yind >= (dist_transform->num_voxels[1] - 1) || zind >= (dist_transform->num_voxels[2] - 1))
+			// 	continue;
+				
 			double dist_adjacent[3] = { 0, 0, 0 };
 			if (D <= unsigned_dist_check)
 			{
@@ -398,7 +400,7 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 						numParticles = min2(maxNumParticles, max2((num_bins - 1) * 2, N_MIN));
 					}
 				}
-				double d = testResult(mesh, particles[i], cur_M, R);
+				//double d = testResult(mesh, particles[i], cur_M, R);
 				//if (d > 0.01)
 				//	cout << cur_inv_M[0][0] << "  " << cur_inv_M[0][1] << "  " << cur_inv_M[0][2] << "   " << d << "   " << D << //"   " << gradient << "   " << gradient.dot(touch_dir) << 
 				//	     "   " << dist_adjacent[0] << "   " << dist_adjacent[1] << "   " << dist_adjacent[2] << "   " << particles[i][2] << endl;

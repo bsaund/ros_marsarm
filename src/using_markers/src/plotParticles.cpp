@@ -89,17 +89,17 @@ void ShapePlotter::generateTransforms()
     geometry_msgs::Pose particleTransform;
     // particleTransform.position.x = randn(gen)/50;
     // particleTransform.position.y = randn(gen)/50;
-    // particleTransform.position.z = randn(gen)/50;
+    // particleTransform.position.z = randn(gen)/50;s
 
 
-    particleTransform.position.x = randn(rd)*uncertainties[0];
-    particleTransform.position.y = randn(rd)*uncertainties[1];
-    particleTransform.position.z = randn(rd)*uncertainties[2];
+    particleTransform.position.x = randn(rd)*uncertainties[0] + 0.02;
+    particleTransform.position.y = randn(rd)*uncertainties[1] - 0.01;
+    particleTransform.position.z = randn(rd)*uncertainties[2] + 0.02;
 
     particleTransform.orientation = 
-      tf::createQuaternionMsgFromRollPitchYaw(randn(rd)*uncertainties[3], 
-					      randn(rd)*uncertainties[4], 
-					      randn(rd)*uncertainties[5]);
+      tf::createQuaternionMsgFromRollPitchYaw(randn(rd)*uncertainties[3] - 0.04, 
+					      randn(rd)*uncertainties[4] + 0.05, 
+					      randn(rd)*uncertainties[5] - 0.01);
 					      
       // tf::createQuaternionMsgFromRollPitchYaw(0, randn(gen)/20, 0);
     

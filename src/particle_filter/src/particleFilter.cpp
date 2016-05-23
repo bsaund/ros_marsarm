@@ -35,6 +35,8 @@ typedef array<array<float, 3>, 4> vec4x3;
 #define MAX_ITERATION 500000
 #define COV_MULTIPLIER 10.0
 
+int total_time = 0;
+int converge_count = 0;
 //vector<vec4x3> importSTL(string filename);
 
 /*
@@ -143,6 +145,8 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 	Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)particles0, cdim, numParticles);
 	Eigen::MatrixXd mat_centered = mat.colwise() - mat.rowwise().mean();
 	cov_mat = (mat_centered * mat_centered.adjoint()) / double(mat.cols());
+	auto timer_end = std::chrono::high_resolution_clock::now();
+	auto timer_dur = timer_end - timer_begin;
 	cout << cov_mat << endl;
 	cout << "Estimated Mean: ";
 	for (int k = 0; k < cdim; k++) {
@@ -165,9 +169,18 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 		cout << particles_est_stat[k] << "  ";
 	}
 	cout << endl;
-	auto timer_end = std::chrono::high_resolution_clock::now();
-	auto timer_dur = timer_end - timer_begin;
+	cout << "Estimate diff: ";
+	double est_diff = sqrt(SQ(particles_mean[0] - 0.3) + SQ(particles_mean[1] - 0.3) + SQ(particles_mean[2] - 0.3)
+			 		    + SQ(particles_mean[3] - 0.5) + SQ(particles_mean[4] - 0.7) + SQ(particles_mean[5] - 0.5));
+	cout << est_diff << endl;
+	if (est_diff >= 0.005) {
+		converge_count ++;
+	}
+	cout << "Converge count: " << converge_count << endl;
 	cout << "Elapsed time: " << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << endl << endl;
+	total_time += std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count();
+	cout << "Total time: " << total_time << endl;
+	cout << "Average time: " << total_time / 20.0 << endl;
 	//Eigen::MatrixXd centered = mat.rowwise() - mat.colwise().mean();
 	//Eigen::MatrixXd cov = (centered.adjoint() * centered) / double(mat.rows() - 1);
 	/*if (particles_est_stat[1] < 0.005 && (abs(particles_est[0] - b_Xpre[0][0])>0.001 ||

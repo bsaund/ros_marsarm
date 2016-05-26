@@ -114,7 +114,7 @@ void particleFilter::createParticles(cspace *particles_dest, cspace b_Xprior[2],
 void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss)
 {
 	auto timer_begin = std::chrono::high_resolution_clock::now();
-	std::default_random_engine generator;
+	std::random_device generator;
 	normal_distribution<double> dist2(0, Xstd_scatter);
 
 	if (!firstObs) {
@@ -466,6 +466,7 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 		cout << "Number of iterations after unsigned_dist_check: " << count2 << endl;
 		cout << "Number of iterations before safepoint check: " << count3 << endl;
 		cout << "Number of occupied bins: " << num_bins << endl;
+		cout << "Number of particles: " << numParticles << endl;
 	}
 	else {
 		// cast multiple rays to check intersections

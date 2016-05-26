@@ -120,7 +120,6 @@ void ShapePlotter::generateTransforms()
 void ShapePlotter::updateMarkers()
 {
   points.markers.resize(particles_.poses.size());
-  ROS_INFO("Receive poseArray Size: %d", (int)particles_.poses.size());
   for(int i=0; i<particles_.poses.size(); i++){
     points.markers[i].header.frame_id = "particle_frame";
     points.markers[i].header.stamp = ros::Time::now();

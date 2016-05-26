@@ -51,9 +51,7 @@ class particleFilter
 
   // Local functions
   void createParticles(cspace *particles, cspace b_Xprior[2], int n_particles);
-  bool updateParticles(cspace *particles_1, cspace *particles0, cspace *particles, double cur_M[2][3],
-			bool miss, vector<vec4x3> &mesh, distanceTransform *dist_transform,
-			double R, double Xstd_ob, double Xstd_tran);
+  bool updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss);
   //void calcWeight(double *W, int n_particles, double Xstd_tran, 
 		//   cspace *particles0, cspace *particles);
   //void resampleParticles(cspace *particles0, cspace *particles, double *W, int n_particles);

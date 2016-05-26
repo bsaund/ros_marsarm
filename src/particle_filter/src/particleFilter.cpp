@@ -1,5 +1,6 @@
 #include <string.h>
 #include <iostream>
+#include <fstream>
 #include <random>
 #include <chrono>
 #include <fstream>
@@ -32,8 +33,9 @@ typedef array<array<float, 3>, 4> vec4x3;
 #define N_MIN 50
 #define DISPLACE_INTERVAL 0.015
 #define SAMPLE_RATE 0.50
-#define MAX_ITERATION 500000
-#define COV_MULTIPLIER 10.0
+#define MAX_ITERATION 100000
+#define COV_MULTIPLIER 5.0
+#define MIN_STD 1.0e-6
 
 int total_time = 0;
 int converge_count = 0;
@@ -129,7 +131,7 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 			b_Xpre[1][k] = sqrt(b_Xpre[1][k] / numParticles);*/
 		}
 	}
-	bool iffar = updateParticles(particles_1, particles0, particles, obs, miss, mesh, dist_transform, R, Xstd_ob, Xstd_tran);
+	bool iffar = updateParticles(obs, mesh, dist_transform, miss);
 	if (firstObs)
 	{
 		firstObs = false;
@@ -147,7 +149,7 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 	cov_mat = (mat_centered * mat_centered.adjoint()) / double(mat.cols());
 	auto timer_end = std::chrono::high_resolution_clock::now();
 	auto timer_dur = timer_end - timer_begin;
-	cout << cov_mat << endl;
+	cout << "cov_mat: " << cov_mat << endl;
 	cout << "Estimated Mean: ";
 	for (int k = 0; k < cdim; k++) {
 		particles_mean[k] = 0;
@@ -177,10 +179,20 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 		converge_count ++;
 	}
 	cout << "Converge count: " << converge_count << endl;
-	cout << "Elapsed time: " << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << endl << endl;
+	cout << "Elapsed time: " << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << endl;
 	total_time += std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count();
 	cout << "Total time: " << total_time << endl;
-	cout << "Average time: " << total_time / 20.0 << endl;
+	cout << "Average time: " << total_time / 20.0 << endl << endl;
+
+	ofstream myfile;
+	myfile.open("/home/shiyuan/Documents/ros_marsarm/diff.csv", ios::out|ios::app);
+	myfile << est_diff << ",";
+	myfile.close();
+	myfile.open("/home/shiyuan/Documents/ros_marsarm/time.csv", ios::out|ios::app);
+	myfile << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << ",";
+	myfile.close();
+
+
 	//Eigen::MatrixXd centered = mat.rowwise() - mat.colwise().mean();
 	//Eigen::MatrixXd cov = (centered.adjoint() * centered) / double(mat.rows() - 1);
 	/*if (particles_est_stat[1] < 0.005 && (abs(particles_est[0] - b_Xpre[0][0])>0.001 ||
@@ -207,9 +219,9 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
  *        Xstd_tran: gaussian kernel standard deviation when sampling
  * output: return whether previous estimate is bad (not used here)
  */
-bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cspace *particles, double cur_M[2][3], 
-		bool miss, vector<vec4x3> &mesh, distanceTransform *dist_transform, double R, double Xstd_ob, double Xstd_tran)
+bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss)
 {
+	
 	std::unordered_set<string> bins;
 	std::random_device rd;
 	std::normal_distribution<double> dist(0, 1);
@@ -238,6 +250,7 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 	//Eigen::Vector3d gradient;
 	Eigen::Vector3d touch_dir;
 	int num_bins = 0;
+	int count_bar = 0;
 	if (!miss) {
 		for (int t = 0; t < num_Mean; t++) {
 			measure_workspace[t] = new double[3];
@@ -278,10 +291,19 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 		
 		dist_transform->voxelizeSTL(mesh, world_range);
 		dist_transform->build();
-		
+		cout << "Finish building DT !!" << endl;
 		double coeff = pow(numParticles, -0.2)/1.2155;
 		Eigen::MatrixXd H_cov = coeff * cov_mat;
-		//cout << " H  : " << H_cov << endl;
+		double tmp_min = 1000000.0;
+		for (int t = 0; t < 3; t++) {
+			if (H_cov(t, t) < tmp_min) {
+				tmp_min = H_cov(t, t);
+			}
+		}
+		if (tmp_min < MIN_STD) {
+			H_cov = MIN_STD / tmp_min * H_cov;
+		}
+		cout << " H  : " << H_cov << endl;
 		Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigenSolver(H_cov);
 		Eigen::MatrixXd rot = eigenSolver.eigenvectors(); 
 		Eigen::VectorXd scl = eigenSolver.eigenvalues();
@@ -294,25 +316,30 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 		//cout << "Sampled Co_std_deviation: " << scl << endl;
 		// sample particles
 		//touch_dir << cur_M[1][0], cur_M[1][1], cur_M[1][2];
+
 		while (i < numParticles && i < maxNumParticles)
 		{
-			if(count > MAX_ITERATION || count2 > 6000 || count3 > 3000)
-			{
-				H_cov = COV_MULTIPLIER * H_cov;
-				Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigenSolver(H_cov);
-				rot = eigenSolver.eigenvectors(); 
-				scl = eigenSolver.eigenvalues();
+			// if(count > MAX_ITERATION || count2 > 4000 || count3 > 3000)
+			// {
+			// 	H_cov = COV_MULTIPLIER * H_cov;
+			// 	Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigenSolver(H_cov);
+			// 	rot = eigenSolver.eigenvectors(); 
+			// 	scl = eigenSolver.eigenvalues();
 
-				for (int j = 0; j < cdim; j++) {
-				  scl(j, 0) = sqrt(scl(j, 0));
-				}
-				count = 0;
-				//cout << "Oops, increase cov_mat" << endl << endl;
-				//cout << " H  : " << H_cov << endl;
-				//cout << "Sampled Co_std_deviation: " << scl << endl;
-			}
+			// 	for (int j = 0; j < cdim; j++) {
+			// 	  scl(j, 0) = sqrt(scl(j, 0));
+			// 	}
+			// 	cout << count << "  " << count2 << "  " << count3 << endl;
+			// 	count = 0;
+			// 	count2 = 0;
+			// 	count3 = 0;
+			// 	cout << "increasing !!!" << endl;
+			// 	//cout << "Oops, increase cov_mat" << endl << endl;
+			// 	//cout << " H  : " << H_cov << endl;
+			// 	//cout << "Sampled Co_std_deviation: " << scl << endl;
+			// }
 			
-			count += 1;
+			
 			idx = int(floor(distribution(rd)));
 			for (int j = 0; j < cdim; j++)
 			{
@@ -322,6 +349,7 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 			//Eigen::VectorXd returnVal = meanVec + rot*samples;
 			for (int j = 0; j < cdim; j++)
 			{
+				/* TODO: use quaternions instead of euler angles */
 				tempState[j] = b_X[idx][j] + rot_sample(j, 0);
 			}
 			inverseTransform(cur_M, tempState, cur_inv_M);
@@ -332,14 +360,23 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 				cur_inv_M[0][2] >= dist_transform->world_range[2][1] || cur_inv_M[0][2] <= dist_transform->world_range[2][0]) {
 				continue;
 			}
+			
 			int xind = int(floor((cur_inv_M[0][0] - dist_transform->world_range[0][0]) / dist_transform->voxel_size));
 			int yind = int(floor((cur_inv_M[0][1] - dist_transform->world_range[1][0]) / dist_transform->voxel_size));
 			int zind = int(floor((cur_inv_M[0][2] - dist_transform->world_range[2][0]) / dist_transform->voxel_size));
+			// cout << "finish update1" << endl;
+
+			// cout << "x " << cur_inv_M[0][0] - dist_transform->world_range[0][0] << endl;
+			// cout << "floor " << floor((cur_inv_M[0][0] - dist_transform->world_range[0][0]) / dist_transform->voxel_size) << endl;
+			// cout << "voxel size " << dist_transform->voxel_size << endl;
+
+			// cout << "idx " << xind << "  " << yind << "  " << zind << endl;
 			D = (*dist_transform->dist_transform)[xind][yind][zind];
 			// if (xind >= (dist_transform->num_voxels[0] - 1) || yind >= (dist_transform->num_voxels[1] - 1) || zind >= (dist_transform->num_voxels[2] - 1))
 			// 	continue;
 				
 			double dist_adjacent[3] = { 0, 0, 0 };
+			count += 1;
 			if (D <= unsigned_dist_check)
 			{
 				// if (xind < (dist_transform->num_voxels[0] - 1) && yind < (dist_transform->num_voxels[1] - 1) && zind < (dist_transform->num_voxels[2] - 1))
@@ -355,8 +392,13 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 				// gradient[1] = dist_adjacent[1] - D;
 				// gradient[2] = dist_adjacent[2] - D;
 				count2 ++;
-				if (checkIntersections(mesh, cur_inv_M[0], cur_inv_M[1], ARM_LENGTH, D))
+				if (checkIntersections(mesh, cur_inv_M[0], cur_inv_M[1], ARM_LENGTH, D)) {
+					count_bar ++;
+					if (count_bar > 1000)
+						break;
 					continue;
+				}
+				count_bar = 0;
 				D -= R;
 				// if (checkInObject(mesh, cur_inv_M[0]) == 1 && D != 0)
 				// {
@@ -464,6 +506,7 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 			std::cout << "Miss!" << endl;
 		}
 	}
+
 	return iffar;
 };
 

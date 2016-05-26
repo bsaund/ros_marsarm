@@ -5,6 +5,7 @@
  *    publishes visualization messages, and RViz.
  */
 #include <iostream>
+#include <fstream>
 #include <ros/ros.h>
 #include "particle_filter/PFilterInit.h"
 #include "particle_filter/AddObservation.h"
@@ -142,7 +143,13 @@ int main(int argc, char **argv)
     }
     i ++;
   }
-
+  std::ofstream myfile;
+  myfile.open("/home/shiyuan/Documents/ros_marsarm/diff.csv", std::ios::out|std::ios::app);
+  myfile << "\n";
+  myfile.close();
+  myfile.open("/home/shiyuan/Documents/ros_marsarm/time.csv", std::ios::out|std::ios::app);
+  myfile << "\n";
+  myfile.close();
   ROS_INFO("Finished all action");
 
 }

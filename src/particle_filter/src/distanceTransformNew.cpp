@@ -89,12 +89,12 @@ void distanceTransform::voxelizeSTL(vector<vec4x3> &mesh, double World_Range[3][
 		ystart = ystart - fmod(ystart - world_range[1][0], voxel_size) + voxel_size / 2;
 		zstart = max2(bbox[2][0], world_range[2][0]);
 		zstart = zstart - fmod(zstart - world_range[2][0], voxel_size) + voxel_size / 2;
-		xend = min2(bbox[0][1], world_range[0][1]);
-		xend = xend - fmod(xend - world_range[0][1], voxel_size) - voxel_size / 2;
-		yend = min2(bbox[1][1], world_range[1][1]);
-		yend = yend - fmod(yend - world_range[1][1], voxel_size) - voxel_size / 2;
-		zend = min2(bbox[2][1], world_range[2][1]);
-		zend = zend - fmod(zend - world_range[2][1], voxel_size) - voxel_size / 2;
+		xend = min2(bbox[0][1], world_range[0][1] - 0.000001);
+		xend = xend - fmod(xend - world_range[0][0], voxel_size) + voxel_size / 2;
+		yend = min2(bbox[1][1], world_range[1][1] - 0.000001);
+		yend = yend - fmod(yend - world_range[1][0], voxel_size) + voxel_size / 2;
+		zend = min2(bbox[2][1], world_range[2][1] - 0.000001);
+		zend = zend - fmod(zend - world_range[2][0], voxel_size) + voxel_size / 2;
 		ix = xstart;
 		for (ix = xstart; ix <= xend; ix += voxel_size)
 		{

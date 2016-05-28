@@ -19,6 +19,10 @@
 
 using namespace std;
 
+#define COMBINE_RAYCASTING
+#define ADAPTIVE_NUMBER
+#define ADAPTIVE_BANDWIDTH
+
 # define Pi          3.141592653589793238462643383279502884L
 
 #define SQ(x) ((x)*(x))
@@ -66,10 +70,13 @@ particleFilter::particleFilter(int n_particles, cspace b_init[2],
 	particles_1 = new cspace[numParticles];
 
 	createParticles(particles0, b_Xprior, numParticles);
+
+	#ifdef ADAPTIVE_BANDWIDTH
 	Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)particles0, cdim, numParticles);
 	Eigen::MatrixXd mat_centered = mat.colwise() - mat.rowwise().mean();
 	cov_mat = (mat_centered * mat_centered.adjoint()) / double(mat.cols());
 	cout << cov_mat << endl;
+	#endif
 	//W = new double[numParticles];
 }
 void particleFilter::getAllParticles(cspace *particles_dest)
@@ -144,12 +151,15 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 	memcpy(particles_1, particles0, numParticles*sizeof(cspace));
 	//resampleParticles(particles0, particles, W, numParticles);
 	memcpy(particles0, particles, numParticles*sizeof(cspace));
+	#ifdef ADAPTIVE_BANDWIDTH
 	Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)particles0, cdim, numParticles);
 	Eigen::MatrixXd mat_centered = mat.colwise() - mat.rowwise().mean();
 	cov_mat = (mat_centered * mat_centered.adjoint()) / double(mat.cols());
+	cout << "cov_mat: " << cov_mat << endl;
+	#endif
 	auto timer_end = std::chrono::high_resolution_clock::now();
 	auto timer_dur = timer_end - timer_begin;
-	cout << "cov_mat: " << cov_mat << endl;
+
 	cout << "Estimated Mean: ";
 	for (int k = 0; k < cdim; k++) {
 		particles_mean[k] = 0;
@@ -292,6 +302,7 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 		dist_transform->voxelizeSTL(mesh, world_range);
 		dist_transform->build();
 		cout << "Finish building DT !!" << endl;
+		#ifdef ADAPTIVE_BANDWIDTH
 		double coeff = pow(numParticles, -0.2)/1.2155;
 		Eigen::MatrixXd H_cov = coeff * cov_mat;
 		double tmp_min = 1000000.0;
@@ -303,7 +314,7 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 		if (tmp_min < MIN_STD) {
 			H_cov = MIN_STD / tmp_min * H_cov;
 		}
-		cout << " H  : " << H_cov << endl;
+		//cout << " H  : " << H_cov << endl;
 		Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigenSolver(H_cov);
 		Eigen::MatrixXd rot = eigenSolver.eigenvectors(); 
 		Eigen::VectorXd scl = eigenSolver.eigenvalues();
@@ -313,6 +324,7 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 		}
 		Eigen::VectorXd samples(cdim, 1);
 		Eigen::VectorXd rot_sample(cdim, 1);
+		#endif
 		//cout << "Sampled Co_std_deviation: " << scl << endl;
 		// sample particles
 		//touch_dir << cur_M[1][0], cur_M[1][1], cur_M[1][2];
@@ -341,17 +353,24 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 			
 			
 			idx = int(floor(distribution(rd)));
+			#ifdef ADAPTIVE_BANDWIDTH
 			for (int j = 0; j < cdim; j++)
 			{
 				samples(j, 0) = scl(j, 0) * dist(rd);
 			}
 			rot_sample = rot*samples;
-			//Eigen::VectorXd returnVal = meanVec + rot*samples;
 			for (int j = 0; j < cdim; j++)
 			{
 				/* TODO: use quaternions instead of euler angles */
 				tempState[j] = b_X[idx][j] + rot_sample(j, 0);
 			}
+			#else
+			for (int j = 0; j < cdim; j++)
+			{
+				/* TODO: use quaternions instead of euler angles */
+				tempState[j] = b_X[idx][j] + Xstd_tran * dist(rd);
+			}
+			#endif
 			inverseTransform(cur_M, tempState, cur_inv_M);
 			touch_dir << cur_inv_M[1][0], cur_inv_M[1][1], cur_inv_M[1][2];
 			// reject particles ourside of distance transform
@@ -392,6 +411,7 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 				// gradient[1] = dist_adjacent[1] - D;
 				// gradient[2] = dist_adjacent[2] - D;
 				count2 ++;
+				#ifdef COMBINE_RAYCASTING
 				if (checkIntersections(mesh, cur_inv_M[0], cur_inv_M[1], ARM_LENGTH, D)) {
 					count_bar ++;
 					if (count_bar > 1000)
@@ -400,54 +420,63 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 				}
 				count_bar = 0;
 				D -= R;
-				// if (checkInObject(mesh, cur_inv_M[0]) == 1 && D != 0)
-				// {
-				// 	// if (gradient.dot(touch_dir) <= epsilon)
-				// 	// 	continue;
-				// 	D = -D - R;
-				// }
-				// else if (D == 0) 
-				// {
-				// 	// double tmp[3] = { cur_inv_M[0][0] + dist_transform->voxel_size, cur_inv_M[0][1], cur_inv_M[0][2] };
-				// 	// if (checkInObject(mesh, tmp) == 1)
-				// 	// 	gradient[0] = -gradient[0];
-				// 	// tmp[0] -= dist_transform->voxel_size;
-				// 	// tmp[1] += dist_transform->voxel_size;
-				// 	// if (checkInObject(mesh, tmp) == 1)
-				// 	// 	gradient[1] = -gradient[1];
-				// 	// tmp[1] -= dist_transform->voxel_size;
-				// 	// tmp[2] += dist_transform->voxel_size;
-				// 	// if (checkInObject(mesh, tmp) == 1)
-				// 	// 	gradient[2] = -gradient[2];
-				// 	// if (gradient.dot(touch_dir) >= -epsilon)
-				// 	// 	continue;
-				// 	D = - R;
-				// }
-				// else
-				// {
-				// 	// if (gradient.dot(touch_dir) >= -epsilon)
-				// 	// 	continue;
-				// 	D = D - R;
-				// }	
+				#else
+				if (checkInObject(mesh, cur_inv_M[0]) == 1 && D != 0)
+				{
+					// if (gradient.dot(touch_dir) <= epsilon)
+					// 	continue;
+					D = -D - R;
+				}
+				else if (D == 0) 
+				{
+					// double tmp[3] = { cur_inv_M[0][0] + dist_transform->voxel_size, cur_inv_M[0][1], cur_inv_M[0][2] };
+					// if (checkInObject(mesh, tmp) == 1)
+					// 	gradient[0] = -gradient[0];
+					// tmp[0] -= dist_transform->voxel_size;
+					// tmp[1] += dist_transform->voxel_size;
+					// if (checkInObject(mesh, tmp) == 1)
+					// 	gradient[1] = -gradient[1];
+					// tmp[1] -= dist_transform->voxel_size;
+					// tmp[2] += dist_transform->voxel_size;
+					// if (checkInObject(mesh, tmp) == 1)
+					// 	gradient[2] = -gradient[2];
+					// if (gradient.dot(touch_dir) >= -epsilon)
+					// 	continue;
+					D = - R;
+				}
+				else
+				{
+					// if (gradient.dot(touch_dir) >= -epsilon)
+					// 	continue;
+					D = D - R;
+				}
+				#endif
 			}
 			else
 				continue;
 			if (D >= -Xstd_ob && D <= Xstd_ob)
 			{
-				
-				// safe_point[1][0] = cur_M[1][0];
-				// safe_point[1][1] = cur_M[1][1];
-				// safe_point[1][2] = cur_M[1][2];
-				// safe_point[0][0] = cur_M[0][0] - cur_M[1][0] * ARM_LENGTH;
-				// safe_point[0][1] = cur_M[0][1] - cur_M[1][1] * ARM_LENGTH;
-				// safe_point[0][2] = cur_M[0][2] - cur_M[1][2] * ARM_LENGTH;
-				// count3 ++;
-				// if (checkObstacles(mesh, tempState, safe_point , D + R) == 1)
-				// 	continue;
+				#ifndef COMBINE_RAYCASTING	
+				safe_point[1][0] = cur_M[1][0];
+				safe_point[1][1] = cur_M[1][1];
+				safe_point[1][2] = cur_M[1][2];
+				safe_point[0][0] = cur_M[0][0] - cur_M[1][0] * ARM_LENGTH;
+				safe_point[0][1] = cur_M[0][1] - cur_M[1][1] * ARM_LENGTH;
+				safe_point[0][2] = cur_M[0][2] - cur_M[1][2] * ARM_LENGTH;
+				count3 ++;
+				if (checkObstacles(mesh, tempState, safe_point , D + R) == 1){
+					count_bar ++;
+					if (count_bar > 1000)
+						break;
+					continue;
+				}
+				count_bar = 0;
+				#endif
 				for (int j = 0; j < cdim; j++)
 				{
 					particles[i][j] = tempState[j];
 				}
+				#ifdef ADAPTIVE_NUMBER
 				if (checkEmptyBin(&bins, particles[i]) == 1) {
 					num_bins++;
 					if (i >= N_MIN) {
@@ -455,6 +484,7 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 						numParticles = min2(maxNumParticles, max2((num_bins - 1) * 2, N_MIN));
 					}
 				}
+				#endif
 				//double d = testResult(mesh, particles[i], cur_M, R);
 				//if (d > 0.01)
 				//	cout << cur_inv_M[0][0] << "  " << cur_inv_M[0][1] << "  " << cur_inv_M[0][2] << "   " << d << "   " << D << //"   " << gradient << "   " << gradient.dot(touch_dir) << 
@@ -950,8 +980,8 @@ int checkIntersections(vector<vec4x3> &mesh, double voxel_center[3], double dir[
 	int countIntRod = 0;
 	int num_mesh = int(mesh.size());
 	double vert0[3], vert1[3], vert2[3];
-	double *t = new double; 
-	double *u = new double; 
+	double *t = new double;
+	double *u = new double;
 	double *v = new double;
 	double tMax = 0;
 	double ray_dir[3] = {-dir[0], -dir[1], -dir[2]};

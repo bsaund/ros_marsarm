@@ -49,7 +49,7 @@ void randomSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_e
   double bestIG;
   bestIG = 0;
   std::random_device rd;
-  std::uniform_real_distribution<double> rand(-3.0,3.0);
+  std::uniform_real_distribution<double> rand(-4.0,3.0);
 
 
   for(int i=0; i<1000; i++){

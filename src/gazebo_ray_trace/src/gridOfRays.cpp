@@ -37,8 +37,8 @@ int main(int argc, char **argv){
     std::cout << "Angle: " << angle << std::endl;
 
     std::ostringstream ss;
-    ss << "XY_rotation_" << angle << ".txt"; 
-    myfile.open(ss.str());
+    // ss << "XY_rotation_" << angle << ".txt"; 
+    // myfile.open(ss.str());
     R.setRotation(tf::createQuaternionFromRPY(0,-angle,0));
     x = 0.3;
     while( x <= 1.4){
@@ -51,19 +51,19 @@ int main(int argc, char **argv){
 	end   = t * R * t.inverse() * end;
 
 	// plt.plotCylinder(start, end, 0.01, 0.002);
-	// plt.plotRay(start, end, false);
-	// ros::Duration(0.1).sleep();
+	plt.plotRay(start, end, false);
+	ros::Duration(0.1).sleep();
 
-	myfile << x << ", " << y << ", " << plt.getIG(start, end, 0.01, 0.002) << std::endl;
-	y += .001;
+	// myfile << x << ", " << y << ", " << plt.getIG(start, end, 0.01, 0.002) << std::endl;
+	y += .3;
       }
       std::cout << "x, y: " << x << ", " << y << std::endl;
-      x += .001;
+      x += .3;
     }
     
     // angle += .1;
-    angle += 2;
-    myfile.close();
+    angle += 2.031;
+    // myfile.close();
   }
 
 

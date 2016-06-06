@@ -48,7 +48,7 @@ class RayTracePluginUtils{
   bool rayTraceCondDisEntropy(gazebo_ray_trace::RayTraceCylinder::Request &req,
 			      gazebo_ray_trace::RayTraceCylinder::Response &resp);
 
-  std::vector<CalcEntropy::ConfigDist> intersectionsToConfig(std::vector<RayIntersection> const &rays, double depth_err);
+  std::vector<CalcEntropy::ConfigDist> intersectionsToConfig(std::vector<RayIntersection> const &rays, double depth_err, tf::Vector3 start, tf::Vector3 end);
 
  public:
   ros::NodeHandle* rosnode_;
@@ -59,6 +59,8 @@ class RayTracePluginUtils{
   double rayTrace(tf::Vector3 start, tf::Vector3 end);
 
   tf::Vector3 calcNormal(tf::Vector3 start, tf::Vector3 end);
+
+  std::vector<tf::Vector3> calcNormals(tf::Vector3 start, tf::Vector3 end);
 
   math::Vector3 vectorTFToGazebo(const tf::Vector3 t);
 

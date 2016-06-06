@@ -12,7 +12,9 @@
 #include "std_msgs/String.h"
 #include <tf/transform_broadcaster.h>
 #include "gazebo_ray_trace/plotRayUtils.h"
+#include <ros/console.h>
 # define M_PI       3.14159265358979323846  /* pi */
+
 
 /**
  * Gets initial points for the particle filter by shooting
@@ -151,7 +153,7 @@ void generateRandomRay(std::mt19937 &gen, tf::Pose &probePose, tf::Point &start,
 
   start = probePose.getOrigin();
   end = probePose.getOrigin() + 
-    tf::Transform(probePose.getRotation()) * tf::Point(0,0,.1);
+    tf::Transform(probePose.getRotation()) * tf::Point(0,0,.15);
 }
 
 
@@ -174,6 +176,7 @@ void randomSelection(PlotRayUtils &plt, tf::Pose &probePose)
 
   tf::Point best_start, best_end;
 
+
   for(int i=0; i<500; i++){
     // tf::Point start(rand(gen), rand(gen), rand(gen));
     // start = start.normalize();
@@ -181,9 +184,11 @@ void randomSelection(PlotRayUtils &plt, tf::Pose &probePose)
     // end.normalized();
     tf::Point start, end;
     tf::Pose probePoseTmp;
+
     generateRandomRay(gen, probePoseTmp, start, end);
     // plt.plotRay(start, end);
     double IG = plt.getIG(start, end, 0.01, 0.002);
+
     if (IG > bestIG){
       
       bestIG = IG;
@@ -191,6 +196,9 @@ void randomSelection(PlotRayUtils &plt, tf::Pose &probePose)
       best_end = end;
       probePose = probePoseTmp;
     }
+
+
+    ROS_DEBUG_THROTTLE(10, "Calculating best point based on information gain...");
   }
   plt.plotRay(best_start, best_end);
   plt.plotIntersections(best_start, best_end);
@@ -224,6 +232,10 @@ geometry_msgs::Pose probeAt(tf::Transform rotate, tf::Transform base, double x, 
 
 int main(int argc, char **argv)
 {
+  if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
+    ros::console::notifyLoggerLevelsChanged();
+  }
+
   ros::init(argc, argv, "updating_particles");
   ros::NodeHandle n;
   PlotRayUtils plt;

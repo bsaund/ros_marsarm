@@ -16,7 +16,7 @@
 int main(int argc, char **argv){
   ros::init(argc, argv, "ig_manual");
   if (argc != 7){
-    ROS_INFO("usage: two vectors x y z x y z");
+    ROS_INFO("usage: two vectors x y z dir_x dir_y dir_z");
     return 1;
   }
 
@@ -25,6 +25,7 @@ int main(int argc, char **argv){
 
   tf::Point start(atof(argv[1]), atof(argv[2]), atof(argv[3]));
   tf::Point end(atof(argv[4]), atof(argv[5]), atof(argv[6]));
+  end = start + end;
 
 
   plt.plotCylinder(start, end, 0.01, 0.002);

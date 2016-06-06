@@ -130,7 +130,9 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
 {
   geometry_msgs::Point obs = req.p;
   geometry_msgs::Point dir = req.dir; 
-  ROS_INFO("Adding Observation...");
+  ROS_INFO("Adding Observation...") ;
+  ROS_INFO("point: %f, %f, %f", obs.x, obs.y, obs.z);
+  ROS_INFO("dir: %f, %f, %f", dir.x, dir.y, dir.z);
   double obs2[2][3] = {{obs.x, obs.y, obs.z}, {dir.x, dir.y, dir.z}};
 
   pFilter_.addObservation(obs2, mesh, dist_transform, 0);
@@ -195,16 +197,16 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   particleFilter::cspace particles_est;
   pFilter_.estimatedDistribution(particles_est, particles_est_stat);
   geometry_msgs::PoseArray poseArray;
-  for(int i=0; i<500; i++){
+  for(int i=0; i<NUM_PARTICLES; i++){
     tf::Pose pose = poseAt(particles[i]);
     geometry_msgs::Pose pose_msg;
     tf::poseTFToMsg(trans*pose, pose_msg);
     poseArray.poses.push_back(pose_msg);
+    // ROS_INFO("Pose %d: %f, %f, %f", i, poseArray.poses[i].position.x,
+    // 	     poseArray.poses[i].position.y, 
+    // 	     poseArray.poses[i].position.z);
+
   }
-  ROS_INFO("Pose 1: %f%f%f", poseArray.poses[0].position.x,
-	   poseArray.poses[0].position.y, 
-	   poseArray.poses[0].position.z);
-  ROS_INFO("PoseArray Size: %d", (int) poseArray.poses.size());
   return poseArray;
 }
 
@@ -269,7 +271,7 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
   // sub_init = n.subscribe("/particle_filter_init", 1, &PFilterTest::initDistribution, this);
   srv_add_obs = n.advertiseService("/particle_filter_add", &PFilterTest::addObs, this);
   pub_particles = n.advertise<geometry_msgs::PoseArray>("/particles_from_filter", 5);
-  ROS_INFO("Testing Boeing");
+  ROS_INFO("Loading Boeing Particle Filter");
   getMesh("boeing_part.stl");
   //int num_voxels[3] = { 200,200,200 };
   //dist_transform(num_voxels);
@@ -300,6 +302,8 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
   update = true;
   updateLock.unlock();
   #endif
+  ros::Duration(1.0).sleep();
+  pub_particles.publish(getParticlePoseArray());
 }
 
 int main(int argc, char **argv)

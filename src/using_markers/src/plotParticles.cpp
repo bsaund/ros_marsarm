@@ -33,7 +33,7 @@ class ShapePlotter
   geometry_msgs::PoseArray particles_;
   
 
-  int numParticles = 500;
+  int numParticles = 1;
 
   void externalParticleUpdate(geometry_msgs::PoseArray p);
 
@@ -92,14 +92,20 @@ void ShapePlotter::generateTransforms()
     // particleTransform.position.z = randn(gen)/50;s
 
 
-    particleTransform.position.x = randn(rd)*uncertainties[0] + 0.02;
-    particleTransform.position.y = randn(rd)*uncertainties[1] - 0.01;
-    particleTransform.position.z = randn(rd)*uncertainties[2] + 0.02;
+    // particleTransform.position.x = randn(gen)*uncertainties[0];
+    // particleTransform.position.y = randn(gen)*uncertainties[1];
+    // particleTransform.position.z = randn(gen)*uncertainties[2];
+
+    // particleTransform.orientation = 
+    //   tf::createQuaternionMsgFromRollPitchYaw(randn(gen)*uncertainties[3], 
+    // 					      randn(gen)*uncertainties[4], 
+    // 					      randn(gen)*uncertainties[5]);
+    particleTransform.position.x = 0;
+    particleTransform.position.y = 0;
+    particleTransform.position.z = 0;
 
     particleTransform.orientation = 
-      tf::createQuaternionMsgFromRollPitchYaw(randn(rd)*uncertainties[3] - 0.04, 
-					      randn(rd)*uncertainties[4] + 0.05, 
-					      randn(rd)*uncertainties[5] - 0.01);
+      tf::createQuaternionMsgFromRollPitchYaw(0,0,0);
 					      
       // tf::createQuaternionMsgFromRollPitchYaw(0, randn(gen)/20, 0);
     
@@ -154,7 +160,8 @@ void ShapePlotter::updateMarkers()
     points.markers[i].color.b = 0.8f;
 
     //alpha to make the particles transparent
-    points.markers[i].color.a = 0.07;
+    // points.markers[i].color.a = 0.07;
+    points.markers[i].color.a = 0.2;
 
   }
 }

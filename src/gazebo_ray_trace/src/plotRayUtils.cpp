@@ -258,6 +258,7 @@ void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double radial_er
 gazebo_ray_trace::RayTraceCylinder PlotRayUtils::getIGFullResponse(
 		  tf::Point start, tf::Point end, double radial_err, double dist_err)
 {
+
   gazebo_ray_trace::RayTraceCylinder srv;
 
   transformRayToParticleFrame(start, end, srv.request.start, srv.request.end);

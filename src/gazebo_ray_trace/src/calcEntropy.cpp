@@ -2,7 +2,7 @@
 #include <iostream>
 #include <algorithm>
 #include <math.h>
-
+#include <ctime>
 
 struct Bin {
   // std::vector<CalcEntropy::ConfigDist> element;
@@ -23,7 +23,8 @@ static std::vector<Bin> histogram(std::vector<CalcEntropy::ConfigDist> c, double
   }
 
   double max = c[m].dist;
-  
+
+
 
   int nbins = (int)((max-min)/binSize) + 2;
   double binValue = min + binSize;
@@ -32,9 +33,10 @@ static std::vector<Bin> histogram(std::vector<CalcEntropy::ConfigDist> c, double
 
   hist.resize(nbins);
 
-
+  // std::cout << std::endl << std::endl;
   // std::cout <<"Max: " << max << " Min: " << min << std::endl;
   // std::cout <<"c size " << c.size() << " hist size: " << hist.size() << std::endl;
+  // std::cout <<"binSize: " << binSize << " nbins:" << nbins << std::endl;
 
   int i=0;
   while(i < c.size()){
@@ -167,9 +169,9 @@ namespace CalcEntropy{
 
     for(int binId = 0; binId < hist.size(); binId++){
       // std::cout << "Bin " << binId << ": ";
-      for(int j=0; j<hist[binId].id.size(); j++){
-	// std::cout << hist[binId].id[j] << ", ";
-      }
+      // for(int j=0; j<hist[binId].id.size(); j++){
+      // 	std::cout << hist[binId].id[j] << ", ";
+      // }
       // std::cout << std::endl;
 
       Bin bin = hist[binId];
@@ -188,11 +190,15 @@ namespace CalcEntropy{
   
   double calcIG(std::vector<ConfigDist> distances, double binSize, int numConfigs)
   {
+    int start_s = clock();
     double H_Y_given_X = calcCondDisEntropy(distances, binSize);
     double p = 1.0 / (double)numConfigs;
     double H_Y = -log(p);
 
     // std::cout << "IG: " <<  H_Y - H_Y_given_X << std::endl;
+    int afterIG_s = clock();
+    std::cout << "IG: " << (afterIG_s - start_s)/double(CLOCKS_PER_SEC) << std::endl;
+
     return H_Y - H_Y_given_X;
   }
 

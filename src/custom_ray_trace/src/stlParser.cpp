@@ -57,7 +57,7 @@ vector<vec4x3> StlParser::importSTL(string filename)
 	return mesh;
 }
 
-void setMeshPoint(float* point, float* value)
+void setMeshPoint(array<float,3> &point, float* value)
 {
   for(int i=0; i<3; i++){
     point[i] = value[i];
@@ -73,108 +73,17 @@ void setMeshFace(vec4x3 &face, float boundX[2],
 		      boundY[faceBool[i][1]], 
 		      boundZ[faceBool[i][2]]};
 
-    setMeshPoint(&face[i+1][0], point);
+    setMeshPoint(face[i+1], point);
+    // for(int j=0; j<3; j++){
+    //   face[i+1][j] = point[j];
+    // }
+    // cout << point[0] << ", " << point[1] << ", " << point[2] << endl; 
   }
 }
 
-vector<vector<int>> generateBinarySet(vector<int> start)
-{
-  vector<vector<int>> v;
-  int i=start[0];
-  int j=start[1];
-  int k=start[2];
-
-  while(i < 2){
-    while(j < 2){
-      while(k < 2){
-	vector<int> point = {i,j,k};
-	v.push_back(point);
-	k++;
-      }
-      k = 0;
-      j++;
-    }
-    j = 0;
-    i++;
-  }
-	
-
-  // for(int i=start[0]; i<2; i++){
-  //   for(int j=start[1]; j<2; j++){
-  //     for(int k=start[2]; k<2; k++){
-  // 	vector<int> point = {i,j,k};
-  // 	v.push_back(point);
-  //     }
-  //   }
-  // }
-  return v;
-}
-
-/*
- *  Returns true if exactly one element of v2 is exactly one larger than 
- *  that same element in v1. All other elements are equal.
- */
-bool oneLarger(vector<int> v1, vector<int> v2){
-  int absDiff = 0;
-  for(int i=0; i<3; i++){
-    absDiff += abs(v2[i] - v1[i]);
-  }
-  return absDiff == 1;
-}
 
 vector<vector<vector<int>>> getFaceIndices()
 {
-  /*
-  vector<int> base = {0, 0, 0};
-  vector<vector<int>> basePoints = generateBinarySet(base);
-  vector<vector<vector<int>>> faceIndices;
-
-
-  for(vector<int> mainCorner: basePoints){
-
-    for(vector<int> c1: generateBinarySet(mainCorner)){
-      cout << endl;
-      cout << endl;
-
-      cout << c1[0] << ", " << c1[1] << ", " << c1[2] << endl;
-      cout << endl;
-      
-      for(vector<int> c2: generateBinarySet(c1)){
-	cout << c2[0] << ", " << c2[1] << ", " << c2[2] << endl;
-
-	// cout << oneLarger(mainCorner, c1) << endl;
-	// if(oneLarger(mainCorner, c1) &&
-	//    oneLarger(mainCorner, c2)){
-	//   cout << mainCorner[0] << ", " << mainCorner[1] << ", " << mainCorner[2] << endl;
-	//   cout << c1[0] << ", " << c1[1] << ", " << c1[2] << endl;
-	//   cout << c2[0] << ", " << c2[1] << ", " << c2[2] << endl;
-	//   cout << endl;
-	// }
-	
-	if(oneLarger(mainCorner, c1) &&
-	   oneLarger(mainCorner, c2) &&
-	   c1 != c2){
-	  // vector<vector<int>> face {mainCorner, c1, c2};
-	  // cout << mainCorner[0] << ", " << mainCorner[1] << ", " << mainCorner[2] << endl;	  
-	  for(int val: mainCorner)
-	    cout << val << ", ";
-	  for(int val: c1)
-	    cout << val << ", ";
-	  for(int val: c2)
-	    cout << val << ", ";
-	  cout << endl;
-	  
-	  vector<vector<int>> face;
-	  face.push_back(mainCorner);
-	  face.push_back(c1);
-	  face.push_back(c2);
-	  faceIndices.push_back(face);
-	}
-      }
-    }
-  }
-
-  */
   vector<vector<vector<int>>> faceIndices;
   faceIndices = {{{0,0,0}, {0,0,1}, {0,1,0}},
 		 {{0,0,0}, {0,0,1}, {1,0,0}},
@@ -217,29 +126,31 @@ vector<vec4x3> StlParser::getSurroundingBox(vector<vec4x3> fullMesh){
 
 
 
-  int faceIndex = -1;
+  int faceIndex = 0;
 
   vector<vector<vector<int>>> faceIndBool = getFaceIndices();
 
 
   for(vector<vector<int>> faceBool: faceIndBool){
     setMeshFace(surroundingBox[faceIndex++], boundX, boundY, boundZ,
-		faceBool);
+    		faceBool);
   }
 
   
-  // int n = 0;
-  // for(vec4x3 tri: surroundingBox){
-  //   cout << n++ << endl;
-  //   cout << endl;
-  //   for(array<float,3> point: tri){
-  //     cout << endl;
-  //     for(float coord: point){
-  // 	cout << coord << ", ";
-  //     }
-  //   }
+  int n = 0;
+  for(vec4x3 tri: surroundingBox){
 
-  // }
+    cout << endl;
+    cout << n++ << endl;
+    for(array<float,3> point: tri){
+      cout << endl;
+
+      for(float coord: point){
+  	cout << coord << ", ";
+      }
+    }
+
+  }
 
   return surroundingBox;
 

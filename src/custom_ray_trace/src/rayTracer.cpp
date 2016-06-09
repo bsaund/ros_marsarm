@@ -129,7 +129,7 @@ bool RayTracer::loadMesh(){
   mesh = StlParser::importSTL(stlFilePath);
   // StlParser::testFunc();
   // getSurroundingBox();
-  // surroundingBox = StlParser::getSurroundingBox(mesh);
+  surroundingBox = StlParser::getSurroundingBox(mesh);
   ROS_INFO("survived");
 }
 

@@ -22,8 +22,8 @@
 
   <rosparam param="particle_frame">
     <!-- [.97, 0.41, .18, 0, 0, -2] -->
-    [1.1, 0.41, .18, 0, 0, -1.95]
-
+    <!-- [1.1, 0.41, .18, 0, 0, -1.95] -->
+    [0, 0, 0, 0, 0, -1.57]
   </rosparam>
 
 
@@ -35,10 +35,10 @@
   <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
 
 <!-- Gazebo ray tracing service used to calculate values of a touch -->
-  <include file="$(find gazebo_ray_trace)/launch/headless_ray_tracing_service.launch">
-    <arg name="world_name" 
-	 value="$(find gazebo_ray_trace)/worlds/$(arg localization_object).world"/>
-  </include>
+  <!-- <include file="$(find gazebo_ray_trace)/launch/headless_ray_tracing_service.launch"> -->
+  <!--   <arg name="world_name"  -->
+  <!-- 	 value="$(find gazebo_ray_trace)/worlds/$(arg localization_object).world"/> -->
+  <!-- </include> -->
 
 
 

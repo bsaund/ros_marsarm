@@ -7,7 +7,7 @@ project(particle_filter)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  gazebo_ray_trace
+  custom_ray_trace
   roscpp
   visualization_msgs
   tf
@@ -139,14 +139,15 @@ add_definitions(${PCL_DEFINITIONS})
 #target_link_libraries(pfilter3D
 #  ${catkin_LIBRARIES})
 
-add_library(pfilter6D src/particleFilter6DOF.cpp)
-target_link_libraries(pfilter6D
- ${catkin_LIBRARIES})
+# add_library(pfilter6D src/particleFilter6DOF.cpp)
+# target_link_libraries(pfilter6D
+#  ${catkin_LIBRARIES})
 
 add_library(pfilterBoeing src/particleFilter.cpp)
 target_link_libraries(pfilterBoeing
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES})
+
 
 add_library(Matrix src/matrix.cpp)
 target_link_libraries(Matrix
@@ -180,11 +181,11 @@ target_link_libraries(triBox
 #  pfilter3D
 #)
 
-add_executable(pfilter6DOFTest src/particleFilter6DOFTest.cpp)
-target_link_libraries(pfilter6DOFTest
- ${catkin_LIBRARIES}
- pfilter6D
-)
+# add_executable(pfilter6DOFTest src/particleFilter6DOFTest.cpp)
+# target_link_libraries(pfilter6DOFTest
+#  ${catkin_LIBRARIES}
+#  pfilter6D
+# )
   
 
 add_executable(pfilterBoeingTest src/particleFilterBoeingTest.cpp)
@@ -230,11 +231,11 @@ target_link_libraries(pfilterBoeingTest
 # )
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE
+)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES

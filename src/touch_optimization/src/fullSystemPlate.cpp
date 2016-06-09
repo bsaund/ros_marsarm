@@ -10,7 +10,7 @@
 #include "particle_filter/AddObservation.h"
 #include "geometry_msgs/Point.h"
 #include <tf/transform_broadcaster.h>
-#include "gazebo_ray_trace/plotRayUtils.h"
+#include "custom_ray_trace/plotRayUtils.h"
 # define M_PI       3.14159265358979323846  /* pi */
 
 

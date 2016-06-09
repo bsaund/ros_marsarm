@@ -14,6 +14,7 @@
 #include "particle_filter/PFilterInit.h"
 #include "particle_filter/AddObservation.h"
 #include "stlParser.h"
+// #include <custom_ray_trace/stlParser.h>
 #include <custom_ray_trace/rayTracer.h>
 #include <math.h>
 #include <string>

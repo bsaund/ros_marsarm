@@ -48,6 +48,7 @@ class RayTracer
  private:
   ros::NodeHandle n_;
   vector<vec4x3> mesh;
+  vector<vec4x3> surroundingBox;
   ParticleHandler particleHandler;
 
  public:

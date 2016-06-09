@@ -46,15 +46,15 @@ include_directories(${Boost_INCLUDE_DIR}
   include/${PROJECT_NAME}
   )
 
-add_library(stlParser src/stlParser.cpp)
-target_link_libraries(stlParser
+add_library(stlParserCustom src/stlParser.cpp)
+target_link_libraries(stlParserCustom
   ${catkin_LIBRARIES})
 
 # add_library(ray_trace src/rayTrace.cpp)
 # target_link_libraries(ray_trace ${catkin_LIBRARIES})
 
 add_library(ray_tracer src/rayTracer.cpp)
-target_link_libraries(ray_tracer ${catkin_LIBRARIES} stlParser)
+target_link_libraries(ray_tracer ${catkin_LIBRARIES} stlParserCustom)
 
 add_library(calc_entropy src/calcEntropy.cpp)
 target_link_libraries(calc_entropy ${catkin_LIBRARIES})

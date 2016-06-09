@@ -41,7 +41,7 @@ typedef array<array<float, 3>, 4> vec4x3;
 
 int intersect_triangle(double orig[3], double dir[3],
 		       double vert0[3], double vert1[3], double vert2[3],
-		       double *t, double *u, double *v)
+		       double &t, double &u, double &v)
 {
   double edge1[3], edge2[3], tvec[3], pvec[3], qvec[3];
   double det, inv_det;
@@ -62,39 +62,39 @@ int intersect_triangle(double orig[3], double dir[3],
   if (det > EPSILON)
     {
       /* calculate U parameter and test bounds */
-      *u = DOT(tvec, pvec);
-      if (*u < 0.0 || *u > det)
+      u = DOT(tvec, pvec);
+      if (u < 0.0 || u > det)
 	return 0;
 
       /* prepare to test V parameter */
       CROSS(qvec, tvec, edge1);
 
       /* calculate V parameter and test bounds */
-      *v = DOT(dir, qvec);
-      if (*v < 0.0 || *u + *v > det)
+      v = DOT(dir, qvec);
+      if (v < 0.0 || u + v > det)
 	return 0;
 
     }
   else if (det < -EPSILON)
     {
       /* calculate U parameter and test bounds */
-      *u = DOT(tvec, pvec);
-      if (*u > 0.0 || *u < det)
+      u = DOT(tvec, pvec);
+      if (u > 0.0 || u < det)
 	return 0;
 
       /* prepare to test V parameter */
       CROSS(qvec, tvec, edge1);
 
       /* calculate V parameter and test bounds */
-      *v = DOT(dir, qvec);
-      if (*v > 0.0 || *u + *v < det)
+      v = DOT(dir, qvec);
+      if (v > 0.0 || u + v < det)
 	return 0;
     }
   else return 0;  /* ray is parallell to the plane of the triangle */
 
   /* calculate t, ray intersects triangle */
-  *t = DOT(edge2, qvec) * inv_det;
-  if (*t < 0)
+  t = DOT(edge2, qvec) * inv_det;
+  if (t < 0)
     return 0;
   /*(*u) *= inv_det;
     (*v) *= inv_det;*/
@@ -116,9 +116,9 @@ int getIntersection(vector<vec4x3> &mesh, double pstart[3], double dir[3], doubl
 {
   int num_mesh = int(mesh.size());
   double vert0[3], vert1[3], vert2[3];
-  double *t = new double;
-  double *u = new double;
-  double *v = new double;
+  double t;
+  double u;
+  double v;
   double tMin = 100000;
   for (int i = 0; i < num_mesh; i++)
     {
@@ -131,13 +131,13 @@ int getIntersection(vector<vec4x3> &mesh, double pstart[3], double dir[3], doubl
       vert2[0] = mesh[i][3][0];
       vert2[1] = mesh[i][3][1];
       vert2[2] = mesh[i][3][2];
-      if (intersect_triangle(pstart, dir, vert0, vert1, vert2, t, u, v) == 1 && *t < tMin)
+      if (intersect_triangle(pstart, dir, vert0, vert1, vert2, t, u, v) == 1 && t < tMin)
 	{
-	  tMin = *t;
+	  tMin = t;
 	}
 
     }
-  delete t, u, v;
+
   if (tMin == 100000)
     return 0;
 

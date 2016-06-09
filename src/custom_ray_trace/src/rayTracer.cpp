@@ -2,6 +2,7 @@
 #include "stlParser.h"
 #include <std_msgs/Empty.h>
 
+
 /*
  *************************
  ***     Ray           ***
@@ -125,7 +126,11 @@ bool RayTracer::loadMesh(){
     ROS_INFO("Failed to get param");
   }
 
-  mesh = importSTL(stlFilePath);
+  mesh = StlParser::importSTL(stlFilePath);
+  // StlParser::testFunc();
+  // getSurroundingBox();
+  // surroundingBox = StlParser::getSurroundingBox(mesh);
+  ROS_INFO("survived");
 }
 
 
@@ -161,11 +166,7 @@ bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart)
 
   bool hitPart = false;
   for(int i=0; i<particles.size(); i++){
-    double d;
     hitPart = tracePartFrameRay(ray.getTransformed(particles[i]), distToPart[i]) || hitPart;
-    // Ray ray2 = ray.getTransformed(particles[i]);
-    // ROS_INFO("Ray: %f, %f, %f", ray2.start.getX(), ray2.start.getY(), ray2.start.getZ());
-    // ROS_INFO("dist: %f", d);
   }
   return hitPart;
 }

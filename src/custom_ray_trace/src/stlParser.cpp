@@ -16,7 +16,7 @@ using namespace std;
 * Input: filename: STL file name
 * Output: Triangle mesh vector.
 */
-vector<vec4x3> StlParser::importSTL(string filename)
+pluckerMesh StlParser::importSTL(string filename)
 {
 	ifstream stlFile;
 	char title[80];
@@ -30,7 +30,7 @@ vector<vec4x3> StlParser::importSTL(string filename)
 	stlFile.read((char *)&num_triangles, sizeof(num_triangles));
 	cout << title << endl;
 	cout << num_triangles << endl;
-	vector<vec4x3> mesh(num_triangles);
+	stlMesh mesh(num_triangles);
 	Eigen::Vector3f normal_vec, edge1, edge2;
 	Eigen::Vector3f vet[4];
 
@@ -54,7 +54,7 @@ vector<vec4x3> StlParser::importSTL(string filename)
 		mesh[i][0][2] = vet[0][2];
 		stlFile.read((char *)&attribute, sizeof(short));
 	}
-	return mesh;
+	return meshToPluckerMesh(mesh);
 }
 
 void setMeshPoint(array<float,3> &point, float* value)
@@ -105,13 +105,18 @@ vector<vector<vector<int>>> getFaceIndices()
  * Returns a mesh of the smallest axis-aligned box 
  * that surrounds the full mesh
  */
-vector<vec4x3> StlParser::getSurroundingBox(vector<vec4x3> fullMesh){
-  vector<vec4x3> surroundingBox(12);
+pluckerMesh StlParser::getSurroundingBox(pluckerMesh pMesh){
+
+  stlMesh fullMesh = pMesh.stl;
+  stlMesh surroundingBox(12);
+  
+
 
   float boundX[2] = {fullMesh[0][1][0], fullMesh[0][1][0]};
   float boundY[2] = {fullMesh[0][1][1], fullMesh[0][1][1]};
   float boundZ[2] = {fullMesh[0][1][2], fullMesh[0][1][2]};
 
+  
 
   for(int i=0; i<fullMesh.size(); i++){
     for(int j=1; j<4; j++){
@@ -124,8 +129,6 @@ vector<vec4x3> StlParser::getSurroundingBox(vector<vec4x3> fullMesh){
     }
   }
 
-
-
   int faceIndex = 0;
 
   vector<vector<vector<int>>> faceIndBool = getFaceIndices();
@@ -137,21 +140,35 @@ vector<vec4x3> StlParser::getSurroundingBox(vector<vec4x3> fullMesh){
   }
 
   
-  int n = 0;
-  for(vec4x3 tri: surroundingBox){
+  // int n = 0;
+  // for(vec4x3 tri: surroundingBox){
 
-    cout << endl;
-    cout << n++ << endl;
-    for(array<float,3> point: tri){
-      cout << endl;
+  //   cout << endl;
+  //   cout << n++ << endl;
+  //   for(array<float,3> point: tri){
+  //     cout << endl;
 
-      for(float coord: point){
-  	cout << coord << ", ";
-      }
-    }
+  //     for(float coord: point){
+  // 	cout << coord << ", ";
+  //     }
+  //   }
 
+  // }
+
+  return meshToPluckerMesh(surroundingBox);
+
+}
+
+
+pluckerMesh StlParser::meshToPluckerMesh(stlMesh sMesh){
+  pluckerMesh pMesh;
+  pMesh.stl = sMesh;
+
+  for(vec4x3 stlTri:sMesh){
+    array<float,3> p1 = stlTri[1];
+    array<float,3> p2 = stlTri[2];
+    array<float,3> p3 = stlTri[3];
+    pMesh.plucker.push_back(pointsToPluckerTri(p1, p2, p3));
   }
-
-  return surroundingBox;
-
+  return pMesh;
 }

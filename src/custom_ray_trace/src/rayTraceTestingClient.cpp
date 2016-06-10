@@ -21,16 +21,32 @@ int main(int argc, char **argv){
 			    atof(argv[6]));
   double dist;
   Ray ray(start, end);
+  std::vector<double> distsQuick;
   std::vector<double> dists;
 
-  rayTracer.traceRay(ray, dist);
+  // rayTracer.traceRay(ray, dist);
 
-  ROS_INFO("dist: %f", dist);
+  // ROS_INFO("dist: %f", dist);
+  ros::Time s = ros::Time::now();
 
-  // for(int i=0; i<1000; i++){
-  //   rayTracer.traceAllParticles(ray, dists);
-  // }
+  for(int i=0; i<1000; i++){
+    rayTracer.traceAllParticles(ray, distsQuick, true);
+  }
+  ROS_INFO("Quick time: %f", (ros::Time::now() - s).toSec());
+  s = ros::Time::now();
+  for(int i=0; i<1000; i++){
+    rayTracer.traceAllParticles(ray, dists, false);
+  }
 
+  ROS_INFO("Slow time: %f", (ros::Time::now() - s).toSec());
+
+
+  // rayTracer.traceAllParticles(ray, dists, false);
+
+  if(dists == distsQuick)
+    ROS_INFO("Distances equal");
+  else
+    ROS_INFO("Distances Not Equal");
   // rayTracer.traceAllParticles(ray, dists);
   // ROS_INFO("numParticles: %d", dists.size());
 

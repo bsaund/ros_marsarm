@@ -47,16 +47,16 @@ class RayTracer
 {
  private:
   ros::NodeHandle n_;
-  vector<vec4x3> mesh;
-  vector<vec4x3> surroundingBox;
+  pluckerMesh mesh;
+  pluckerMesh surroundingBox;
   ParticleHandler particleHandler;
 
  public:
   RayTracer();
   bool loadMesh();
-  bool tracePartFrameRay(Ray ray, double &distToPart);
+  bool tracePartFrameRay(Ray ray, double &distToPart, bool quick=false);
   bool traceRay(Ray ray, double &distToPart);
-  bool traceAllParticles(Ray ray, std::vector<double> &distToPart);
+  bool traceAllParticles(Ray ray, std::vector<double> &distToPart, bool quick=true);
   void transformRayToPartFrame(Ray &ray);
   void transformRayToBaseFrame(Ray &ray);
 

@@ -127,24 +127,31 @@ bool RayTracer::loadMesh(){
   }
 
   mesh = StlParser::importSTL(stlFilePath);
-  // StlParser::testFunc();
-  // getSurroundingBox();
+
   surroundingBox = StlParser::getSurroundingBox(mesh);
-  ROS_INFO("survived");
+
 }
 
 
 /*
  * Returns true if ray intersections with part and sets the distToPart
  */
-bool RayTracer::tracePartFrameRay(Ray ray, double &distToPart)
+bool RayTracer::tracePartFrameRay(Ray ray, double &distToPart, bool quick)
 {
-  double startArr[3] = {ray.start.getX(), ray.start.getY(), ray.start.getZ()};
+  array<double,3> startArr = {ray.start.getX(), ray.start.getY(), ray.start.getZ()};
 
   tf::Vector3 dir = ray.getDirection();
-  double dirArr[3] = {dir.getX(), dir.getY(), dir.getZ()};
+  array<double,3> dirArr = {dir.getX(), dir.getY(), dir.getZ()};
+  
+  double tmp;
+  if(quick && !getIntersection(surroundingBox, startArr, dirArr, tmp))
+     return false;
+  // if(getIntersection(surroundingBox, startArr, dirArr, tmp))
+  //   cout << "What!!??!?!?!!?!" << endl;
+
 
   return getIntersection(mesh, startArr, dirArr, distToPart);
+  // return true;
 }
 
 
@@ -158,7 +165,7 @@ bool RayTracer::traceRay(Ray ray, double &distToPart){
  *  Traces a ray (specified in world frame) on all particles
  *  Returns true if at least 1 ray intersected the part
  */
-bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart)
+bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart, bool quick)
 {
   transformRayToPartFrame(ray);
   std::vector<tf::Transform> particles = particleHandler.getParticles();
@@ -166,7 +173,7 @@ bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart)
 
   bool hitPart = false;
   for(int i=0; i<particles.size(); i++){
-    hitPart = tracePartFrameRay(ray.getTransformed(particles[i]), distToPart[i]) || hitPart;
+    hitPart = tracePartFrameRay(ray.getTransformed(particles[i]), distToPart[i], quick) || hitPart;
   }
   return hitPart;
 }

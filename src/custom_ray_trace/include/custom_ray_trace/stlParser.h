@@ -1,9 +1,16 @@
 #ifndef STL_PARSER_CUSTOM_RAY_H
 #define STL_PARSER_CUSTOM_RAY_H
 #include <array>
+#include "plucker.h"
 
 using namespace std;
 typedef array<array<float, 3>, 4> vec4x3;
+typedef vector<vec4x3> stlMesh;
+
+struct pluckerMesh{
+  stlMesh stl;
+  vector<pluckerTriangle> plucker;
+};
 
 
 namespace StlParser{
@@ -12,9 +19,11 @@ namespace StlParser{
    * Input: filename: STL file name
    * Output: Triangle mesh vector.
    */
-  vector<vec4x3> importSTL(string filename);
+  pluckerMesh importSTL(string filename);
 
-  vector<vec4x3> getSurroundingBox(vector<vec4x3> fullMesh);
+  pluckerMesh getSurroundingBox(pluckerMesh fullMesh);
+
+  pluckerMesh meshToPluckerMesh(stlMesh);
 
 }
 

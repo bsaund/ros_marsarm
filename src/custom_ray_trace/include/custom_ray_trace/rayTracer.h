@@ -47,8 +47,8 @@ class RayTracer
 {
  private:
   ros::NodeHandle n_;
-  pluckerMesh mesh;
-  pluckerMesh surroundingBox;
+  stlMesh mesh;
+  stlMesh surroundingBox;
   ParticleHandler particleHandler;
 
  public:

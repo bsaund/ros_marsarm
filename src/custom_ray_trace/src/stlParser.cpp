@@ -16,7 +16,7 @@ using namespace std;
 * Input: filename: STL file name
 * Output: Triangle mesh vector.
 */
-pluckerMesh StlParser::importSTL(string filename)
+stlMesh StlParser::importSTL(string filename)
 {
 	ifstream stlFile;
 	char title[80];
@@ -54,7 +54,7 @@ pluckerMesh StlParser::importSTL(string filename)
 		mesh[i][0][2] = vet[0][2];
 		stlFile.read((char *)&attribute, sizeof(short));
 	}
-	return meshToPluckerMesh(mesh);
+	return mesh;
 }
 
 void setMeshPoint(array<float,3> &point, float* value)
@@ -105,9 +105,8 @@ vector<vector<vector<int>>> getFaceIndices()
  * Returns a mesh of the smallest axis-aligned box 
  * that surrounds the full mesh
  */
-pluckerMesh StlParser::getSurroundingBox(pluckerMesh pMesh){
+stlMesh StlParser::getSurroundingBox(stlMesh fullMesh){
 
-  stlMesh fullMesh = pMesh.stl;
   stlMesh surroundingBox(12);
   
 
@@ -155,20 +154,8 @@ pluckerMesh StlParser::getSurroundingBox(pluckerMesh pMesh){
 
   // }
 
-  return meshToPluckerMesh(surroundingBox);
+  return surroundingBox;
 
 }
 
 
-pluckerMesh StlParser::meshToPluckerMesh(stlMesh sMesh){
-  pluckerMesh pMesh;
-  pMesh.stl = sMesh;
-
-  for(vec4x3 stlTri:sMesh){
-    array<float,3> p1 = stlTri[1];
-    array<float,3> p2 = stlTri[2];
-    array<float,3> p3 = stlTri[3];
-    pMesh.plucker.push_back(pointsToPluckerTri(p1, p2, p3));
-  }
-  return pMesh;
-}

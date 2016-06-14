@@ -9,7 +9,7 @@ namespace CalcEntropy{
     int id;
   };
 
-  double calcDifferentialEntropy(std::vector<double> dist);
+  /* double calcDifferentialEntropy(std::vector<double> dist); */
   double calcCondDisEntropy(std::vector<ConfigDist> p, double binSize);
   double calcIG(std::vector<ConfigDist> p, double binSize, int numConfigs);
 

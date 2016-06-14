@@ -130,32 +130,6 @@ bool distOrdering(const CalcEntropy::ConfigDist &left, const CalcEntropy::Config
 
 namespace CalcEntropy{
 
-  /*
-   * Calculates entropy of element of dist distribution
-   *  Uses a histogram then evalutes the entropy
-   *  of the discrete elements
-   */
-  double calcDifferentialEntropy(std::vector<double> dist){
-    // std::cout << "Calculating Entropy" << std::endl;
-    // std::cout << "size is " << dist.size() << std::endl;
-    std::sort(dist.begin(), dist.end());
-    double binSize;
-    std::vector<double> hist = histogram(dist, dist.size()/5, &binSize);
-    if(hist.size() == 0){
-      return 0;
-    }
-    
-    double entropy = 0;
-    for(int i=0; i < hist.size(); i++){
-      double f = hist[i] / dist.size();
-      if(f > 0){
-	entropy += -f * log(f/binSize);
-      }
-      // std::cout << hist[i] << std::endl;
-    }
-
-    return entropy;
-  }
 
   /*
    *  Calculates conditional discrete entropy of histogram of distance
@@ -195,7 +169,7 @@ namespace CalcEntropy{
     // int start_s = clock();
     double H_Y_given_X = calcCondDisEntropy(distances, binSize);
     double p = 1.0 / (double)numConfigs;
-    double H_Y = -log(p);
+    double H_Y = -log(p); // note this is - sum(p_i * log(p_i)) * n
 
     // std::cout << "IG: " <<  H_Y - H_Y_given_X << std::endl;
     // int afterIG_s = clock();

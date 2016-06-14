@@ -50,7 +50,7 @@ void makeImage(double resolution, double roll, double pitch, double yaw, int fra
 
       // myfile << x << ", " << y << ", " << plt.getIG(start, end, 0.01, 0.002) << std::endl;
 
-      myfile << x << ", " << y << ", " << rayt.getIG(Ray(start, end), 0.01, 0.002) << std::endl;
+      myfile << x << ", " << y << ", " << rayt.getIG(Ray(start, end), 0.01, 0.01) << std::endl;
       y += resolution;
     }
     std::cout << "x, y: " << x << ", " << y << std::endl;
@@ -96,13 +96,13 @@ int main(int argc, char **argv){
 
   double resolution = 0.01;
   double roll = 0;
-  double pitch = 0;
+  double pitch = 1.1;
   double yaw = 0;
 
   makeImage(resolution, roll, pitch, yaw, 1);
 
 
-  return 0;
+  // return 0;
   //Touch 1
   addObs(0.729351, 0.215845, 0.358450, 
 	 0.397690, 0.865360, -0.304951, srv_add);

@@ -37,13 +37,15 @@ static std::vector<Bin> histogram(std::vector<CalcEntropy::ConfigDist> c, double
   // std::cout <<"Max: " << max << " Min: " << min << std::endl;
   // std::cout <<"c size " << c.size() << " hist size: " << hist.size() << std::endl;
   // std::cout <<"binSize: " << binSize << " nbins:" << nbins << std::endl;
+  
+  
 
   int i=0;
   while(i < c.size()){
     if(c[i].dist < binValue){
       hist[binNum].id.push_back(c[i].id);
       i++;
-    } else if(c[i].dist > 999){
+    } else if(c[i].dist > 999){ //Outside of normal range
       hist[nbins-1].id.push_back(c[i].id);
       i++;
     } else {
@@ -190,14 +192,14 @@ namespace CalcEntropy{
   
   double calcIG(std::vector<ConfigDist> distances, double binSize, int numConfigs)
   {
-    int start_s = clock();
+    // int start_s = clock();
     double H_Y_given_X = calcCondDisEntropy(distances, binSize);
     double p = 1.0 / (double)numConfigs;
     double H_Y = -log(p);
 
     // std::cout << "IG: " <<  H_Y - H_Y_given_X << std::endl;
-    int afterIG_s = clock();
-    std::cout << "IG: " << (afterIG_s - start_s)/double(CLOCKS_PER_SEC) << std::endl;
+    // int afterIG_s = clock();
+    // std::cout << "IG time: " << (afterIG_s - start_s)/double(CLOCKS_PER_SEC) << std::endl;
 
     return H_Y - H_Y_given_X;
   }

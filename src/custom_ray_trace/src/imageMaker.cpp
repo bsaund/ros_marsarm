@@ -16,7 +16,8 @@
 void makeImage(double resolution, double roll, double pitch, double yaw, int frame)
 {
   std::ofstream myfile;
-  PlotRayUtils plt;
+  // PlotRayUtils plt;
+  RayTracer rayt;
   tf::Transform t, R;
 
 
@@ -47,7 +48,9 @@ void makeImage(double resolution, double roll, double pitch, double yaw, int fra
       // plt.plotRay(start, end, false);
       // ros::Duration(0.1).sleep();
 
-      myfile << x << ", " << y << ", " << plt.getIG(start, end, 0.01, 0.002) << std::endl;
+      // myfile << x << ", " << y << ", " << plt.getIG(start, end, 0.01, 0.002) << std::endl;
+
+      myfile << x << ", " << y << ", " << rayt.getIG(Ray(start, end), 0.01, 0.002) << std::endl;
       y += resolution;
     }
     std::cout << "x, y: " << x << ", " << y << std::endl;

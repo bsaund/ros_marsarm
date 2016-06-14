@@ -1,5 +1,4 @@
 #include "plotRayUtils.h"
-
 #include "calcEntropy.h"
 
 

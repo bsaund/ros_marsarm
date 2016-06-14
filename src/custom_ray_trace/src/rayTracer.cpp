@@ -15,7 +15,7 @@ Ray::Ray(tf::Point start_, tf::Point end_)
   end = end_;
 }
 
-tf::Vector3 Ray::getDirection()
+tf::Vector3 Ray::getDirection() const
 {
   return (end-start).normalize();
 }
@@ -27,7 +27,7 @@ Ray Ray::transform(tf::Transform trans)
   return *this;
 }
 
-Ray Ray::getTransformed(tf::Transform trans)
+Ray Ray::getTransformed(tf::Transform trans) const
 {
   Ray newRay(start, end);
   newRay.transform(trans);
@@ -46,7 +46,7 @@ ParticleHandler::ParticleHandler()
   particlesInitialized = false;
   tf_listener_.waitForTransform("/my_frame", "/particle_frame", ros::Time(0), ros::Duration(10.0));
   tf_listener_.lookupTransform("/particle_frame", "/my_frame", ros::Time(0), trans_);
-  particleSub = rosnode.subscribe("/transform_particles", 1000, 
+  particleSub = rosnode.subscribe("/particles_from_filter", 1000, 
 				     &ParticleHandler::setParticles, this);
   requestParticlesPub = rosnode.advertise<std_msgs::Empty>("/request_particles", 5);
 }
@@ -74,6 +74,12 @@ void ParticleHandler::setParticles(geometry_msgs::PoseArray p)
     particles[i] = particles[i].inverse();
   }
 
+  int num = std::min((int)particles.size(), 50);
+  subsetParticles = vector<tf::Transform>(particles);
+  subsetParticles.resize(num);
+  
+  ROS_INFO("Subset Particles Size %d", subsetParticles.size());
+  
   particlesInitialized = true;
 }
 
@@ -98,6 +104,26 @@ std::vector<tf::Transform> ParticleHandler::getParticles()
   return particles;
 }
 
+std::vector<tf::Transform> ParticleHandler::getParticleSubset()
+{
+  if(!particlesInitialized)
+    getParticles();
+  return subsetParticles;
+}
+
+int ParticleHandler::getNumParticles()
+{
+  if(!particlesInitialized)
+    getParticles();
+  return particles.size();
+}
+
+int ParticleHandler::getNumSubsetParticles()
+{
+  if(!particlesInitialized)
+    getParticles();
+  return subsetParticles.size();
+}
 
 
 
@@ -129,29 +155,52 @@ bool RayTracer::loadMesh(){
   mesh = StlParser::importSTL(stlFilePath);
 
   surroundingBox = StlParser::getSurroundingBox(mesh);
+}
 
+void RayTracer::getBoxAroundAllParticles()
+{
+  
+}
+
+
+/*
+ *   Casts "ray" onto "mesh", set the distance, and returns true if intersection happened
+ *    sets distance to 1000 if no intersection
+ */
+bool RayTracer::traceRay(const stlMesh &mesh, const Ray &ray, double &distToPart)
+{
+  array<double,3> startArr = {ray.start.getX(), ray.start.getY(), ray.start.getZ()};
+  tf::Vector3 dir = ray.getDirection();
+  array<double,3> dirArr = {dir.getX(), dir.getY(), dir.getZ()};
+  distToPart = 1000;
+
+  return getIntersection(mesh, startArr, dirArr, distToPart);
 }
 
 
 /*
  * Returns true if ray intersections with part and sets the distToPart
  */
-bool RayTracer::tracePartFrameRay(Ray ray, double &distToPart, bool quick)
+bool RayTracer::tracePartFrameRay(const Ray &ray, double &distToPart, bool quick)
 {
-  array<double,3> startArr = {ray.start.getX(), ray.start.getY(), ray.start.getZ()};
 
+  array<double,3> startArr = {ray.start.getX(), ray.start.getY(), ray.start.getZ()};
   tf::Vector3 dir = ray.getDirection();
   array<double,3> dirArr = {dir.getX(), dir.getY(), dir.getZ()};
   
   double tmp;
-  if(quick && !getIntersection(surroundingBox, startArr, dirArr, tmp))
+
+  distToPart = 1000;
+  
+  if(quick && !traceRay(surroundingBox, ray, tmp))
+  // if(quick && (surroundingBox, ray, tmp))
      return false;
   // if(getIntersection(surroundingBox, startArr, dirArr, tmp))
   //   cout << "What!!??!?!?!!?!" << endl;
 
 
-  return getIntersection(mesh, startArr, dirArr, distToPart);
-  // return true;
+  return traceRay(mesh, ray, distToPart);
+
 }
 
 
@@ -168,7 +217,7 @@ bool RayTracer::traceRay(Ray ray, double &distToPart){
 bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart, bool quick)
 {
   transformRayToPartFrame(ray);
-  std::vector<tf::Transform> particles = particleHandler.getParticles();
+  std::vector<tf::Transform> particles = particleHandler.getParticleSubset();
   distToPart.resize(particles.size());
 
   bool hitPart = false;
@@ -177,6 +226,82 @@ bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart, bool
   }
   return hitPart;
 }
+
+double RayTracer::getIG(Ray ray, double radialErr, double distErr)
+{
+  vector<CalcEntropy::ConfigDist> distsToParticles;
+  if(!traceCylinderAllParticles(ray, radialErr, distsToParticles))
+     return 0;
+  return CalcEntropy::calcIG(distsToParticles, distErr, particleHandler.getNumSubsetParticles());
+}
+
+/*
+ *  Returns the possible distances receives from casting a cylinder of rays
+ *  
+ *  Returns true if at least one ray hit the part
+ */
+bool RayTracer::traceCylinderAllParticles(Ray ray, double radius, 
+					  vector<CalcEntropy::ConfigDist> &distsToPart)
+{
+  std::vector<tf::Vector3> ray_orthog = getOrthogonalBasis(ray.getDirection());
+  int n = 12;
+  
+  bool hitPart = false;
+
+  for(int i = 0; i < n; i ++){
+    double theta = 2*3.1415 * i / n;
+    tf::Vector3 offset = radius * (ray_orthog[0]*sin(theta) + ray_orthog[1]*cos(theta));
+
+    Ray cylinderRay(ray.start + offset, ray.end+offset);
+    vector<double> distsTmp;
+    
+    hitPart = traceAllParticles(cylinderRay, distsTmp) || hitPart;
+
+    for(int pNumber = 0; pNumber<distsTmp.size(); pNumber++){
+      CalcEntropy::ConfigDist cDist;
+      cDist.id = pNumber;
+      cDist.dist = distsTmp[pNumber];
+      distsToPart.push_back(cDist);
+    }
+  }
+  return hitPart;
+}
+
+/**
+ *  Return vector of two Vector3s that form a basis for the space orthogonal to the ray
+ */
+std::vector<tf::Vector3> RayTracer::getOrthogonalBasis(tf::Vector3 dir)
+{
+  // ROS_INFO("Orthogonal Parts of %f, %f, %f", ray.getX(), ray.getY(), ray.getZ());
+  dir.normalize();
+  std::vector<tf::Vector3> v;
+
+  //Initialize vector on the most orthogonal axis
+  switch(dir.closestAxis()){
+  case 0:
+    v.push_back(tf::Vector3(0,0,1));
+    v.push_back(tf::Vector3(0,1,0));
+    break;
+  case 1:
+    v.push_back(tf::Vector3(0,0,1));
+    v.push_back(tf::Vector3(1,0,0));
+    break;
+  case 2:
+  default:
+    v.push_back(tf::Vector3(0,1,0));
+    v.push_back(tf::Vector3(1,0,0));
+    break;
+  }
+
+  //Recover the pure orthogonal parts
+  for(int i = 0; i < 2; i++){
+    v[i] = (v[i] - dir * dir.dot(v[i])).normalize();
+    // ROS_INFO("%f, %f, %f", v[i].getX(), v[i].getY(), v[i].getZ());
+  }
+
+  return v;
+}
+
 
 
 void RayTracer::transformRayToPartFrame(Ray &ray)

@@ -124,20 +124,20 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 	std::random_device generator;
 	normal_distribution<double> dist2(0, Xstd_scatter);
 
-	if (!firstObs) {
-		//bzero(b_Xpre, 2 * sizeof(cspace));
-		for (int k = 0; k < cdim; k++) {
-			for (int j = 0; j < numParticles; j++) {
-				particles0[j][k] += dist2(generator);
-				//b_Xpre[0][k] += particles0[j][k];
-			}
-			/*b_Xpre[0][k] /= numParticles;
-			for (int j = 0; j < numParticles; j++) {
-				b_Xpre[1][k] += SQ(particles0[j][k] - b_Xpre[0][k]);
-			}
-			b_Xpre[1][k] = sqrt(b_Xpre[1][k] / numParticles);*/
-		}
-	}
+	// if (!firstObs) {
+	// 	//bzero(b_Xpre, 2 * sizeof(cspace));
+	// 	for (int k = 0; k < cdim; k++) {
+	// 		for (int j = 0; j < numParticles; j++) {
+	// 			particles0[j][k] += dist2(generator);
+	// 			//b_Xpre[0][k] += particles0[j][k];
+	// 		}
+	// 		/*b_Xpre[0][k] /= numParticles;
+	// 		for (int j = 0; j < numParticles; j++) {
+	// 			b_Xpre[1][k] += SQ(particles0[j][k] - b_Xpre[0][k]);
+	// 		}
+	// 		b_Xpre[1][k] = sqrt(b_Xpre[1][k] / numParticles);*/
+	// 	}
+	// }
 	bool iffar = updateParticles(obs, mesh, dist_transform, miss);
 	if (firstObs)
 	{
@@ -155,7 +155,6 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 	Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)particles0, cdim, numParticles);
 	Eigen::MatrixXd mat_centered = mat.colwise() - mat.rowwise().mean();
 	cov_mat = (mat_centered * mat_centered.adjoint()) / double(mat.cols());
-	cout << "cov_mat: " << cov_mat << endl;
 	#endif
 	auto timer_end = std::chrono::high_resolution_clock::now();
 	auto timer_dur = timer_end - timer_begin;
@@ -305,6 +304,7 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 		#ifdef ADAPTIVE_BANDWIDTH
 		double coeff = pow(numParticles, -0.2)/1.2155;
 		Eigen::MatrixXd H_cov = coeff * cov_mat;
+		cout << "H_cov: " << H_cov << endl;
 		double tmp_min = 1000000.0;
 		for (int t = 0; t < 3; t++) {
 			if (H_cov(t, t) < tmp_min) {
@@ -627,7 +627,7 @@ int main()
 	particleFilter::cspace particles_est_stat;
 	double particle_est_diff;
 
-	std::default_random_engine generator;
+	std::random_device generator;
 	std::uniform_real_distribution<double> distribution(0, 1);
 
 	double pstart[3];

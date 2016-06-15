@@ -18,13 +18,17 @@
 #include <string>
 #include <array>
 
+//#define POINT_CLOUD
 #define NUM_PARTICLES 500
 typedef array<array<float, 3>, 4> vec4x3;
+
+#ifdef POINT_CLOUD
 pcl::PointCloud<pcl::PointXYZ>::Ptr basic_cloud_ptr1(new pcl::PointCloud<pcl::PointXYZ>);
 pcl::PointCloud<pcl::PointXYZ>::Ptr basic_cloud_ptr2(new pcl::PointCloud<pcl::PointXYZ>);
 bool update;
 boost::mutex updateModelMutex;
 void visualize();
+#endif
 
 class PFilterTest
 {
@@ -159,19 +163,20 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   pFilter_.getAllParticles(particles);
   tf::Transform trans = plt.getTrans();
 
+  #ifdef POINT_CLOUD
   boost::mutex::scoped_lock updateLock(updateModelMutex);	
   basic_cloud_ptr1->points.clear();
   basic_cloud_ptr2->points.clear();
   for (int j = 0; j < pFilter_.numParticles; j++ ) {
-	pcl::PointXYZ basic_point;
-	basic_point.x = particles[j][0] * 2;
-	basic_point.y = particles[j][1] * 2;
-	basic_point.z = particles[j][2] * 2;
-	basic_cloud_ptr1->points.push_back(basic_point);
-        basic_point.x = particles[j][3] * 2;
-	basic_point.y = particles[j][4] * 2;
-	basic_point.z = particles[j][5] * 2;
-	basic_cloud_ptr2->points.push_back(basic_point);
+  	pcl::PointXYZ basic_point;
+  	basic_point.x = particles[j][0] * 2;
+  	basic_point.y = particles[j][1] * 2;
+  	basic_point.z = particles[j][2] * 2;
+  	basic_cloud_ptr1->points.push_back(basic_point);
+    basic_point.x = particles[j][3] * 2;
+  	basic_point.y = particles[j][4] * 2;
+  	basic_point.z = particles[j][5] * 2;
+  	basic_cloud_ptr2->points.push_back(basic_point);
   }
   basic_cloud_ptr1->width = (int) basic_cloud_ptr1->points.size ();
   basic_cloud_ptr1->height = 1;
@@ -179,6 +184,7 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   basic_cloud_ptr2->height = 1;
   update = true;
   updateLock.unlock();
+  #endif
 
   particleFilter::cspace particles_est_stat;
   particleFilter::cspace particles_est;
@@ -197,6 +203,7 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   return poseArray;
 }
 
+#ifdef POINT_CLOUD
 /*
  * Visualize particles
  */
@@ -238,7 +245,7 @@ void visualize()
 		return;
 	}
 }
-
+#endif
 
 PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
   pFilter_(n_particles, b_init, 0.001, 0.0035, 0.0001, 0.00),
@@ -263,21 +270,22 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
   //dist_transform(num_voxels);
   dist_transform = new distanceTransform(num_voxels);
 
+  #ifdef POINT_CLOUD
   particleFilter::cspace particles[NUM_PARTICLES];
   pFilter_.getAllParticles(particles);
   boost::mutex::scoped_lock updateLock(updateModelMutex);	
   basic_cloud_ptr1->points.clear();
   basic_cloud_ptr2->points.clear();
   for (int j = 0; j < NUM_PARTICLES; j++ ) {
-	pcl::PointXYZ basic_point;
-	basic_point.x = particles[j][0] * 2;
-	basic_point.y = particles[j][1] * 2;
-	basic_point.z = particles[j][2] * 2;
-	basic_cloud_ptr1->points.push_back(basic_point);
-        basic_point.x = particles[j][3] * 2;
-	basic_point.y = particles[j][4] * 2;
-	basic_point.z = particles[j][5] * 2;
-	basic_cloud_ptr2->points.push_back(basic_point);
+  	pcl::PointXYZ basic_point;
+  	basic_point.x = particles[j][0] * 2;
+  	basic_point.y = particles[j][1] * 2;
+  	basic_point.z = particles[j][2] * 2;
+  	basic_cloud_ptr1->points.push_back(basic_point);
+    basic_point.x = particles[j][3] * 2;
+  	basic_point.y = particles[j][4] * 2;
+  	basic_point.z = particles[j][5] * 2;
+  	basic_cloud_ptr2->points.push_back(basic_point);
   }
   basic_cloud_ptr1->width = (int) basic_cloud_ptr1->points.size ();
   basic_cloud_ptr1->height = 1;
@@ -285,12 +293,15 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
   basic_cloud_ptr2->height = 1;
   update = true;
   updateLock.unlock();
+  #endif
 }
 
 int main(int argc, char **argv)
-{ 
-  //update = false;
+{
+  #ifdef POINT_CLOUD
+  update = false;
   boost::thread workerThread(visualize);
+  #endif
   ros::init(argc, argv, "pfilterTest");
   ros::NodeHandle n;
   // ros::Publisher pub = n.advertise<geometry_msgs::PoseArray>("/particles_from_filter", 5);
@@ -302,7 +313,9 @@ int main(int argc, char **argv)
   PFilterTest pFilterTest(NUM_PARTICLES, b_Xprior);
   
   ros::spin();
+  #ifdef POINT_CLOUD
   workerThread.interrupt();
   workerThread.join();
+  #endif
 
 }

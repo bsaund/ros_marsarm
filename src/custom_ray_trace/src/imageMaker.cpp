@@ -102,7 +102,7 @@ int main(int argc, char **argv){
   makeImage(resolution, roll, pitch, yaw, 1);
 
 
-  // return 0;
+  return 0;
   //Touch 1
   addObs(0.729351, 0.215845, 0.358450, 
 	 0.397690, 0.865360, -0.304951, srv_add);

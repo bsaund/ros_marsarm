@@ -54,7 +54,7 @@ int main(int argc, char **argv){
   //   ROS_INFO("Distance: %f", dists[i]);
   // }
 
-  ROS_INFO("IG: %f", rayTracer.getIG(ray, 0.01, 0.002));
+  ROS_INFO("IG: %f", rayTracer.getIG(ray, 0.01, 0.01));
 
   return 0;
 }

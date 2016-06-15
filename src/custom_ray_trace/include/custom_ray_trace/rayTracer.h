@@ -51,9 +51,9 @@ class RayTracer
 {
  private:
   ros::NodeHandle n_;
-  stlMesh mesh;
-  stlMesh surroundingBox;
-  stlMesh surroundingBoxAllParticles;
+  stl::Mesh mesh;
+  stl::Mesh surroundingBox;
+  stl::Mesh surroundingBoxAllParticles;
   
   ParticleHandler particleHandler;
 
@@ -62,7 +62,7 @@ class RayTracer
   bool loadMesh();
   bool tracePartFrameRay(const Ray &ray, double &distToPart, bool quick=false);
   bool traceRay(Ray ray, double &distToPart);
-  bool traceRay(const stlMesh &mesh, const Ray &ray, double &distToPart);
+  bool traceRay(const stl::Mesh &mesh, const Ray &ray, double &distToPart);
   bool traceAllParticles(Ray ray, std::vector<double> &distToPart, bool quick=true);
 
   double getIG(Ray ray, double radialErr, double distErr);

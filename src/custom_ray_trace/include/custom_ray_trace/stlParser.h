@@ -1,23 +1,30 @@
 #ifndef STL_PARSER_CUSTOM_RAY_H
 #define STL_PARSER_CUSTOM_RAY_H
 #include <array>
-
+#include <tf/tf.h>
 
 using namespace std;
-typedef array<array<float, 3>, 4> vec4x3;
-typedef vector<vec4x3> stlMesh;
 
 
 
-namespace StlParser{
+namespace stl{
+  typedef array<array<double, 3>, 4> vec4x3;
+  typedef vector<vec4x3> Mesh;
+
   /*
    * Import binary STL file to arrays.
    * Input: filename: STL file name
    * Output: Triangle mesh vector.
    */
-  stlMesh importSTL(string filename);
+  Mesh importSTL(string filename);
 
-  stlMesh getSurroundingBox(stlMesh fullMesh);
+  Mesh getSurroundingBox(Mesh fullMesh);
+  
+  void combineMesh(Mesh &mesh1, const Mesh &mesh2){
+    mesh1.insert(mesh1.end(), mesh2.begin(), mesh2.end());
+  }
+
+  Mesh transformMesh(Mesh mesh, tf::Transform t);
 
 }
 

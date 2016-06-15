@@ -152,9 +152,8 @@ bool RayTracer::loadMesh(){
     ROS_INFO("Failed to get param");
   }
 
-  mesh = StlParser::importSTL(stlFilePath);
-
-  surroundingBox = StlParser::getSurroundingBox(mesh);
+  mesh = stl::importSTL(stlFilePath);
+  surroundingBox = stl::getSurroundingBox(mesh);
 }
 
 void RayTracer::getBoxAroundAllParticles()
@@ -167,7 +166,7 @@ void RayTracer::getBoxAroundAllParticles()
  *   Casts "ray" onto "mesh", set the distance, and returns true if intersection happened
  *    sets distance to 1000 if no intersection
  */
-bool RayTracer::traceRay(const stlMesh &mesh, const Ray &ray, double &distToPart)
+bool RayTracer::traceRay(const stl::Mesh &mesh, const Ray &ray, double &distToPart)
 {
   array<double,3> startArr = {ray.start.getX(), ray.start.getY(), ray.start.getZ()};
   tf::Vector3 dir = ray.getDirection();

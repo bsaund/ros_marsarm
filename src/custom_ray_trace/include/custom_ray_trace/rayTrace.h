@@ -118,7 +118,7 @@ int intersect_triangle(array<double,3> orig, array<double,3> dir,
  * Output: 1 if intersect
  *         0 if not
  */
-int getIntersection(stlMesh mesh, array<double,3> pstart, 
+int getIntersection(stl::Mesh mesh, array<double,3> pstart, 
 		    array<double,3> dir, double &distToPart)
 {
 

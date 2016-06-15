@@ -1,6 +1,7 @@
 #ifndef CALC_ENTROPY_H
 #define CALC_ENTROPY_H
 #include <vector>
+#include <map>
 
 
 namespace CalcEntropy{
@@ -9,24 +10,26 @@ namespace CalcEntropy{
     int id;
   };
 
-  struct Particle{
-    int id;
-    double probability;
-  };
+  /* struct Particle{ */
+  /*   int id; */
+  /*   double probability; */
+  /* }; */
   
   struct BinWithParticles{
     double probability;
-    std::vector<Particle> particles;
+    //map from Particle ID to probability of that particle in this bin
+    std::map<int, double> particles;
   };
 
-  struct ProcessedBin{
-    int id;
-    double probability;
-  };
+  /* struct ProcessedBin{ */
+  /*   int id; */
+  /*   double probability; */
+  /* }; */
   
   struct ParticlesWithBin{
     double probability;
-    std::vector<ProcessedBin> bin;
+    //map from binId to weighted bins this particle is in
+    std::map<int, double> bin;
   };
 
   struct ProcessedHistogram{

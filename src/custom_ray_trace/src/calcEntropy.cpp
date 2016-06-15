@@ -52,54 +52,87 @@ static void histogram(const std::vector<CalcEntropy::ConfigDist> &measurements,
   }
 }
 
-static void processBin(Bin &unproc, CalcEntropy::BinWithParticles &procBin){
-    std::sort(unproc.particleIds.begin(), unproc.particleIds.end());
-    int numInBin = unproc.particleIds.size();    
-    
-    if(unproc.particleIds.size() == 0)
-      return;
+static void processBin(const Bin &unproc, CalcEntropy::BinWithParticles &procBin){
+    double singleProb = (double)1 / unproc.particleIds.size();    
 
-    int count = 0;
-    int id = unproc.particleIds[0];;
-    for(int i=0; i<unproc.particleIds.size(); i++){
-      if(unproc.particleIds[i] == id){
-	count++;
-      } else {
-	CalcEntropy::Particle particle;
-	particle.id = id;
-	particle.probability = (double)count / numInBin;
-	procBin.particles.push_back(particle);
-	count = 1;
-	id = unproc.particleIds[i];
-      }
+    for(int particleId:unproc.particleIds){
+      procBin.particles[particleId] += singleProb;
     }
-    CalcEntropy::Particle particle;
-    particle.id = id;
-    particle.probability = (double)count / numInBin;
-    procBin.particles.push_back(particle);
 }
 
-static void processHistogram(std::vector<Bin> &unproc, 
-			     CalcEntropy::ProcessedHistogram &proc){
+/*
+ *   Turns a vector of Bins (vectors of particles ids) into 
+ *    a procesed histogram. It condenses the lists of particles
+ *    into smaller lists of (particle, probability) for each bin.
+ *    it also assigned a probability to each bin based on the 
+ *    fraction of particles in the bin
+ */
+static void processBins(const std::vector<Bin> &unproc, 
+		       CalcEntropy::ProcessedHistogram &proc){
   proc.bin.resize(unproc.size());
 
+  int totalData = 0;
   for(int bin=0; bin<unproc.size(); bin++){
     processBin(unproc[bin], proc.bin[bin]);
-
+    totalData += unproc[bin].particleIds.size();
   }
-
 
   for(int bin=0; bin<unproc.size(); bin++){
-    std::cout << "Bin " << bin << ": " << std::endl;
-    for(int p:unproc[bin].particleIds){
-      std::cout << p << ", ";
-    }
-    std::cout << std::endl;
-    for(CalcEntropy::Particle p:proc.bin[bin].particles){
-      std::cout << "(" << p.id << ", " << p.probability << "), ";
-    }
-    std::cout << std::endl;
+    proc.bin[bin].probability = (double)unproc[bin].particleIds.size() / totalData;
   }
+}
+
+/*
+ *  
+ */
+static void processParticles(std::vector<Bin> unproc, 
+			     CalcEntropy::ProcessedHistogram &proc,
+			     int numRepeated){
+  double p = 1.0/numRepeated;
+  for(int bin = 0; bin<unproc.size(); bin++){
+    for(int particleId:unproc[bin].particleIds){
+      proc.particle[particleId].bin[bin] += p;
+    }
+  }
+}
+
+
+/*
+ * Processed a vector of Bins (vectors of particle ids) into
+ *  vector of ProcessedBins (probability of the bin with a vector 
+ *  weighted unique particles) and vector of ProcessedParticles 
+ *  (particle probabilities vector of weighted list of bins the particle 
+ *  might be in)
+ *  NOTE: proc.particle must be the correct size when given to this function
+ */
+static void processHistogram(std::vector<Bin> &unproc, 
+			     CalcEntropy::ProcessedHistogram &proc,
+			     int numRepeated){
+  processBins(unproc, proc);
+  processParticles(unproc, proc, numRepeated);
+
+
+  // for(int bin=0; bin<unproc.size(); bin++){
+  //   std::cout << "Bin " << bin << " Probability:  " << proc.bin[bin].probability << std::endl;
+  //   for(int p:unproc[bin].particleIds){
+  //     std::cout << p << ", ";
+  //   }
+  //   std::cout << std::endl;
+
+  //   for(const auto &p : proc.bin[bin].particles){
+  //     std::cout << "(" << p.first << ", " << p.second << "), ";
+  //   }
+  //   std::cout << std::endl << std::endl;
+  // }
+
+  // for(int pId=0; pId<proc.particle.size(); pId++){
+  //   std::cout << pId << ": ";
+  //   for(const auto &b : proc.particle[pId].bin){
+  //     std::cout << "(" << b.first << ", " << b.second << "), ";
+  //   }
+  //   std::cout << std::endl;
+  // }
+  
 }
 
 
@@ -150,8 +183,6 @@ namespace CalcEntropy{
   double calcCondDisEntropy(std::vector<ConfigDist> p, double binSize, int numParticles)
   {
     std::sort(p.begin(), p.end(), &distOrdering);
-    // ParticleBinHistogram hist;
-    // hist.particle.resize(numParticles);
 
     std::vector<Bin> hist;
     histogram(p, binSize, hist);
@@ -159,7 +190,8 @@ namespace CalcEntropy{
 
     //TEST CODE
     CalcEntropy::ProcessedHistogram procHist;
-    processHistogram(hist, procHist);
+    procHist.particle.resize(numParticles);
+    processHistogram(hist, procHist, p.size()/numParticles);
     //END TEST CODE
 
 

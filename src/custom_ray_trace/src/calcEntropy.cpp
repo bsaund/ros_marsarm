@@ -56,6 +56,11 @@ static void processBin(const Bin &unproc, CalcEntropy::BinWithParticles &procBin
     }
 }
 
+static CalcEntropy::BinId idOf(int id){
+  CalcEntropy::BinId b = {id};
+  return b;
+}
+
 /*
  *   Turns a vector of Bins (vectors of particles ids) into 
  *    a procesed histogram. It condenses the lists of particles
@@ -65,16 +70,17 @@ static void processBin(const Bin &unproc, CalcEntropy::BinWithParticles &procBin
  */
 static void processBins(const std::vector<Bin> &unproc, 
 		       CalcEntropy::ProcessedHistogram &proc){
-  proc.bin.resize(unproc.size());
+  // proc.bin.resize(unproc.size());
 
   int totalData = 0;
   for(int bin=0; bin<unproc.size(); bin++){
-    processBin(unproc[bin], proc.bin[bin]);
+    processBin(unproc[bin], proc.bin[idOf(bin)]);
     totalData += unproc[bin].particleIds.size();
   }
 
   for(int bin=0; bin<unproc.size(); bin++){
-    proc.bin[bin].probability = (double)unproc[bin].particleIds.size() / totalData;
+    
+    proc.bin[idOf(bin)].probability = (double)unproc[bin].particleIds.size() / totalData;
   }
 }
 
@@ -87,7 +93,7 @@ static void processParticles(std::vector<Bin> unproc,
   double p = 1.0/numRepeated;
   for(int bin = 0; bin<unproc.size(); bin++){
     for(int particleId:unproc[bin].particleIds){
-      proc.particle[particleId].bin[bin] += p;
+      proc.particle[particleId].bin[idOf(bin)] += p;
     }
   }
 }
@@ -126,7 +132,8 @@ static void processHistogram(std::vector<Bin> &unproc,
   for(int pId=0; pId<proc.particle.size(); pId++){
     std::cout << pId << ": ";
     for(const auto &b : proc.particle[pId].bin){
-      std::cout << "(" << b.first << ", " << b.second << "), ";
+      std::cout << "(" << b.first[0] << ", "
+		<< b.second << "), ";
     }
     std::cout << std::endl;
   }
@@ -161,10 +168,10 @@ namespace CalcEntropy{
 
     double entropy = 0;
     
-    for(const BinWithParticles &b : procHist.bin){
-      for(const auto &p : b.particles){
+    for(const auto &b : procHist.bin){
+      for(const auto &p : b.second.particles){
 	double particleProb = p.second;
-	entropy -= b.probability * particleProb * log(particleProb);
+	entropy -= b.second.probability * particleProb * log(particleProb);
       }
     }
 

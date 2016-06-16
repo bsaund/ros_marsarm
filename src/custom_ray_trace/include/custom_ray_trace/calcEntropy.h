@@ -5,6 +5,8 @@
 
 
 namespace CalcEntropy{
+  typedef std::vector<int> BinId;
+  
   struct ConfigDist {
     double dist;
     int id;
@@ -19,11 +21,11 @@ namespace CalcEntropy{
   struct ParticlesWithBin{
     double probability;
     //map from binId to weighted bins this particle is in
-    std::map<int, double> bin;
+    std::map<BinId, double> bin;
   };
 
   struct ProcessedHistogram{
-    std::vector<BinWithParticles> bin;
+    std::map<BinId, BinWithParticles> bin;
     std::vector<ParticlesWithBin> particle;
   };
   

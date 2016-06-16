@@ -146,24 +146,8 @@ static void processHistogram(std::vector<Bin> &unproc,
   processBins(unproc, proc);
   processParticles(unproc, proc, numRepeated);
 
-
-  //Print Bins
-  // for(int bin=0; bin<unproc.size(); bin++){
-  //   std::cout << "Bin " << bin << " Probability:  " << proc.bin[bin].probability << std::endl;
-  //   for(int p:unproc[bin].particleIds){
-  //     std::cout << p << ", ";
-  //   }
-  //   std::cout << std::endl;
-
-  //   for(const auto &p : proc.bin[bin].particles){
-  //     std::cout << "(" << p.first << ", " << p.second << "), ";
-  //   }
-  //   std::cout << std::endl << std::endl;
-  // }
   printParticles(proc);
   printBins(proc);
-
-  
 }
 
 
@@ -177,6 +161,21 @@ bool distOrdering(const CalcEntropy::ConfigDist &left, const CalcEntropy::Config
 
 
 namespace CalcEntropy{
+  /*
+   *  Calculates conditional discrete entropy of histogram of distance
+   */
+  double calcCondDisEntropy(CalcEntropy::ProcessedHistogram procHist){
+    double entropy = 0;
+    
+    for(const auto &b : procHist.bin){
+      for(const auto &p : b.second.particles){
+	double particleProb = p.second;
+	entropy -= b.second.probability * particleProb * log(particleProb);
+      }
+    }
+
+    return entropy;
+  }
 
   /*
    *  Calculates conditional discrete entropy of histogram of distance
@@ -191,17 +190,7 @@ namespace CalcEntropy{
     CalcEntropy::ProcessedHistogram procHist;
     procHist.particle.resize(numParticles);
     processHistogram(hist, procHist, p.size()/numParticles);
-
-    double entropy = 0;
-    
-    for(const auto &b : procHist.bin){
-      for(const auto &p : b.second.particles){
-	double particleProb = p.second;
-	entropy -= b.second.probability * particleProb * log(particleProb);
-      }
-    }
-
-    return entropy;
+    return calcCondDisEntropy(procHist);
   }
   
   double calcIG(std::vector<ConfigDist> distances, double binSize, int numParticles)

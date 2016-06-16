@@ -174,7 +174,6 @@ stl::Mesh stl::transformMesh(stl::Mesh mesh, tf::Transform t){
     }
   }
   return mesh;
-  
 }
 
 

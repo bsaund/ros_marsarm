@@ -154,7 +154,6 @@ RayTracer::RayTracer()
 }
 
 
-
 bool RayTracer::loadMesh(){
   std::string stlFilePath;
   if(!n_.getParam("/localization_object_filepath", stlFilePath)){
@@ -322,11 +321,6 @@ void RayTracer::transformRayToPartFrame(Ray &ray)
   ray.transform(particleHandler.getTransformToPartFrame());
 }
 
-
-void RayTracer::transformRayToBaseFrame(Ray &ray)
-{
-  ray.transform(particleHandler.getTransformToPartFrame().inverse());
-}
 
 		
 

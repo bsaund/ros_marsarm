@@ -136,35 +136,6 @@ static void processHistogram(std::vector<Bin> &unproc,
 }
 
 
-static double calcEntropyOfBin(Bin bin){
-  double entropy = 0;
-  double numPointsInBin = bin.particleIds.size();
-  std::sort(bin.particleIds.begin(), bin.particleIds.end());
-
-  int unique_particleIds_count = 0;
-  int unique_particleIds = -1;
-  for(int i=0; i<bin.particleIds.size(); i++){
-    if(unique_particleIds == bin.particleIds[i]){
-      unique_particleIds_count++;
-    } else {
-      if(unique_particleIds_count > 0){
-  	 double p = (double)unique_particleIds_count / numPointsInBin;
-  	 entropy -= p * log(p);
-      }
-      unique_particleIds_count = 1;
-      unique_particleIds = bin.particleIds[i];
-    }
-  }
-  if(unique_particleIds_count > 0){
-    double p = (double)unique_particleIds_count / numPointsInBin;
-    entropy -= p * log(p);
-  }
-
-  
-  return entropy;
-}
-
-
 /**
  * Ordering function for ConfigDist sort.
  *  
@@ -176,7 +147,6 @@ bool distOrdering(const CalcEntropy::ConfigDist &left, const CalcEntropy::Config
 
 namespace CalcEntropy{
 
-
   /*
    *  Calculates conditional discrete entropy of histogram of distance
    */
@@ -187,35 +157,19 @@ namespace CalcEntropy{
     std::vector<Bin> hist;
     histogram(p, binSize, hist);
 
-
-    //TEST CODE
     CalcEntropy::ProcessedHistogram procHist;
     procHist.particle.resize(numParticles);
     processHistogram(hist, procHist, p.size()/numParticles);
-    //END TEST CODE
 
-
-    double totalPoints = p.size();
     double entropy = 0;
-
-
-    for(int binId = 0; binId < hist.size(); binId++){
-      // std::cout << "Bin " << binId << ": ";
-      // for(int j=0; j<hist[binId].particleIds.size(); j++){
-      // 	std::cout << hist[binId].particleIds[j] << ", ";
-      // }
-      // std::cout << std::endl;
-
-      Bin bin = hist[binId];
-
-      double p_bin = bin.particleIds.size()/totalPoints;
-      entropy += p_bin * calcEntropyOfBin(bin);
-    //   // std::cout << std::endl; 
-    //   // std::cout << "Entropy: " << calcEntropyOfBin(bin);
-    //   // std::cout << " Probability: " << p_bin << std::endl;
+    
+    for(const BinWithParticles &b : procHist.bin){
+      for(const auto &p : b.particles){
+	double particleProb = p.second;
+	entropy -= b.probability * particleProb * log(particleProb);
+      }
     }
 
-    // std::cout << "Entropy: " << entropy << std::endl;
     return entropy;
   }
   

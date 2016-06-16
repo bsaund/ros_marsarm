@@ -57,13 +57,8 @@ class RayTracer
   stl::Mesh mesh;
   stl::Mesh surroundingBox;
   stl::Mesh surroundingBoxAllParticles;
-
-  
-  
   ParticleHandler particleHandler;
   
-  
-
  public:
   RayTracer();
   bool loadMesh();
@@ -79,8 +74,6 @@ class RayTracer
   stl::Mesh getBoxAroundAllParticles(stl::Mesh mesh);
 
   void transformRayToPartFrame(Ray &ray);
-  void transformRayToBaseFrame(Ray &ray);
-
 };
 
 

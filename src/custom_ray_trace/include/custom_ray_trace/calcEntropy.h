@@ -9,11 +9,6 @@ namespace CalcEntropy{
     double dist;
     int id;
   };
-
-  /* struct Particle{ */
-  /*   int id; */
-  /*   double probability; */
-  /* }; */
   
   struct BinWithParticles{
     double probability;
@@ -21,11 +16,6 @@ namespace CalcEntropy{
     std::map<int, double> particles;
   };
 
-  /* struct ProcessedBin{ */
-  /*   int id; */
-  /*   double probability; */
-  /* }; */
-  
   struct ParticlesWithBin{
     double probability;
     //map from binId to weighted bins this particle is in

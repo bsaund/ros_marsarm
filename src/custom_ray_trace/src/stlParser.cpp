@@ -161,11 +161,20 @@ stl::Mesh stl::getSurroundingBox(stl::Mesh fullMesh){
 
 
 stl::Mesh stl::transformMesh(stl::Mesh mesh, tf::Transform t){
-  for(stl::vec4x3 face:mesh){
+
+  for(stl::vec4x3 &face:mesh){
     for(int i=1; i<4; i++){
-      
+      tf::Vector3 v(face[i][0], face[i][1], face[i][2]);
+
+      v = t*v;
+      face[i][0]=v.getX();
+      face[i][1]=v.getY();
+      face[i][2]=v.getZ();
+
     }
   }
+  return mesh;
+  
 }
 
 

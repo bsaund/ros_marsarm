@@ -28,6 +28,7 @@ class ParticleHandler
   ros::Subscriber particleSub;
   ros::Publisher requestParticlesPub;
   bool particlesInitialized;
+  bool newParticles;
 
  public:
   ParticleHandler();
@@ -35,6 +36,7 @@ class ParticleHandler
   tf::StampedTransform trans_;
   std::vector<tf::Transform> particles;
   std::vector<tf::Transform> subsetParticles;
+  
 
   tf::StampedTransform getTransformToPartFrame();  
   void setParticles(geometry_msgs::PoseArray p);
@@ -42,6 +44,7 @@ class ParticleHandler
   std::vector<tf::Transform> getParticleSubset();
   int getNumParticles();
   int getNumSubsetParticles();
+  bool theseAreNewParticles();
 };
 
 
@@ -54,8 +57,12 @@ class RayTracer
   stl::Mesh mesh;
   stl::Mesh surroundingBox;
   stl::Mesh surroundingBoxAllParticles;
+
+  
   
   ParticleHandler particleHandler;
+  
+  
 
  public:
   RayTracer();
@@ -69,7 +76,7 @@ class RayTracer
   bool traceCylinderAllParticles(Ray ray, double radius, vector<CalcEntropy::ConfigDist> &dists);
   std::vector<tf::Vector3> getOrthogonalBasis(tf::Vector3 dir);
 
-  void getBoxAroundAllParticles();
+  stl::Mesh getBoxAroundAllParticles(stl::Mesh mesh);
 
   void transformRayToPartFrame(Ray &ray);
   void transformRayToBaseFrame(Ray &ray);

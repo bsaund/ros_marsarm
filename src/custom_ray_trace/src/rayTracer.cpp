@@ -44,6 +44,7 @@ Ray Ray::getTransformed(tf::Transform trans) const
 ParticleHandler::ParticleHandler()
 {
   particlesInitialized = false;
+  newParticles = true;
   tf_listener_.waitForTransform("/my_frame", "/particle_frame", ros::Time(0), ros::Duration(10.0));
   tf_listener_.lookupTransform("/particle_frame", "/my_frame", ros::Time(0), trans_);
   particleSub = rosnode.subscribe("/particles_from_filter", 1000, 
@@ -77,10 +78,12 @@ void ParticleHandler::setParticles(geometry_msgs::PoseArray p)
   int num = std::min((int)particles.size(), 50);
   subsetParticles = vector<tf::Transform>(particles);
   subsetParticles.resize(num);
+
   
   ROS_INFO("Subset Particles Size %d", subsetParticles.size());
   
   particlesInitialized = true;
+  newParticles = true;
 }
 
 
@@ -126,6 +129,12 @@ int ParticleHandler::getNumSubsetParticles()
 }
 
 
+bool ParticleHandler::theseAreNewParticles(){
+  bool tmp = newParticles;
+  newParticles = false;
+  return tmp;
+}
+
 
 
 
@@ -156,9 +165,15 @@ bool RayTracer::loadMesh(){
   surroundingBox = stl::getSurroundingBox(mesh);
 }
 
-void RayTracer::getBoxAroundAllParticles()
+stl::Mesh RayTracer::getBoxAroundAllParticles(stl::Mesh mesh)
 {
-  
+  stl::Mesh allMesh;
+  std::vector<tf::Transform> particles = particleHandler.getParticleSubset();
+
+  for(tf::Transform particle : particles){
+    stl::combineMesh(allMesh, stl::transformMesh(mesh, particle.inverse()));
+  }
+  return stl::getSurroundingBox(allMesh);
 }
 
 
@@ -182,24 +197,13 @@ bool RayTracer::traceRay(const stl::Mesh &mesh, const Ray &ray, double &distToPa
  */
 bool RayTracer::tracePartFrameRay(const Ray &ray, double &distToPart, bool quick)
 {
-
-  array<double,3> startArr = {ray.start.getX(), ray.start.getY(), ray.start.getZ()};
-  tf::Vector3 dir = ray.getDirection();
-  array<double,3> dirArr = {dir.getX(), dir.getY(), dir.getZ()};
-  
-  double tmp;
-
   distToPart = 1000;
-  
+
+  //Quick check to see if ray has a chance of hitting any particle
+  double tmp;
   if(quick && !traceRay(surroundingBox, ray, tmp))
-  // if(quick && (surroundingBox, ray, tmp))
      return false;
-  // if(getIntersection(surroundingBox, startArr, dirArr, tmp))
-  //   cout << "What!!??!?!?!!?!" << endl;
-
-
   return traceRay(mesh, ray, distToPart);
-
 }
 
 
@@ -217,6 +221,16 @@ bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart, bool
 {
   transformRayToPartFrame(ray);
   std::vector<tf::Transform> particles = particleHandler.getParticleSubset();
+
+  //Quick check to see if ray even has a chance of hitting any particle
+  if(particleHandler.theseAreNewParticles()){
+    surroundingBoxAllParticles = getBoxAroundAllParticles(mesh);
+  }
+  
+  double tmp;
+  if(!traceRay(surroundingBoxAllParticles, ray, tmp))
+    return false;
+
   distToPart.resize(particles.size());
 
   bool hitPart = false;

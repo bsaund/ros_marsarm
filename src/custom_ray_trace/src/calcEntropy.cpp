@@ -11,6 +11,7 @@ struct Bin {
 
 /*
  *  Get the min and max of a sorted ConfigDist vector
+ *   ignoring the out of bounds measurements that miss the part
  */
 static void getConfigDistMinAndMax(const std::vector<CalcEntropy::ConfigDist> &measurements,
 				   double &min, double &max){
@@ -30,21 +31,16 @@ static void getConfigDistMinAndMax(const std::vector<CalcEntropy::ConfigDist> &m
 static void histogram(const std::vector<CalcEntropy::ConfigDist> &measurements, 
 		      double binSize, std::vector<Bin> &hist){
   double min, max;
+  int binNum = -1;
 
   getConfigDistMinAndMax(measurements, min, max);
-  
-  double binValue = min + binSize;
-  int binNum = 0;
-
-  Bin b;
-  hist.push_back(b);
+  double binValue = min;
 
   for(CalcEntropy::ConfigDist m:measurements){
-    if(m.dist > binValue){
+    if(m.dist >= binValue){
       binNum++;
-      Bin b;
-      hist.push_back(b);
-      while(m.dist > binValue){
+      hist.push_back(Bin());
+      while(m.dist >= binValue){
   	binValue += binSize;
       }
     }
@@ -112,6 +108,7 @@ static void processHistogram(std::vector<Bin> &unproc,
   processParticles(unproc, proc, numRepeated);
 
 
+  //Print Bins
   // for(int bin=0; bin<unproc.size(); bin++){
   //   std::cout << "Bin " << bin << " Probability:  " << proc.bin[bin].probability << std::endl;
   //   for(int p:unproc[bin].particleIds){
@@ -125,13 +122,14 @@ static void processHistogram(std::vector<Bin> &unproc,
   //   std::cout << std::endl << std::endl;
   // }
 
-  // for(int pId=0; pId<proc.particle.size(); pId++){
-  //   std::cout << pId << ": ";
-  //   for(const auto &b : proc.particle[pId].bin){
-  //     std::cout << "(" << b.first << ", " << b.second << "), ";
-  //   }
-  //   std::cout << std::endl;
-  // }
+  //Print Particles
+  for(int pId=0; pId<proc.particle.size(); pId++){
+    std::cout << pId << ": ";
+    for(const auto &b : proc.particle[pId].bin){
+      std::cout << "(" << b.first << ", " << b.second << "), ";
+    }
+    std::cout << std::endl;
+  }
   
 }
 

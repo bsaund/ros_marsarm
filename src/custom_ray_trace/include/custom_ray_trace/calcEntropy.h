@@ -9,7 +9,7 @@ namespace CalcEntropy{
     double dist;
     int id;
   };
-  
+
   struct BinWithParticles{
     double probability;
     //map from Particle ID to probability of that particle in this bin

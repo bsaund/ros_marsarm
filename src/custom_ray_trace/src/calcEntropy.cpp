@@ -79,7 +79,6 @@ static void processBins(const std::vector<Bin> &unproc,
   }
 
   for(int bin=0; bin<unproc.size(); bin++){
-    
     proc.bin[idOf(bin)].probability = (double)unproc[bin].particleIds.size() / totalData;
   }
 }
@@ -98,6 +97,40 @@ static void processParticles(std::vector<Bin> unproc,
   }
 }
 
+static void printParticles(CalcEntropy::ProcessedHistogram &proc){
+  std::cout << std::endl << 
+    "=========== PARTICLES ===========" << std::endl << std::endl;
+  for(int pId=0; pId<proc.particle.size(); pId++){
+    std::cout << pId << ": ";
+    for(const auto &b : proc.particle[pId].bin){
+      std::cout << "(<" ;
+      for(int binNum : b.first){
+	std::cout << binNum << ", ";
+      }
+      std::cout << "\b\b>, " << b.second << "), ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+}
+
+static void printBins(CalcEntropy::ProcessedHistogram &proc){
+  std::cout << std::endl << 
+    "============= BINS ===============" << std::endl << std::endl;
+  for(const auto &b : proc.bin){
+    std::cout << "<" ;
+    for(int binNum : b.first){
+      std::cout << binNum << ", ";
+    }
+    std::cout << "\b\b>: p=" << b.second.probability << "  " << std::endl;
+    std::cout << "    ";
+    for(const auto &p : b.second.particles){
+      std::cout << "(" << p.first << ", " << p.second << "), ";
+    }
+    std::cout <<std::endl;
+  }
+  std::cout << std::endl;
+}
 
 /*
  * Processed a vector of Bins (vectors of particle ids) into
@@ -127,16 +160,9 @@ static void processHistogram(std::vector<Bin> &unproc,
   //   }
   //   std::cout << std::endl << std::endl;
   // }
+  printParticles(proc);
+  printBins(proc);
 
-  //Print Particles
-  for(int pId=0; pId<proc.particle.size(); pId++){
-    std::cout << pId << ": ";
-    for(const auto &b : proc.particle[pId].bin){
-      std::cout << "(" << b.first[0] << ", "
-		<< b.second << "), ";
-    }
-    std::cout << std::endl;
-  }
   
 }
 

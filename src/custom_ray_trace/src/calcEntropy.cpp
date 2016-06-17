@@ -166,14 +166,14 @@ static void processHistogram(std::vector<Bin> &unproc,
   processBins(unproc, proc);
   processParticles(unproc, proc, numRepeated);
 
-  printParticles(proc);
-  printBins(proc);
+  // printParticles(proc);
+  // printBins(proc);
 
   //TEST CODE!!!!
-  CalcEntropy::ProcessedHistogram comb;
-  comb = CalcEntropy::combineHist(proc, proc);
-  printParticles(comb);
-  printBins(comb);
+  // CalcEntropy::ProcessedHistogram comb;
+  // comb = CalcEntropy::combineHist(proc, proc);
+  // printParticles(comb);
+  // printBins(comb);
 }
 
 
@@ -185,7 +185,7 @@ bool distOrdering(const CalcEntropy::ConfigDist &left, const CalcEntropy::Config
   return left.dist < right.dist;
 }
 namespace CalcEntropy{
-  static ProcessedHistogram 
+  ProcessedHistogram 
   processMeasurements(std::vector<ConfigDist> p, double binSize, int numParticles){
     std::sort(p.begin(), p.end(), &distOrdering);
 
@@ -214,43 +214,29 @@ namespace CalcEntropy{
     return entropy;
   }
 
-  /*
-   *  Calculates conditional discrete entropy of histogram of distance
-   */
-  double calcCondDisEntropy(std::vector<ConfigDist> p, double binSize, int numParticles)
-  {
-    return calcCondDisEntropy(processMeasurements(p, binSize, numParticles));
-  }
   
   double calcIG(std::vector<ConfigDist> distances, double binSize, int numParticles)
   {
-    // int start_s = clock();
-    double H_Y_given_X = calcCondDisEntropy(distances, binSize, numParticles);
-    double p = 1.0 / (double)numParticles;
-    double H_Y = -log(p); // note this is - sum(p_i * log(p_i)) * n
+    return calcIG(processMeasurements(distances, binSize, numParticles), numParticles);
+  }
 
-    // std::cout << "IG: " <<  H_Y - H_Y_given_X << std::endl;
-    // int afterIG_s = clock();
-    // std::cout << "IG time: " << (afterIG_s - start_s)/double(CLOCKS_PER_SEC) << std::endl;
-
+  double calcIG(ProcessedHistogram procHist, int numParticles){
+    double H_Y_given_X = calcCondDisEntropy(procHist);
+    double H_Y = -log(1.0/(double)numParticles);
     return H_Y - H_Y_given_X;
   }
 
   ProcessedHistogram combineHist(const ProcessedHistogram &hist1, 
 				 const ProcessedHistogram &hist2){
     ProcessedHistogram comb;
-    // for(const auto &bin_1 : hist1.bin){
-    //   for(const auto &particle_1 : bin_1.second.particles){
-    // 	for(const auto &bin_2 : hist2.particle[particle_1.first].bin){
-    // 	  const auto &particle_2 = hist2.particle[particle_1.first].bin;
-    // 	  BinId newBinId = bin_1.first;
-    // 	  newBinId.insert(newBinId.end(), bin_2.first.begin(), bin_2.first.end());
-    // 	  comb.bin[newBinId].particles[particle_1.first] =
-    // 	    particle_1.second * particle_2.second;
-    // 	}
-    //   }
-    // }
+    comb.particle.resize(hist1.particle.size());
+
+    std::cout <<" Combining Hists " << std::endl;
+
+    //For every particle add probability of observation <x_1, x_2>
     for(int pId = 0; pId < hist1.particle.size(); pId++){
+      comb.particle[pId].probability = hist1.particle[pId].probability;
+
       for(const auto &binPair_1 : hist1.particle[pId].bin){
 	for(const auto &binPair_2 : hist2.particle[pId].bin){
 	  BinId b_1 = binPair_1.first;
@@ -259,18 +245,27 @@ namespace CalcEntropy{
     	  newBinId.insert(newBinId.end(), b_2.begin(), b_2.end());
 
 	  double prob_1 = hist1.bin.at(b_1).particles.at(pId);
-	  double prob_2 = hist1.bin.at(b_2).particles.at(pId);
+	  double prob_2 = hist2.bin.at(b_2).particles.at(pId);
 	  comb.bin[newBinId].particles[pId] = prob_1*prob_2;
-	  // comb.bin[newBinId].binProbability += prob_1*prob_2*
-	  //   hist1.bin.at(b_1).binProbability *hist2.bin.at(b_2).binProbability;
 	  
 	  comb.bin[newBinId].binProbability += hist1.particle[pId].probability * 
 	    binPair_1.second * binPair_2.second;
-
+	  comb.particle[pId].bin[newBinId] = binPair_1.second * binPair_2.second;
 	}
       }
     }
     
+    //normalize particle probabilities in each bin:
+    for(auto &b : comb.bin){
+      double totalProb = 0;
+      for(auto &p : b.second.particles){
+	totalProb += p.second;
+      }
+      for(auto &p : b.second.particles){
+	p.second = p.second / totalProb;
+      }
+    }
+
     return comb;
   }
 

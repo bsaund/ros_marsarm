@@ -54,7 +54,11 @@ int main(int argc, char **argv){
   //   ROS_INFO("Distance: %f", dists[i]);
   // }
 
-  ROS_INFO("IG: %f", rayTracer.getIG(ray, 0.01, 0.01));
+  // ROS_INFO("IG: %f", rayTracer.getIG(ray, 0.01, 0.01));
+  Ray ray_base(tf::Point(.9, 0, 1), tf::Point(.9, 0, 0));
+  ROS_INFO("IG of base ray: %f", rayTracer.getIG(ray_base, 0.01, 0.01));
+  ROS_INFO("IG of input ray: %f", rayTracer.getIG(ray, 0.01, 0.01));
+  ROS_INFO("IG of both: %f", rayTracer.getIG(ray_base, ray, 0.01, 0.01));
 
   return 0;
 }

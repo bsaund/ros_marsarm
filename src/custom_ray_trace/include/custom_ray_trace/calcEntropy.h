@@ -30,12 +30,12 @@ namespace CalcEntropy{
   };
   
 
-
+  ProcessedHistogram processMeasurements(std::vector<ConfigDist> p, double binSize, int numConfigs);
   ProcessedHistogram combineHist(const ProcessedHistogram &hist1, 
 				 const ProcessedHistogram &hist2);
-  double calcCondDisEntropy(CalcEntropy::ProcessedHistogram procHist);
-  double calcCondDisEntropy(std::vector<ConfigDist> p, double binSize, int numParticles);
-  double calcIG(std::vector<ConfigDist> p, double binSize, int numConfigs);
+  double calcCondDisEntropy(ProcessedHistogram procHist);
+  double calcIG(std::vector<ConfigDist> p, double binSize, int numParticles);
+  double calcIG(ProcessedHistogram procHist, int numParticles);
 
 }
 

@@ -215,6 +215,7 @@ bool RayTracer::traceRay(Ray ray, double &distToPart){
 /*
  *  Traces a ray (specified in world frame) on all particles
  *  Returns true if at least 1 ray intersected the part
+ *   If "quick" then it will not set distances if ray misses all particles
  */
 bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart, bool quick)
 {
@@ -227,7 +228,7 @@ bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart, bool
   }
   
   double tmp;
-  if(!traceRay(surroundingBoxAllParticles, ray, tmp))
+  if(quick && !traceRay(surroundingBoxAllParticles, ray, tmp))
     return false;
 
   distToPart.resize(particles.size());
@@ -239,6 +240,9 @@ bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart, bool
   return hitPart;
 }
 
+/*
+ *  Returns the information gain for a measurement ray with error
+ */
 double RayTracer::getIG(Ray ray, double radialErr, double distErr)
 {
   vector<CalcEntropy::ConfigDist> distsToParticles;
@@ -247,13 +251,33 @@ double RayTracer::getIG(Ray ray, double radialErr, double distErr)
   return CalcEntropy::calcIG(distsToParticles, distErr, particleHandler.getNumSubsetParticles());
 }
 
+
+double RayTracer::getIG(Ray ray1, Ray ray2, double radialErr, double distErr){
+  vector<CalcEntropy::ConfigDist> dists1, dists2;
+  CalcEntropy::ProcessedHistogram hist1, hist2, comb;
+  bool noIntersection = !traceCylinderAllParticles(ray1, radialErr, dists1, false);
+  noIntersection = !traceCylinderAllParticles(ray2, radialErr, dists2, false) && noIntersection;
+
+  if(noIntersection)
+    return 0;
+
+  int n = particleHandler.getNumSubsetParticles();
+  hist1 = CalcEntropy::processMeasurements(dists1, distErr, n);
+  hist2 = CalcEntropy::processMeasurements(dists2, distErr, n);
+  comb = CalcEntropy::combineHist(hist1, hist2);
+  return calcIG(comb, n);
+}
+
+
+
 /*
  *  Returns the possible distances receives from casting a cylinder of rays
  *  
  *  Returns true if at least one ray hit the part
  */
 bool RayTracer::traceCylinderAllParticles(Ray ray, double radius, 
-					  vector<CalcEntropy::ConfigDist> &distsToPart)
+					  vector<CalcEntropy::ConfigDist> &distsToPart,
+					  bool quick)
 {
   std::vector<tf::Vector3> ray_orthog = getOrthogonalBasis(ray.getDirection());
   int n = 12;
@@ -267,7 +291,7 @@ bool RayTracer::traceCylinderAllParticles(Ray ray, double radius,
     Ray cylinderRay(ray.start + offset, ray.end+offset);
     vector<double> distsTmp;
     
-    hitPart = traceAllParticles(cylinderRay, distsTmp) || hitPart;
+    hitPart = traceAllParticles(cylinderRay, distsTmp, quick) || hitPart;
 
     for(int pNumber = 0; pNumber<distsTmp.size(); pNumber++){
       CalcEntropy::ConfigDist cDist;

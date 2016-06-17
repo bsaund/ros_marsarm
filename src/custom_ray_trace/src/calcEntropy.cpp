@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <math.h>
 #include <ctime>
+#include <cmath>
 
 struct Bin {
   // std::vector<CalcEntropy::ConfigDist> element;
@@ -79,7 +80,7 @@ static void processBins(const std::vector<Bin> &unproc,
   }
 
   for(int bin=0; bin<unproc.size(); bin++){
-    proc.bin[idOf(bin)].probability = (double)unproc[bin].particleIds.size() / totalData;
+    proc.bin[idOf(bin)].binProbability = (double)unproc[bin].particleIds.size() / totalData;
   }
 }
 
@@ -95,6 +96,12 @@ static void processParticles(std::vector<Bin> unproc,
       proc.particle[particleId].bin[idOf(bin)] += p;
     }
   }
+  //Assume equal particle probabilities;
+  double particleProb = 1.0/proc.particle.size();
+  for(auto &p : proc.particle){
+    p.probability = particleProb;
+  }
+
 }
 
 static void printParticles(CalcEntropy::ProcessedHistogram &proc){
@@ -115,6 +122,7 @@ static void printParticles(CalcEntropy::ProcessedHistogram &proc){
 }
 
 static void printBins(CalcEntropy::ProcessedHistogram &proc){
+  double totalBinP = 0;
   std::cout << std::endl << 
     "============= BINS ===============" << std::endl << std::endl;
   for(const auto &b : proc.bin){
@@ -122,14 +130,26 @@ static void printBins(CalcEntropy::ProcessedHistogram &proc){
     for(int binNum : b.first){
       std::cout << binNum << ", ";
     }
-    std::cout << "\b\b>: p=" << b.second.probability << "  " << std::endl;
+    std::cout << "\b\b>: p=" << b.second.binProbability << "  " << std::endl;
     std::cout << "    ";
+    totalBinP += b.second.binProbability;
+    double pProb = 0;
     for(const auto &p : b.second.particles){
       std::cout << "(" << p.first << ", " << p.second << "), ";
+      pProb += p.second;
+    }
+    if(std::abs(pProb - 1) > 0.00001){
+      std::cout << "!!!!!!!!!!!!!!  Probability doesnt sum to 1" << std::endl;
+      std::cout << "Sum particle prob in a bin: " << pProb << std::endl;
     }
     std::cout <<std::endl;
   }
   std::cout << std::endl;
+  
+  if(std::abs(totalBinP -1) > 0.00001){
+    std::cout << std::endl << "!!!!!!!! Probability doesnt sum to 1" << std::endl;
+    std::cout << "Sum Bin Probability: " << totalBinP << std::endl << std::endl;
+  }
 }
 
 /*
@@ -148,6 +168,12 @@ static void processHistogram(std::vector<Bin> &unproc,
 
   printParticles(proc);
   printBins(proc);
+
+  //TEST CODE!!!!
+  CalcEntropy::ProcessedHistogram comb;
+  comb = CalcEntropy::combineHist(proc, proc);
+  printParticles(comb);
+  printBins(comb);
 }
 
 
@@ -158,9 +184,21 @@ static void processHistogram(std::vector<Bin> &unproc,
 bool distOrdering(const CalcEntropy::ConfigDist &left, const CalcEntropy::ConfigDist &right) {
   return left.dist < right.dist;
 }
-
-
 namespace CalcEntropy{
+  static ProcessedHistogram 
+  processMeasurements(std::vector<ConfigDist> p, double binSize, int numParticles){
+    std::sort(p.begin(), p.end(), &distOrdering);
+
+    std::vector<Bin> hist;
+    histogram(p, binSize, hist);
+
+    CalcEntropy::ProcessedHistogram procHist;
+    procHist.particle.resize(numParticles);
+    processHistogram(hist, procHist, p.size()/numParticles);
+    return procHist;
+  }
+
+
   /*
    *  Calculates conditional discrete entropy of histogram of distance
    */
@@ -170,10 +208,9 @@ namespace CalcEntropy{
     for(const auto &b : procHist.bin){
       for(const auto &p : b.second.particles){
 	double particleProb = p.second;
-	entropy -= b.second.probability * particleProb * log(particleProb);
+	entropy -= b.second.binProbability * particleProb * log(particleProb);
       }
     }
-
     return entropy;
   }
 
@@ -182,15 +219,7 @@ namespace CalcEntropy{
    */
   double calcCondDisEntropy(std::vector<ConfigDist> p, double binSize, int numParticles)
   {
-    std::sort(p.begin(), p.end(), &distOrdering);
-
-    std::vector<Bin> hist;
-    histogram(p, binSize, hist);
-
-    CalcEntropy::ProcessedHistogram procHist;
-    procHist.particle.resize(numParticles);
-    processHistogram(hist, procHist, p.size()/numParticles);
-    return calcCondDisEntropy(procHist);
+    return calcCondDisEntropy(processMeasurements(p, binSize, numParticles));
   }
   
   double calcIG(std::vector<ConfigDist> distances, double binSize, int numParticles)
@@ -206,5 +235,44 @@ namespace CalcEntropy{
 
     return H_Y - H_Y_given_X;
   }
+
+  ProcessedHistogram combineHist(const ProcessedHistogram &hist1, 
+				 const ProcessedHistogram &hist2){
+    ProcessedHistogram comb;
+    // for(const auto &bin_1 : hist1.bin){
+    //   for(const auto &particle_1 : bin_1.second.particles){
+    // 	for(const auto &bin_2 : hist2.particle[particle_1.first].bin){
+    // 	  const auto &particle_2 = hist2.particle[particle_1.first].bin;
+    // 	  BinId newBinId = bin_1.first;
+    // 	  newBinId.insert(newBinId.end(), bin_2.first.begin(), bin_2.first.end());
+    // 	  comb.bin[newBinId].particles[particle_1.first] =
+    // 	    particle_1.second * particle_2.second;
+    // 	}
+    //   }
+    // }
+    for(int pId = 0; pId < hist1.particle.size(); pId++){
+      for(const auto &binPair_1 : hist1.particle[pId].bin){
+	for(const auto &binPair_2 : hist2.particle[pId].bin){
+	  BinId b_1 = binPair_1.first;
+	  BinId b_2 = binPair_2.first;
+    	  BinId newBinId = b_1;
+    	  newBinId.insert(newBinId.end(), b_2.begin(), b_2.end());
+
+	  double prob_1 = hist1.bin.at(b_1).particles.at(pId);
+	  double prob_2 = hist1.bin.at(b_2).particles.at(pId);
+	  comb.bin[newBinId].particles[pId] = prob_1*prob_2;
+	  // comb.bin[newBinId].binProbability += prob_1*prob_2*
+	  //   hist1.bin.at(b_1).binProbability *hist2.bin.at(b_2).binProbability;
+	  
+	  comb.bin[newBinId].binProbability += hist1.particle[pId].probability * 
+	    binPair_1.second * binPair_2.second;
+
+	}
+      }
+    }
+    
+    return comb;
+  }
+
 
 }

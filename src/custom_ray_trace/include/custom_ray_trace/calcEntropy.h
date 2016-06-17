@@ -13,7 +13,7 @@ namespace CalcEntropy{
   };
 
   struct BinWithParticles{
-    double probability;
+    double binProbability;
     //map from Particle ID to probability of that particle in this bin
     std::map<int, double> particles;
   };
@@ -31,8 +31,9 @@ namespace CalcEntropy{
   
 
 
-
-
+  ProcessedHistogram combineHist(const ProcessedHistogram &hist1, 
+				 const ProcessedHistogram &hist2);
+  double calcCondDisEntropy(CalcEntropy::ProcessedHistogram procHist);
   double calcCondDisEntropy(std::vector<ConfigDist> p, double binSize, int numParticles);
   double calcIG(std::vector<ConfigDist> p, double binSize, int numConfigs);
 

@@ -21,10 +21,6 @@
 //#define POINT_CLOUD
 #define NUM_PARTICLES 500
 typedef array<array<float, 3>, 4> vec4x3;
-pcl::PointCloud<pcl::PointXYZ>::Ptr basic_cloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
-bool update;
-boost::mutex updateModelMutex;
-void visualize();
 
 #ifdef POINT_CLOUD
 pcl::PointCloud<pcl::PointXYZ>::Ptr basic_cloud_ptr1(new pcl::PointCloud<pcl::PointXYZ>);
@@ -197,7 +193,7 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   particleFilter::cspace particles_est;
   pFilter_.estimatedDistribution(particles_est, particles_est_stat);
   geometry_msgs::PoseArray poseArray;
-  for(int i=0; i<NUM_PARTICLES; i++){
+  for(int i=0; i<50; i++){
     tf::Pose pose = poseAt(particles[i]);
     geometry_msgs::Pose pose_msg;
     tf::poseTFToMsg(trans*pose, pose_msg);
@@ -255,7 +251,7 @@ void visualize()
 #endif
 
 PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
-  pFilter_(n_particles, b_init, 0.001, 0.0035, 0.0001, 0.00),
+  pFilter_(n_particles, b_init, 0.001, 0.0035, 0.0001, 0.001),
   num_voxels{200, 200, 200}//,
   //dist_transform(num_voxels)
   // particleFilter (int n_particles, cspace b_init[2], 

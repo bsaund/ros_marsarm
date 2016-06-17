@@ -1,6 +1,5 @@
 #include <string.h>
 #include <iostream>
-#include <fstream>
 #include <random>
 #include <chrono>
 #include <fstream>
@@ -192,15 +191,6 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 	total_time += std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count();
 	cout << "Total time: " << total_time << endl;
 	cout << "Average time: " << total_time / 20.0 << endl << endl;
-
-	ofstream myfile;
-	myfile.open("/home/shiyuan/Documents/ros_marsarm/diff.csv", ios::out|ios::app);
-	myfile << est_diff << ",";
-	myfile.close();
-	myfile.open("/home/shiyuan/Documents/ros_marsarm/time.csv", ios::out|ios::app);
-	myfile << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << ",";
-	myfile.close();
-
 
 	//Eigen::MatrixXd centered = mat.rowwise() - mat.colwise().mean();
 	//Eigen::MatrixXd cov = (centered.adjoint() * centered) / double(mat.rows() - 1);

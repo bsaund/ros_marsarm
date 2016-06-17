@@ -197,7 +197,7 @@ namespace CalcEntropy{
 
     // std::cout << "IG: " <<  H_Y - H_Y_given_X << std::endl;
     int afterIG_s = clock();
-    std::cout << "IG: " << (afterIG_s - start_s)/double(CLOCKS_PER_SEC) << std::endl;
+    //std::cout << "IG: " << (afterIG_s - start_s)/double(CLOCKS_PER_SEC) << std::endl;
 
     return H_Y - H_Y_given_X;
   }

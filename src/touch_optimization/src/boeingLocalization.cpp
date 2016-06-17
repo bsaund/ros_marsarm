@@ -5,14 +5,12 @@
  *    publishes visualization messages, and RViz.
  */
 #include <iostream>
-#include <fstream>
 #include <ros/ros.h>
 #include "particle_filter/PFilterInit.h"
 #include "particle_filter/AddObservation.h"
 #include "geometry_msgs/Point.h"
 #include <tf/transform_broadcaster.h>
 #include "gazebo_ray_trace/plotRayUtils.h"
-#include <Eigen/Dense>
 
 #define NUM_TOUCHES 20
 /**
@@ -74,82 +72,9 @@ void randomSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_e
   
 }
 
-void fixedSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_end, int index)
-{
-  std::random_device rd;
-  std::uniform_real_distribution<double> rand(0, 1);
-  Eigen::Vector3d start;
-  Eigen::Vector3d end;
-  if (index % 6 == 0)
-  {
-    double y = rand(rd) * 0.2 + 0.15;
-    double z = rand(rd) * 0.12 + 0.03;
-     start << 2, y, z;
-     end << 0, y, z;
-  }
-  else if (index % 6 == 1)
-  {
-    double x = rand(rd) * 0.35 + 1.2;
-    double z = rand(rd) * 0.12 + 0.03;
-    start << x, 1, z;
-    end << x, 0, z;
-  }
-  else if (index % 6 == 2)
-  {
-    double x = rand(rd) * 1.4 + 0.1;
-    double y = rand(rd) * 0.04 + 0.02;
-    start << x, y, 1;
-    end << x, y, 0;
-  }
-  else if (index % 6 == 3)
-  {
-    double y = rand(rd) * 0.2 + 0.15;
-    double z = rand(rd) * 0.12 + 0.03;
-     start << 0.8, y, z;
-     end << 0, y, z;
-  }
-  else if (index % 6 == 4)
-  {
-    double x = rand(rd) * 0.35 + 0.1;
-    double z = rand(rd) * 0.12 + 0.03;
-    start << x, 1, z;
-    end << x, 0, z;
-  }
-  else
-  {
-    double x = rand(rd) * 1.4 + 0.1;
-    double y = rand(rd) * 0.04 + 0.02;
-    start << x, y, 1;
-    end << x, y, 0;
-  }
-  double state[6] = {0.3, 0.3, 0.3, 0.5, 0.7, 0.5};
-  Eigen::Matrix3d rotationC;
-  rotationC << cos(state[5]), -sin(state[5]), 0,
-               sin(state[5]), cos(state[5]), 0,
-               0, 0, 1;
-  Eigen::Matrix3d rotationB;
-  rotationB << cos(state[4]), 0 , sin(state[4]),
-               0, 1, 0,
-               -sin(state[4]), 0, cos(state[4]);
-  Eigen::Matrix3d rotationA;
-  rotationA << 1, 0, 0 ,
-               0, cos(state[3]), -sin(state[3]),
-               0, sin(state[3]), cos(state[3]);
-  Eigen::Matrix3d rotationM = rotationC * rotationB * rotationA;
-  Eigen::Vector3d displaceV(state[0], state[1], state[2]);
-  Eigen::Vector3d tran_start = rotationM * start + displaceV;
-  Eigen::Vector3d tran_end = rotationM * end + displaceV;
-  best_start.setValue(tran_start(0, 0), tran_start(1, 0), tran_start(2, 0));
-  best_end.setValue(tran_end(0, 0), tran_end(1, 0), tran_end(2, 0));
-  // plt.plotCylinder(best_start, best_end, 0.01, 0.002, true);
-  ROS_INFO("Ray is: %f, %f, %f.  %f, %f, %f", 
-     best_start.getX(), best_start.getY(), best_start.getZ(),
-     best_end.getX(), best_end.getY(), best_end.getZ());
-}
-
 bool getIntersection(PlotRayUtils &plt, tf::Point start, tf::Point end, tf::Point &intersection){
   bool intersectionExists = plt.getIntersectionWithPart(start, end, intersection);
-  double radius = 0.000;
+  double radius = 0.001;
   intersection = intersection - (end-start).normalize() * radius;
   return intersectionExists;
 }
@@ -162,7 +87,7 @@ int main(int argc, char **argv)
   PlotRayUtils plt;
 
   std::random_device rd;
-  std::normal_distribution<double> randn(0.0,0.0000001);
+  std::normal_distribution<double> randn(0.0,0.0005);
 
   ROS_INFO("Running...");
 
@@ -178,73 +103,7 @@ int main(int argc, char **argv)
  
   geometry_msgs::Point obs;
   geometry_msgs::Point dir;
-  // Eigen::Matrix<double, NUM_TOUCHES, 3> ray_start;
-  // Eigen::Matrix<double, NUM_TOUCHES, 3> ray_end;
-  // ray_start << 2, 0.3, 0.05,
-  //              1.4, 1, 0.18,
-  //              0.1, 0.05, 1,
-  //              0.8, 0.15, 0.15,
-  //              0.1, 1, 0.03,
-  //              1.13, 0.35, 1,
-  //              1.5, 0.02, 1,
-  //              1.5, -1, 0.03,
-  //              2, 0.04, 0.13,
-  //              -1, 0.06, 0.03,
-  //              0.85, 1, 0.1,
-  //              0.4, 0.04, 1,
-  //              1.55, 0.06, -1,
-  //              2, 0.1, 0.14,
-  //              1.12, 1, 0.08,
-  //              0.51, 0.18, -1,
-  //              1.35, 1, 0.07,
-  //              0, 0.35, 0.03,
-  //              1.54, 0.025, 1,
-  //              1.20, 1, 0.03;
-
-  // ray_end << 1, 0.3, 0.05,
-  //            1.4, 0, 0.18,
-  //            0.1, 0.05, 0,
-  //            0, 0.15, 0.15,
-  //            0.1, 0, 0.03,
-  //            1.13, 0.35, 0,
-  //            1.5, 0.02, 0,
-  //            1.5, 1, 0.03,
-  //            1, 0.04, 0.13,
-  //            1, 0.06, 0.03,
-  //            0.85, 0, 0.1,
-  //            0.4, 0.04, 0,
-  //            1.55, 0.06, 1,
-  //            1, 0.1, 0.14,
-  //            1.12, 0, 0.08,
-  //            0.51, 0.18, 1,
-  //            1.35, 0, 0.07,
-  //            1, 0.35, 0.03,
-  //            1.54, 0.025, 0,
-  //            1.20, 0, 0.03;
-
-  // double state[6] = {0.3, 0.3, 0.3, 0.5, 0.7, 0.5};
-  // Eigen::Matrix3d rotationC;
-  // rotationC << cos(state[5]), -sin(state[5]), 0,
-  //              sin(state[5]), cos(state[5]), 0,
-  //              0, 0, 1;
-  // Eigen::Matrix3d rotationB;
-  // rotationB << cos(state[4]), 0 , sin(state[4]),
-  //              0, 1, 0,
-  //              -sin(state[4]), 0, cos(state[4]);
-  // Eigen::Matrix3d rotationA;
-  // rotationA << 1, 0, 0 ,
-  //              0, cos(state[3]), -sin(state[3]),
-  //              0, sin(state[3]), cos(state[3]);
-  // Eigen::Matrix3d rotationM = rotationC * rotationB * rotationA;
-  // Eigen::Matrix<double, 3, NUM_TOUCHES> displaceM;
-  // for (int ii = 0; ii < NUM_TOUCHES; ii ++) {
-  //   displaceM(0, ii) = state[0];
-  //   displaceM(1, ii) = state[1];
-  //   displaceM(2, ii) = state[2];
-  // }
-  // Eigen::Matrix<double, 3, NUM_TOUCHES> tran_start = rotationM * (ray_start.transpose()) + displaceM;
-  // Eigen::Matrix<double, 3, NUM_TOUCHES> tran_end = rotationM * (ray_end.transpose()) + displaceM;
-
+  
 
   int i = 0;
   //for(int i=0; i<20; i++){
@@ -254,9 +113,7 @@ int main(int argc, char **argv)
     //tf::Point end(0.95,2,-0.15);
     tf::Point start, end;
     randomSelection(plt, start, end);
-    //fixedSelection(plt, start, end, i);
-    // start.setValue(tran_start(0, i), tran_start(1, i), tran_start(2, i));
-    // end.setValue(tran_end(0, i), tran_end(1, i), tran_end(2, i));
+
     tf::Point intersection;
     if(!getIntersection(plt, start, end, intersection)){
       ROS_INFO("NO INTERSECTION, Skipping");
@@ -288,13 +145,7 @@ int main(int argc, char **argv)
     }
     i ++;
   }
-  std::ofstream myfile;
-  myfile.open("/home/shiyuan/Documents/ros_marsarm/diff.csv", std::ios::out|std::ios::app);
-  myfile << "\n";
-  myfile.close();
-  myfile.open("/home/shiyuan/Documents/ros_marsarm/time.csv", std::ios::out|std::ios::app);
-  myfile << "\n";
-  myfile.close();
+  
   ROS_INFO("Finished all action");
 
 }

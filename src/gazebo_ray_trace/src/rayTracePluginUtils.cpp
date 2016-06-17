@@ -174,14 +174,14 @@ bool RayTracePluginUtils::rayTraceCondDisEntropy(gazebo_ray_trace::RayTraceCylin
 
   std::vector<RayIntersection> rays = rayTraceCylinderHelper(start, end, req.error_radius);
 
-  std::cout << "Ray Trace time: " << (clock() - t0)/double(CLOCKS_PER_SEC) << std::endl;
+  //std::cout << "Ray Trace time: " << (clock() - t0)/double(CLOCKS_PER_SEC) << std::endl;
   t0 = clock();
 
 
   std::vector<CalcEntropy::ConfigDist> distToConfig;
   distToConfig = intersectionsToConfig(rays, req.error_depth, start, end);
 
-  std::cout << "intersections to Config time: " << (clock() - t0)/double(CLOCKS_PER_SEC) << std::endl;
+  //std::cout << "intersections to Config time: " << (clock() - t0)/double(CLOCKS_PER_SEC) << std::endl;
   t0 = clock();
 
 

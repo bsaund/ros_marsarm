@@ -45,7 +45,7 @@ void PlotRayUtils::plotIntersections(std::vector<double> dist,
 
 void PlotRayUtils::plotIntersections(tf::Point rayStart, tf::Point rayEnd, bool overwrite)
 {
-  plotIntersections(getDistToParticles(rayStart, rayEnd), rayStart, rayEnd, overwrite);
+  // plotIntersections(getDistToParticles(rayStart, rayEnd), rayStart, rayEnd, overwrite);
 }
 
 visualization_msgs::Marker PlotRayUtils::getIntersectionMarker(tf::Point intersection, int index){
@@ -82,12 +82,13 @@ visualization_msgs::Marker PlotRayUtils::getIntersectionMarker(tf::Point interse
  * publishes a visualization message with the ray.
  *  By default overwrites the previous array
  */
-void PlotRayUtils::plotRay(tf::Point start, tf::Point end, bool overwrite)
+void PlotRayUtils::plotRay(Ray ray, bool overwrite)
 {
   if(!overwrite){
     ray_index_++;
   }
-  visualization_msgs::Marker marker = createRayMarker(start, end, ray_index_);
+
+  visualization_msgs::Marker marker = createRayMarker(ray, ray_index_);
 
   //wait until subscribed
   ros::Rate poll_rate(100);
@@ -97,6 +98,14 @@ void PlotRayUtils::plotRay(tf::Point start, tf::Point end, bool overwrite)
     i++;
   }
   marker_pub_.publish(marker);
+}
+
+
+void PlotRayUtils::labelRay(Ray ray, double d){
+  std::stringstream s;
+  //Note: IG should always be positive, but I am using fabs here to see errors if IG is negative
+  s << d;
+  labelRay(ray.start, s.str());
 }
 
 
@@ -132,8 +141,7 @@ void PlotRayUtils::labelRay(tf::Point start, std::string text){
 /**
  * Creates and returns the ray marker
  */
-visualization_msgs::Marker PlotRayUtils::createRayMarker(tf::Point start, tf::Point end, 
-							 int index)
+visualization_msgs::Marker PlotRayUtils::createRayMarker(Ray ray, int index)
 {
   visualization_msgs::Marker marker;
   marker.header.frame_id = "/my_frame";
@@ -150,8 +158,8 @@ visualization_msgs::Marker PlotRayUtils::createRayMarker(tf::Point start, tf::Po
  
   
   marker.points.resize(2);
-  tf::pointTFToMsg(start, marker.points[0]);
-  tf::pointTFToMsg(end, marker.points[1]);
+  tf::pointTFToMsg(ray.start, marker.points[0]);
+  tf::pointTFToMsg(ray.end, marker.points[1]);
  
   marker.scale.x = 0.005;
   marker.scale.y = 0.04; //Head Width
@@ -207,56 +215,6 @@ void PlotRayUtils::plotCylinder(tf::Point start, tf::Point end, double radial_er
 }
 
 
-/** 
- *  Calls the rayTracePlugin service to get information gain of a simulated touch
- *   Returns the full response from the service
- */
-/*
-gazebo_ray_trace::RayTraceCylinder PlotRayUtils::getIGFullResponse(
-		  tf::Point start, tf::Point end, double radial_err, double dist_err)
-{
-
-  gazebo_ray_trace::RayTraceCylinder srv;
-
-  transformRayToParticleFrame(start, end, srv.request.start, srv.request.end);
-  srv.request.error_radius = radial_err;
-  srv.request.error_depth = dist_err;
-
-  if(!client_ray_trace_condDisEntropy_.call(srv)){
-    ROS_ERROR("Ray Trace Failed");
-  }
-  return srv;
-}
-*/
-
-/**
- *  Calls the rayTracePlugin service to get information gain of a simulated touch
- *   Returns the information gain
- */
-double PlotRayUtils::getIG(tf::Point start, tf::Point end, double radial_err, double dist_err)
-{
-  // return getIGFullResponse(start, end, radial_err, dist_err).response.IG;
-  return 0;
-}
-
-
-/**
- * Call the ros service providedby ray_trace_plugging
- * This servce accepts a ray and returns the transform to the true part
- * particles are not considered
- */
-double PlotRayUtils::getDistToPart(tf::Point start, tf::Point end)
-{
-  // gazebo_ray_trace::RayTrace srv;
-  // transformRayToParticleFrame(start, end, srv.request.start, srv.request.end);
-
-  // if(!client_ray_trace_.call(srv)){
-  //   ROS_ERROR("Ray Trace Failed");
-  // }
-
-  // return srv.response.dist;
-}
-
 /**
  * Returns the point of intersection with the part along the ray
  *   rays are given in the world frame, 
@@ -264,29 +222,9 @@ double PlotRayUtils::getDistToPart(tf::Point start, tf::Point end)
  */
 bool PlotRayUtils::getIntersectionWithPart(tf::Point start, tf::Point end, tf::Point &intersection)
 {
-  double dist = getDistToPart(start, end);
-  intersection= start + (end-start).normalize() * dist;
-  return dist < 999;
+  // double dist = getDistToPart(start, end);
+  // intersection= start + (end-start).normalize() * dist;
+  // return dist < 999;
 }
-
-/**
- * Calls the ros service provided by ray_trace_pluggin.
- *  This service accepts a ray and returns a list of points for where the ray 
- *  intersected each obstacle
- */
-std::vector<double> PlotRayUtils::getDistToParticles(tf::Point start, tf::Point end)
-{
-  // gazebo_ray_trace::RayTraceEachParticle srv;
-  
-  // transformRayToParticleFrame(start, end, srv.request.start, srv.request.end);
-  
-  // if(!client_ray_trace_particles_.call(srv)){
-  //   ROS_ERROR("Ray Trace Failed");
-  // }
-
-  // return srv.response.dist;
-}
-
-
 
 

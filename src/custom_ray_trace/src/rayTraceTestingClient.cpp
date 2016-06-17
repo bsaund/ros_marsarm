@@ -1,6 +1,6 @@
 #include "ros/ros.h"
 #include "rayTracer.h"
-
+#include "plotRayUtils.h"
 
 int main(int argc, char **argv){
   ros::init(argc, argv, "ray_trace_test");
@@ -10,6 +10,7 @@ int main(int argc, char **argv){
   }
 
   RayTracer rayTracer;
+  PlotRayUtils plt;
 
 
   tf::Point start = tf::Point(atof(argv[1]),
@@ -56,9 +57,16 @@ int main(int argc, char **argv){
 
   // ROS_INFO("IG: %f", rayTracer.getIG(ray, 0.01, 0.01));
   Ray ray_base(tf::Point(.9, 0, 1), tf::Point(.9, 0, 0));
+  plt.plotRay(ray_base, false);
+  plt.labelRay(ray_base, rayTracer.getIG(ray_base, 0.01, 0.01));
+  plt.plotRay(ray, false);
+  plt.labelRay(ray, rayTracer.getIG(ray, 0.01, 0.01));
+
   ROS_INFO("IG of base ray: %f", rayTracer.getIG(ray_base, 0.01, 0.01));
   ROS_INFO("IG of input ray: %f", rayTracer.getIG(ray, 0.01, 0.01));
   ROS_INFO("IG of both: %f", rayTracer.getIG(ray_base, ray, 0.01, 0.01));
+  
+
 
   return 0;
 }

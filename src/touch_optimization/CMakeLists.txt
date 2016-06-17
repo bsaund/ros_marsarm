@@ -138,17 +138,17 @@ include_directories(
 # target_link_libraries(random_ray
 #   ${catkin_LIBRARIES})
 
-add_executable(particle_test src/updatingParticles.cpp)
-target_link_libraries(particle_test
-  ${catkin_LIBRARIES})
+# add_executable(particle_test src/updatingParticles.cpp)
+# target_link_libraries(particle_test
+#   ${catkin_LIBRARIES})
 
 # add_executable(cube_localization src/cubeLocalization.cpp)
 # target_link_libraries(cube_localization
 #   ${catkin_LIBRARIES})
 
-add_executable(boeing_localization src/boeingLocalization.cpp)
-target_link_libraries(boeing_localization
-  ${catkin_LIBRARIES})
+# add_executable(boeing_localization src/boeingLocalization.cpp)
+# target_link_libraries(boeing_localization
+#   ${catkin_LIBRARIES})
 
 # add_executable(run_full_plate src/fullSystemPlate.cpp)
 # target_link_libraries(run_full_plate
@@ -158,9 +158,9 @@ target_link_libraries(boeing_localization
 # target_link_libraries(run_full_box
 #   ${catkin_LIBRARIES})
 
-add_executable(run_full_wood src/fullSystemWood.cpp)
-target_link_libraries(run_full_wood
-  ${catkin_LIBRARIES})
+# add_executable(run_full_wood src/fullSystemWood.cpp)
+# target_link_libraries(run_full_wood
+#   ${catkin_LIBRARIES})
 
 
 ## Add cmake target dependencies of the executable

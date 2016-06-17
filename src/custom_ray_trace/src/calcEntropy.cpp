@@ -208,7 +208,7 @@ namespace CalcEntropy{
     for(const auto &b : procHist.bin){
       for(const auto &p : b.second.particles){
 	double particleProb = p.second;
-	entropy -= b.second.binProbability * particleProb * log(particleProb);
+	entropy -= b.second.binProbability * particleProb * log2(particleProb);
       }
     }
     return entropy;
@@ -222,7 +222,8 @@ namespace CalcEntropy{
 
   double calcIG(ProcessedHistogram procHist, int numParticles){
     double H_Y_given_X = calcCondDisEntropy(procHist);
-    double H_Y = -log(1.0/(double)numParticles);
+    double H_Y = -log2(1.0/(double)numParticles);
+    // std::cout << "H_Y: " << H_Y << "    H_Y_given_X: " << H_Y_given_X << std::endl;
     return H_Y - H_Y_given_X;
   }
 

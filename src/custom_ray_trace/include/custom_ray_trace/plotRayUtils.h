@@ -23,7 +23,7 @@ class PlotRayUtils{
  public:
   PlotRayUtils();
 
-  /* RayTracer rayTracer; */
+  RayTracer rayTracer;
   
 
   void plotIntersections(tf::Point rayStart, tf::Point rayEnd, bool overwrite = true);
@@ -32,9 +32,10 @@ class PlotRayUtils{
   void plotIntersection(tf::Point intersection, int index);
 			
 
-  visualization_msgs::Marker createRayMarker(tf::Point start, tf::Point end, int index);
+  visualization_msgs::Marker createRayMarker(Ray ray, int index);
   
-  void plotRay(tf::Point start, tf::Point end, bool overwrite = true);
+  void plotRay(Ray ray, bool overwrite = true);
+  void labelRay(Ray ray, double d);
   void labelRay(tf::Point start, std::string text);
   void plotEntropyRay(tf::Point start, tf::Point end, bool overwrite);
   void plotCylinder(tf::Point start, tf::Point end, double radial_err, double dist_err, bool overwrite = false);
@@ -42,9 +43,6 @@ class PlotRayUtils{
   double getDistToPart(tf::Point start, tf::Point end);
   bool getIntersectionWithPart(tf::Point start, tf::Point end, tf::Point &intersection);
   std::vector<double> getDistToParticles(tf::Point start, tf::Point end);
-  void getIGFullResponse(
-		 tf::Point start, tf::Point end, double radial_err, double dist_err);
-  double getIG(tf::Point start, tf::Point end, double radial_err, double dist_err);
 
   void listDistances(std::vector<double> dist){
     for(int i=0; i < dist.size(); i++){

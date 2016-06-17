@@ -60,10 +60,6 @@ target_link_libraries(calc_entropy ${catkin_LIBRARIES})
 add_library(ray_tracer src/rayTracer.cpp)
 target_link_libraries(ray_tracer ${catkin_LIBRARIES} stlParserCustom calc_entropy)
 
-add_executable(custom_rayTrace_test src/rayTraceTestingClient.cpp)
-target_link_libraries(custom_rayTrace_test
-  ${catkin_LIBRARIES} 
-  ray_tracer)
 
 add_library(plot_ray_utils src/plotRayUtils.cpp)
 target_link_libraries(plot_ray_utils
@@ -71,6 +67,13 @@ target_link_libraries(plot_ray_utils
   calc_entropy
   ray_tracer
   )
+
+add_executable(custom_rayTrace_test src/rayTraceTestingClient.cpp)
+target_link_libraries(custom_rayTrace_test
+  ${catkin_LIBRARIES} 
+  ray_tracer
+  plot_ray_utils)
+
 
 add_executable(image_maker src/imageMaker.cpp)
 target_link_libraries(image_maker

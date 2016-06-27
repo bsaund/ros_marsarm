@@ -269,13 +269,13 @@ int main(int argc, char **argv)
 
   plt.generateTransforms();
   plt.updateMarkers();
-  plt.updateTrueMarker();
+  // plt.updateTrueMarker();
 
 
   while (ros::ok()) {
     waitForRViz.sleep();
     plt.plotParticles();
-    plt.plotTruePart();
+    // plt.plotTruePart();
     // ROS_INFO("spinning");
     ros::spinOnce();
   }

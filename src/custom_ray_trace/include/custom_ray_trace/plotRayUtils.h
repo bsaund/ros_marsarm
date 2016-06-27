@@ -35,6 +35,7 @@ class PlotRayUtils{
   visualization_msgs::Marker createRayMarker(Ray ray, int index);
   
   void plotRay(Ray ray, bool overwrite = true);
+  void label(tf::Point start, int id, std::string text);
   void labelRay(Ray ray, double d);
   void labelRay(tf::Point start, std::string text);
   void plotEntropyRay(tf::Point start, tf::Point end, bool overwrite);

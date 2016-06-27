@@ -103,13 +103,11 @@ void PlotRayUtils::plotRay(Ray ray, bool overwrite)
 
 void PlotRayUtils::labelRay(Ray ray, double d){
   std::stringstream s;
-  //Note: IG should always be positive, but I am using fabs here to see errors if IG is negative
   s << d;
   labelRay(ray.start, s.str());
 }
 
-
-void PlotRayUtils::labelRay(tf::Point start, std::string text){
+void PlotRayUtils::label(tf::Point start, int id, std::string text){
   visualization_msgs::Marker marker;
   marker.header.frame_id = "/my_frame";
   marker.header.stamp = ros::Time::now();
@@ -117,7 +115,7 @@ void PlotRayUtils::labelRay(tf::Point start, std::string text){
   // Set the namespace and id for this marker.  This serves to create a unique ID
   // Any marker sent with the same namespace and id will overwrite the old one
   marker.ns = "ray_label";
-  marker.id = ray_index_;
+  marker.id = id;
   marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
   marker.action = visualization_msgs::Marker::ADD;
  
@@ -136,6 +134,11 @@ void PlotRayUtils::labelRay(tf::Point start, std::string text){
   marker.lifetime = ros::Duration();
 
   marker_pub_.publish(marker);
+}
+
+
+void PlotRayUtils::labelRay(tf::Point start, std::string text){
+  label(start, ray_index_, text);
 }
 
 /**

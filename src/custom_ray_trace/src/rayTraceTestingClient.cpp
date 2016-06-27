@@ -21,7 +21,11 @@ int main(int argc, char **argv){
 			    atof(argv[5]),
 			    atof(argv[6]));
   double dist;
-  Ray ray(start, end);
+
+  double input1 = atof(argv[1]);
+  double input2 = atof(argv[2]);
+
+  // Ray ray(start, end);
   std::vector<double> distsQuick;
   std::vector<double> dists;
 
@@ -58,22 +62,30 @@ int main(int argc, char **argv){
   // ROS_INFO("IG: %f", rayTracer.getIG(ray, 0.01, 0.01));
   // Ray ray_base(tf::Point(.9, 0, 1), tf::Point(.9, 0, 0));
   Ray ray_base(tf::Point(1.5, 0, .3), tf::Point(.5, 0, .3));
-  plt.plotRay(ray_base, false);
-  plt.labelRay(ray_base, rayTracer.getIG(ray_base, 0.01, 0.01));
-  plt.plotRay(ray, false);
-  plt.labelRay(ray, rayTracer.getIG(ray, 0.01, 0.01));
+  // plt.plotRay(ray_base, false);
+  // plt.labelRay(ray_base, rayTracer.getIG(ray_base, 0.01, 0.01));
+  // plt.plotRay(ray, false);
+  // plt.labelRay(ray, rayTracer.getIG(ray, 0.01, 0.01));
 
+  std::vector<Ray> rays;
+  for(int i=0; i<input1; i++){
+    double height = 0.3 + (double)i/(5*input1);
+    rays.push_back(Ray(tf::Point(1.5, 0, height), tf::Point(.5, 0, height)));
+  }
 
+  for(Ray ray:rays){
+    plt.plotRay(ray, false);
+    plt.labelRay(ray, rayTracer.getIG(ray, 0.01, input2));
+  }
+
+  double combIG = rayTracer.getIG(rays, 0.01, input2);
   std::stringstream s;
-  s << "Combined IG: " << rayTracer.getIG(ray_base, ray, 0.01, 0.01);
+  s << "Combined IG: " << combIG;
   plt.label(tf::Point(1,0,0), 10, s.str());
 
-  ROS_INFO("IG of base ray: %f", rayTracer.getIG(ray_base, 0.01, 0.01));
-  ROS_INFO("IG of input ray: %f", rayTracer.getIG(ray, 0.01, 0.01));
-  ROS_INFO("IG of both: %f", rayTracer.getIG(ray_base, ray, 0.01, 0.01));
-  ROS_INFO("IG of both: %f", rayTracer.getIG(ray, ray_base, 0.01, 0.01));
-  
-
+  // ROS_INFO("IG of base ray: %f", rayTracer.getIG(ray_base, 0.01, 0.01));
+  // ROS_INFO("IG of input ray: %f", rayTracer.getIG(ray, 0.01, 0.01));
+  ROS_INFO("IG of both: %f", combIG);
 
   return 0;
 }

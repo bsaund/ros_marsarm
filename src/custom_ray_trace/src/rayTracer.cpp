@@ -252,20 +252,26 @@ double RayTracer::getIG(Ray ray, double radialErr, double distErr)
 }
 
 
-double RayTracer::getIG(Ray ray1, Ray ray2, double radialErr, double distErr){
-  vector<CalcEntropy::ConfigDist> dists1, dists2;
-  CalcEntropy::ProcessedHistogram hist1, hist2, comb;
-  bool noIntersection = !traceCylinderAllParticles(ray1, radialErr, dists1, false);
-  noIntersection = !traceCylinderAllParticles(ray2, radialErr, dists2, false) && noIntersection;
+double RayTracer::getIG(std::vector<Ray> rays, double radialErr, double distErr){
 
-  if(noIntersection)
-    return 0;
-
+  CalcEntropy::ProcessedHistogram histSingle, histCombined;
   int n = particleHandler.getNumSubsetParticles();
-  hist1 = CalcEntropy::processMeasurements(dists1, distErr, n);
-  hist2 = CalcEntropy::processMeasurements(dists2, distErr, n);
-  comb = CalcEntropy::combineHist(hist1, hist2);
-  return calcIG(comb, n);
+  bool firstrun = true;
+  int i=0;
+  for(Ray ray: rays){
+    vector<CalcEntropy::ConfigDist> dists;
+    traceCylinderAllParticles(ray, radialErr, dists, false);
+    if(firstrun){
+       histCombined = CalcEntropy::processMeasurements(dists, distErr, n);    
+       firstrun = false;
+    } else {
+      histSingle = CalcEntropy::processMeasurements(dists, distErr, n);    
+      histCombined = CalcEntropy::combineHist(histCombined, histSingle);
+    }
+    ROS_INFO("Num Bins after %d measurements: %d", ++i, histCombined.bin.size());
+
+  }
+  return calcIG(histCombined, n);
 }
 
 

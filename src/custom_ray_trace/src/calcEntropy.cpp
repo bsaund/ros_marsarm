@@ -195,6 +195,7 @@ namespace CalcEntropy{
     CalcEntropy::ProcessedHistogram procHist;
     procHist.particle.resize(numParticles);
     processHistogram(hist, procHist, p.size()/numParticles);
+    // printParticles(procHist);
     return procHist;
   }
 
@@ -202,7 +203,7 @@ namespace CalcEntropy{
   /*
    *  Calculates conditional discrete entropy of histogram of distance
    */
-  double calcCondDisEntropy(CalcEntropy::ProcessedHistogram procHist){
+  double calcCondDisEntropy(const CalcEntropy::ProcessedHistogram &procHist){
     double entropy = 0;
     
     for(const auto &b : procHist.bin){
@@ -215,12 +216,12 @@ namespace CalcEntropy{
   }
 
   
-  double calcIG(std::vector<ConfigDist> distances, double binSize, int numParticles)
+  double calcIG(const std::vector<ConfigDist> &distances, double binSize, int numParticles)
   {
     return calcIG(processMeasurements(distances, binSize, numParticles), numParticles);
   }
 
-  double calcIG(ProcessedHistogram procHist, int numParticles){
+  double calcIG(const ProcessedHistogram &procHist, int numParticles){
     double H_Y_given_X = calcCondDisEntropy(procHist);
     double H_Y = -log2(1.0/(double)numParticles);
     // std::cout << "H_Y: " << H_Y << "    H_Y_given_X: " << H_Y_given_X << std::endl;
@@ -232,7 +233,7 @@ namespace CalcEntropy{
     ProcessedHistogram comb;
     comb.particle.resize(hist1.particle.size());
 
-    std::cout <<" Combining Hists " << std::endl;
+    // std::cout <<" Combining Hists " << std::endl;
 
     //For every particle add probability of observation <x_1, x_2>
     for(int pId = 0; pId < hist1.particle.size(); pId++){
@@ -266,6 +267,9 @@ namespace CalcEntropy{
 	p.second = p.second / totalProb;
       }
     }
+
+    // printBins(comb);
+    // printParticles(comb);
 
     return comb;
   }

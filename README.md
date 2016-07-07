@@ -28,3 +28,11 @@ If connected to the CMU marsarm robot run
 rosrun touch_optimization run_full_wood
 ```
 Ros talks to the robot over the ipc_ros_bridge. For new robots a new form of communication will be needed.
+
+
+## Quick Overview
+* particle_filter: Our implementation of a particle filter specialized for accurate measurements
+* touch_optimization: Chooses best touch point based on Information Gain
+* using_markers: Visualization of particles and rays in RViz
+* custom_ray_trace: Casts rays on particles and calculates information gain
+* ipc_ros_bridge: Bridge to talk to IPC which controls our robot

@@ -6,7 +6,7 @@ ROS indigo
 Eigen
 
 ## Compilation and usage
-From the directory with these files run 
+Clone this project and run
 ```
 catkin make
 source devel/setup.bash
@@ -27,4 +27,4 @@ If connected to the CMU marsarm robot run
 ```
 rosrun touch_optimization run_full_wood
 ```
-Ros talks to the robot over the ipc_ros_bridge. For new robots a new form of communication will be needed
+Ros talks to the robot over the ipc_ros_bridge. For new robots a new form of communication will be needed.

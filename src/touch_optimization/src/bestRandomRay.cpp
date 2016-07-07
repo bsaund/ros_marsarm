@@ -4,9 +4,9 @@
 
 #include "ros/ros.h"
 
-#include "gazebo_ray_trace/calcEntropy.h"
-#include "gazebo_ray_trace/plotRayUtils.h"
-#include "gazebo_ray_trace/TouchOptimizeGrid.h"
+#include "custom_ray_trace/calcEntropy.h"
+#include "custom_ray_trace/plotRayUtils.h"
+#include "custom_ray_trace/TouchOptimizeGrid.h"
 #include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/Point.h"
 #include <sstream>

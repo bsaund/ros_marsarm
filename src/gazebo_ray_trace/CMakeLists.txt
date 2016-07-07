@@ -5,6 +5,7 @@ add_definitions(-std=c++11)
 
 project(gazebo_ray_trace)
 
+return()
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -108,12 +109,12 @@ target_link_libraries(gazebo_rayTrace_grid
   plot_ray_utils
 )
 
-add_executable(imageMaker src/imageMaker.cpp)
-target_link_libraries(imageMaker
-  ${catkin_LIBRARIES}
-  calc_entropy
-  plot_ray_utils
-)
+# add_executable(imageMaker src/imageMaker.cpp)
+# target_link_libraries(imageMaker
+#   ${catkin_LIBRARIES}
+#   calc_entropy
+#   plot_ray_utils
+# )
 
 
 add_executable(gazebo_ig_manual src/igManual.cpp)

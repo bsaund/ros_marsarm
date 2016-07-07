@@ -40,6 +40,7 @@
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
   <build_depend>gazebo_ray_trace</build_depend>
+  <build_depend>custom_ray_trace</build_depend>
   <build_depend>particle_filter</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>geometry_msgs</build_depend>
@@ -48,6 +49,7 @@
 
 
   <run_depend>gazebo_ray_trace</run_depend>
+  <run_depend>custom_ray_trace</run_depend>
   <run_depend>particle_filter</run_depend>
   <run_depend>roscpp</run_depend>
 

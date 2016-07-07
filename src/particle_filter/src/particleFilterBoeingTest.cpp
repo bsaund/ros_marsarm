@@ -2,6 +2,7 @@
 #include "particleFilter.h"
 #include <tf/transform_broadcaster.h>
 #include <geometry_msgs/PoseArray.h>
+#include <std_msgs/Empty.h>
 #include <iostream>
 #include <boost/thread/thread.hpp>
 #include <pcl/common/common_headers.h>
@@ -13,7 +14,8 @@
 #include "particle_filter/PFilterInit.h"
 #include "particle_filter/AddObservation.h"
 #include "stlParser.h"
-#include "gazebo_ray_trace/plotRayUtils.h"
+// #include <custom_ray_trace/stlParser.h>
+#include <custom_ray_trace/rayTracer.h>
 #include <math.h>
 #include <string>
 #include <array>
@@ -31,13 +33,15 @@ class PFilterTest
 private:
   ros::NodeHandle n;
   ros::Subscriber sub_init;
+  ros::Subscriber sub_request_particles;
   ros::ServiceServer srv_add_obs;
   ros::Publisher pub_particles;
   
   distanceTransform *dist_transform;
-  PlotRayUtils plt;
+  ParticleHandler pHandler;
 
   bool getMesh(std::string filename);
+
 public:
   vector<vec4x3> mesh;
   int num_voxels[3];
@@ -47,6 +51,7 @@ public:
   // void addObs(geometry_msgs::Point obs);
   bool addObs(particle_filter::AddObservation::Request &req,
 	      particle_filter::AddObservation::Response &resp);
+  void sendParticles(std_msgs::Empty);
 };
 
 void computeInitialDistribution(particleFilter::cspace binit[2], ros::NodeHandle n)
@@ -117,6 +122,11 @@ tf::Pose poseAt(particleFilter::cspace particle_pose)
 
 }
 
+void PFilterTest::sendParticles(std_msgs::Empty emptyMsg)
+{
+  pub_particles.publish(getParticlePoseArray());
+}
+
 bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
 			 particle_filter::AddObservation::Response &resp)
 {
@@ -160,7 +170,8 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
 {
   particleFilter::cspace particles[NUM_PARTICLES];
   pFilter_.getAllParticles(particles);
-  tf::Transform trans = plt.getTrans();
+  tf::Transform trans = pHandler.getTransformToPartFrame();
+
 
   boost::mutex::scoped_lock updateLock(updateModelMutex);	
   basic_cloud_ptr1->points.clear();
@@ -258,6 +269,7 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
 {
   
   // sub_init = n.subscribe("/particle_filter_init", 1, &PFilterTest::initDistribution, this);
+  sub_request_particles = n.subscribe("/request_particles", 1, &PFilterTest::sendParticles, this);
   srv_add_obs = n.advertiseService("/particle_filter_add", &PFilterTest::addObs, this);
   pub_particles = n.advertise<geometry_msgs::PoseArray>("/particles_from_filter", 5);
   ROS_INFO("Loading Boeing Particle Filter");
@@ -292,6 +304,8 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
   ros::Duration(1.0).sleep();
   pub_particles.publish(getParticlePoseArray());
 }
+
+
 
 int main(int argc, char **argv)
 { 

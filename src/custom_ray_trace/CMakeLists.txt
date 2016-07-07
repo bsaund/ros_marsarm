@@ -75,11 +75,6 @@ target_link_libraries(custom_rayTrace_test
   plot_ray_utils)
 
 
-add_executable(image_maker src/imageMaker.cpp)
-target_link_libraries(image_maker
-  ${catkin_LIBRARIES}
-  ray_tracer
-  )
 
 # add_dependencies(plot_ray_utils custom_ray_trace_gencpp)
 

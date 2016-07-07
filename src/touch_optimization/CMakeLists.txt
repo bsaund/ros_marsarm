@@ -162,6 +162,13 @@ include_directories(
 # target_link_libraries(run_full_wood
 #   ${catkin_LIBRARIES})
 
+add_executable(image_maker src/imageMaker.cpp)
+target_link_libraries(image_maker
+  ${catkin_LIBRARIES}
+  # ray_tracer
+  )
+
+
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above

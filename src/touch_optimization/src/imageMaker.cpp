@@ -4,8 +4,9 @@
 
 #include "ros/ros.h"
 
-#include "calcEntropy.h"
-#include "plotRayUtils.h"
+// #include "calcEntropy.h"
+// #include "plotRayUtils.h"
+#include <custom_ray_trace/rayTracer.h>
 #include <sstream>
 #include <math.h>
 #include <iostream>

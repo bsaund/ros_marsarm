@@ -12,6 +12,7 @@
 #include "std_msgs/String.h"
 #include <tf/transform_broadcaster.h>
 #include "custom_ray_trace/plotRayUtils.h"
+#include "custom_ray_trace/rayTracer.h"
 #include <ros/console.h>
 # define M_PI       3.14159265358979323846  /* pi */
 
@@ -164,7 +165,7 @@ void generateRandomRay(std::mt19937 &gen, tf::Pose &probePose, tf::Point &start,
  * Randomly chooses vectors, gets the Information Gain for each of 
  *  those vectors, and returns the ray (start and end) with the highest information gain
  */
-void randomSelection(PlotRayUtils &plt, tf::Pose &probePose)
+void randomSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Pose &probePose)
 {
   // tf::Point best_start, best_end;
 
@@ -187,7 +188,8 @@ void randomSelection(PlotRayUtils &plt, tf::Pose &probePose)
 
     generateRandomRay(gen, probePoseTmp, start, end);
     // plt.plotRay(start, end);
-    double IG = plt.getIG(start, end, 0.01, 0.002);
+    Ray measurement(start, end);
+    double IG = rayt.getIG(measurement, 0.01, 0.002);
 
     if (IG > bestIG){
       
@@ -200,7 +202,7 @@ void randomSelection(PlotRayUtils &plt, tf::Pose &probePose)
 
     ROS_DEBUG_THROTTLE(10, "Calculating best point based on information gain...");
   }
-  plt.plotRay(best_start, best_end);
+  plt.plotRay(Ray(best_start, best_end));
   plt.plotIntersections(best_start, best_end);
   // plt.plotCylinder(best_start, best_end, 0.01, 0.002, true);
   ROS_INFO("Ray is: %f, %f, %f.  %f, %f, %f", 
@@ -239,6 +241,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "updating_particles");
   ros::NodeHandle n;
   PlotRayUtils plt;
+  RayTracer rayt;
 
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -262,12 +265,12 @@ int main(int argc, char **argv)
   tf::Point rEnd(0.8, -0.21, 0.35);
 
 
-  plt.plotRay(rStart, rEnd);
+  plt.plotRay(Ray(rStart, rEnd));
 
 
 
   for(int i=0; i<7; i++){
-    randomSelection(plt, probePose);
+    randomSelection(plt, rayt, probePose);
     tf::poseTFToMsg(probePose, probe_msg);
     probe_pub.publish(probe_msg);
     ros::topic::waitForMessage<std_msgs::String>(std::string("/process_finished"));

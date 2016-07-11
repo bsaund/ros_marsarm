@@ -68,8 +68,14 @@ target_link_libraries(plot_ray_utils
   ray_tracer
   )
 
-add_executable(custom_rayTrace_test src/rayTraceTestingClient.cpp)
-target_link_libraries(custom_rayTrace_test
+add_executable(rayPlot src/rayPlot.cpp)
+target_link_libraries(rayPlot
+  ${catkin_LIBRARIES} 
+  ray_tracer
+  plot_ray_utils)
+
+add_executable(linePlot src/linePlot.cpp)
+target_link_libraries(linePlot
   ${catkin_LIBRARIES} 
   ray_tracer
   plot_ray_utils)

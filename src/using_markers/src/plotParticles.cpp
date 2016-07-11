@@ -267,7 +267,7 @@ int main(int argc, char **argv)
 
   ros::Duration waitForRViz(1.0);
 
-  plt.generateTransforms();
+  // plt.generateTransforms();
   plt.updateMarkers();
   // plt.updateTrueMarker();
 

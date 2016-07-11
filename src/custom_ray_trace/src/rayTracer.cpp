@@ -268,7 +268,7 @@ double RayTracer::getIG(std::vector<Ray> rays, double radialErr, double distErr)
       histSingle = CalcEntropy::processMeasurements(dists, distErr, n);    
       histCombined = CalcEntropy::combineHist(histCombined, histSingle);
     }
-    ROS_INFO("Num Bins after %d measurements: %d", ++i, histCombined.bin.size());
+    // ROS_INFO("Num Bins after %d measurements: %d", ++i, histCombined.bin.size());
 
   }
   return calcIG(histCombined, n);

@@ -17,6 +17,8 @@ struct Bin {
 static void getConfigDistMinAndMax(const std::vector<CalcEntropy::ConfigDist> &measurements,
 				   double &min, double &max){
   min = measurements[0].dist;
+  // min = std::floor(min*100)/100; //used to force first bin at a round number
+  // std::cout << "Min: " << min <<std::endl;
   
   int m = measurements.size()-1;
   while(m>0 && measurements[m].dist > 999){
@@ -45,6 +47,7 @@ static void histogram(const std::vector<CalcEntropy::ConfigDist> &measurements,
   	binValue += binSize;
       }
     }
+
     hist[binNum].particleIds.push_back(m.id);
   }
 }
@@ -121,7 +124,7 @@ static void printParticles(CalcEntropy::ProcessedHistogram &proc){
   std::cout << std::endl;
 }
 
-static void printBins(CalcEntropy::ProcessedHistogram &proc){
+static void printBins(const CalcEntropy::ProcessedHistogram &proc){
   double totalBinP = 0;
   std::cout << std::endl << 
     "============= BINS ===============" << std::endl << std::endl;
@@ -225,6 +228,7 @@ namespace CalcEntropy{
     double H_Y_given_X = calcCondDisEntropy(procHist);
     double H_Y = -log2(1.0/(double)numParticles);
     // std::cout << "H_Y: " << H_Y << "    H_Y_given_X: " << H_Y_given_X << std::endl;
+    // printBins(procHist);
     return H_Y - H_Y_given_X;
   }
 

@@ -37,13 +37,13 @@ class particleFilter
 
   // internal variables
   cspace b_Xprior[2]; // Initial distribution (mean and variance)
-  cspace b_Xpre[2];   // Previous (estimated) distribution (mean and variance)
+  //cspace b_Xpre[2];   // Previous (estimated) distribution (mean and variance)
   cspace *particles;  // Current set of particles
   cspace *particles0; // Previous set of particles
   cspace *particles_1; // Previous previous set of particles
   cspace particles_est; // Estimated distribution
   double particles_est_stat[2];
-  double *W;
+  //double *W;
 
   // Local functions
   void createParticles(cspace *particles, cspace b_Xprior[2], int n_particles);
@@ -60,5 +60,6 @@ void inverseTransform(double measure[2][3], particleFilter::cspace src, double d
 int checkInObject(vector<vec4x3> &mesh, double voxel_center[3]);
 int getIntersection(vector<vec4x3> &mesh, double pstart[3], double dir[3], double intersection[3]);
 double testResult(vector<vec4x3> &mesh, double config[6], double touch[2][3], double R);
+int checkObstacles(vector<vec4x3> &mesh, double config[6], double touch[2][3], double dist);
 #endif // PARTICLE_FILTER_H
 

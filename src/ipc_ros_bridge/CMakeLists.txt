@@ -11,11 +11,11 @@ find_package(catkin REQUIRED COMPONENTS
   tf)
 
 # This message does not appear to actually print to the command line
-message(WARNING, "Not building IPC package")
+# message(WARNING, "Not building IPC package")
 
- if(true)
-   return()
- endif()
+if(true)
+ return()
+endif()
 
 
 

@@ -10,7 +10,7 @@
 #include "particle_filter/AddObservation.h"
 #include "geometry_msgs/Point.h"
 #include <tf/transform_broadcaster.h>
-#include "gazebo_ray_trace/plotRayUtils.h"
+#include "custom_ray_trace/plotRayUtils.h"
 
 /**
  * Gets initial points for the particle filter by shooting
@@ -48,14 +48,13 @@ void randomSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_e
   double bestIG;
   bestIG = 0;
   std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_real_distribution<double> rand(-1.0,1.0);
+  std::uniform_real_distribution<double> rand(-2.0,2.0);
 
 
   for(int i=0; i<500; i++){
-    tf::Point start(rand(gen), rand(gen), rand(gen));
+    tf::Point start(rand(rd), rand(rd), rand(rd));
     start = start.normalize();
-    tf::Point end(rand(gen), rand(gen), rand(gen));
+    tf::Point end(rand(rd), rand(rd), rand(rd));
     end.normalized();
     double IG = plt.getIG(start, end, 0.01, 0.002);
     if (IG > bestIG){
@@ -75,7 +74,7 @@ void randomSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_e
 
 bool getIntersection(PlotRayUtils &plt, tf::Point start, tf::Point end, tf::Point &intersection){
   bool intersectionExists = plt.getIntersectionWithPart(start, end, intersection);
-  double radius = 0.001;
+  double radius = 0.000;
   intersection = intersection - (end-start).normalize() * radius;
   return intersectionExists;
 }
@@ -87,7 +86,6 @@ int main(int argc, char **argv)
   PlotRayUtils plt;
 
   std::random_device rd;
-  std::mt19937 gen(rd());
   std::normal_distribution<double> randn(0.0,0.003);
 
   ROS_INFO("Running...");
@@ -104,12 +102,13 @@ int main(int argc, char **argv)
  
   geometry_msgs::Point obs;
   geometry_msgs::Point dir;
-  for(int i=0; i<10; i++){
+  for(int i=0; i<20; i++){
     ros::Duration(1).sleep();
-    // tf::Point start(1,1.4,.5);
-    // tf::Point end(-1,-.6,.5);
+    //tf::Point start(0.95,0,-0.15);
+    //tf::Point end(0.95,2,-0.15);
     tf::Point start, end;
     randomSelection(plt, start, end);
+
     tf::Point intersection;
     if(!getIntersection(plt, start, end, intersection)){
       ROS_INFO("NO INTERSECTION, Skipping");
@@ -117,9 +116,9 @@ int main(int argc, char **argv)
     }
     tf::Point ray_dir(end.x()-start.x(),end.y()-start.y(),end.z()-start.z());
     ray_dir = ray_dir.normalize();
-    obs.x=intersection.getX() + randn(gen); 
-    obs.y=intersection.getY() + randn(gen); 
-    obs.z=intersection.getZ() + randn(gen);
+    obs.x=intersection.getX() + randn(rd); 
+    obs.y=intersection.getY() + randn(rd); 
+    obs.z=intersection.getZ() + randn(rd);
     dir.x=ray_dir.x();
     dir.y=ray_dir.y();
     dir.z=ray_dir.z();

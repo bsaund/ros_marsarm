@@ -8,7 +8,7 @@ project(touch_optimization)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  gazebo_ray_trace
+  custom_ray_trace
   particle_filter
   roscpp
   tf
@@ -134,29 +134,39 @@ include_directories(
 ## Declare a C++ executable
 # add_executable(touch_optimization_node src/touch_optimization_node.cpp)
 
-add_executable(random_ray src/bestRandomRay.cpp)
-target_link_libraries(random_ray
+# add_executable(random_ray src/bestRandomRay.cpp)
+# target_link_libraries(random_ray
+#   ${catkin_LIBRARIES})
+
+# add_executable(particle_test src/updatingParticles.cpp)
+# target_link_libraries(particle_test
+#   ${catkin_LIBRARIES})
+
+# add_executable(cube_localization src/cubeLocalization.cpp)
+# target_link_libraries(cube_localization
+#   ${catkin_LIBRARIES})
+
+# add_executable(boeing_localization src/boeingLocalization.cpp)
+# target_link_libraries(boeing_localization
+#   ${catkin_LIBRARIES})
+
+# add_executable(run_full_plate src/fullSystemPlate.cpp)
+# target_link_libraries(run_full_plate
+#   ${catkin_LIBRARIES})
+
+# add_executable(run_full_box src/fullSystemBox.cpp)
+# target_link_libraries(run_full_box
+#   ${catkin_LIBRARIES})
+
+add_executable(run_full_wood src/fullSystemWood.cpp)
+target_link_libraries(run_full_wood
   ${catkin_LIBRARIES})
 
-add_executable(particle_test src/updatingParticles.cpp)
-target_link_libraries(particle_test
-  ${catkin_LIBRARIES})
+add_executable(image_maker src/imageMaker.cpp)
+target_link_libraries(image_maker
+  ${catkin_LIBRARIES}
+  )
 
-add_executable(cube_localization src/cubeLocalization.cpp)
-target_link_libraries(cube_localization
-  ${catkin_LIBRARIES})
-
-add_executable(boeing_localization src/boeingLocalization.cpp)
-target_link_libraries(boeing_localization
-  ${catkin_LIBRARIES})
-
-add_executable(run_full_plate src/fullSystemPlate.cpp)
-target_link_libraries(run_full_plate
-  ${catkin_LIBRARIES})
-
-add_executable(run_full_box src/fullSystemBox.cpp)
-target_link_libraries(run_full_box
-  ${catkin_LIBRARIES})
 
 
 ## Add cmake target dependencies of the executable

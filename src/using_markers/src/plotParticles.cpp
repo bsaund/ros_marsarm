@@ -33,7 +33,7 @@ class ShapePlotter
   geometry_msgs::PoseArray particles_;
   
 
-  int numParticles = 50;
+  int numParticles = 1;
 
   void externalParticleUpdate(geometry_msgs::PoseArray p);
 
@@ -93,14 +93,20 @@ void ShapePlotter::generateTransforms()
     // particleTransform.position.z = randn(gen)/50;
 
 
-    particleTransform.position.x = randn(gen)*uncertainties[0];
-    particleTransform.position.y = randn(gen)*uncertainties[1];
-    particleTransform.position.z = randn(gen)*uncertainties[2];
+    // particleTransform.position.x = randn(gen)*uncertainties[0];
+    // particleTransform.position.y = randn(gen)*uncertainties[1];
+    // particleTransform.position.z = randn(gen)*uncertainties[2];
+
+    // particleTransform.orientation = 
+    //   tf::createQuaternionMsgFromRollPitchYaw(randn(gen)*uncertainties[3], 
+    // 					      randn(gen)*uncertainties[4], 
+    // 					      randn(gen)*uncertainties[5]);
+    particleTransform.position.x = 0;
+    particleTransform.position.y = 0;
+    particleTransform.position.z = 0;
 
     particleTransform.orientation = 
-      tf::createQuaternionMsgFromRollPitchYaw(randn(gen)*uncertainties[3], 
-					      randn(gen)*uncertainties[4], 
-					      randn(gen)*uncertainties[5]);
+      tf::createQuaternionMsgFromRollPitchYaw(0,0,0);
 					      
       // tf::createQuaternionMsgFromRollPitchYaw(0, randn(gen)/20, 0);
     
@@ -155,7 +161,8 @@ void ShapePlotter::updateMarkers()
     points.markers[i].color.b = 0.8f;
 
     //alpha to make the particles transparent
-    points.markers[i].color.a = 0.07;
+    // points.markers[i].color.a = 0.07;
+    points.markers[i].color.a = 0.2;
 
   }
 }
@@ -260,15 +267,15 @@ int main(int argc, char **argv)
 
   ros::Duration waitForRViz(1.0);
 
-  plt.generateTransforms();
+  // plt.generateTransforms();
   plt.updateMarkers();
-  plt.updateTrueMarker();
+  // plt.updateTrueMarker();
 
 
   while (ros::ok()) {
     waitForRViz.sleep();
     plt.plotParticles();
-    plt.plotTruePart();
+    // plt.plotTruePart();
     // ROS_INFO("spinning");
     ros::spinOnce();
   }

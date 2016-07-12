@@ -12,6 +12,7 @@
 #include "particle_filter/AddObservation.h"
 #include "geometry_msgs/Point.h"
 #include "geometry_msgs/Pose.h"
+#include "std_msgs/String.h"
 #include <tf/transform_broadcaster.h>
 
 
@@ -32,6 +33,7 @@
 // };
 
 static ros::Publisher pub;
+static ros::Publisher processFinishedPub;
 static ros::ServiceClient srv_add;
 static ros::Subscriber sub_probe;
 
@@ -86,17 +88,43 @@ static void observationHnd (MSG_INSTANCE msg, void *callData,
 {
   TouchObservation* obs = (TouchObservation *)callData;
   std::cout << "observationHnd Called" << std::endl;
-  std::cout << obs->x << ", " << obs->y << ", "<< obs->z << std::endl;
+  std::cout << "point: " << obs->x << ", " << obs->y << ", "<< obs->z << std::endl;
   
   particle_filter::AddObservation pfilter_obs;
   pfilter_obs.request.p.x = obs->x;
   pfilter_obs.request.p.y = obs->y;
   pfilter_obs.request.p.z = obs->z;
+
+  tf::Point dir(0, 0, 1);
+  tf::Quaternion q = tf::createQuaternionFromRPY(obs->roll, obs->pitch, obs->yaw) * dir;
+  dir = tf::Transform(q)* dir;
+  
+
+  std::cout << "dir: " << dir.getX() << ", " << dir.getY() << ", " << dir.getZ() << std::endl;
+
+  pfilter_obs.request.dir.x = dir.getX();
+  pfilter_obs.request.dir.y = dir.getY();
+  pfilter_obs.request.dir.z = dir.getZ();
+
   
   if(!srv_add.call(pfilter_obs)){
     ROS_INFO("Failed to call add observation");
   }
 
+
+  IPC_freeData (IPC_msgInstanceFormatter(msg), callData);
+}
+
+static void processFinishedHnd (MSG_INSTANCE msg, void *callData,
+				void* clientData)
+{
+  ProcessFinished* processFinishedIPC = (ProcessFinished *)callData;
+  std::cout << "processFinishedHnd Called" << std::endl;
+  
+  std_msgs::String processMsg;
+  processMsg.data = processFinishedIPC->processName;
+  
+  processFinishedPub.publish(processMsg);
 
   IPC_freeData (IPC_msgInstanceFormatter(msg), callData);
 }
@@ -128,6 +156,7 @@ void ipcInit()
   IPC_subscribeData("coordinated control status message", forceSensorNoiseHnd, NULL);
 
   IPC_subscribeData(TOUCH_OBSERVATION_MSG, observationHnd, NULL);
+  IPC_subscribeData(PROCESS_FINISHED_MSG, processFinishedHnd, NULL);
   std::cout << "Subscribing to ipc_ros_msg" << std::endl;
   std::cout << "HI" << std::endl;
 }
@@ -144,6 +173,10 @@ int main(int argc, char **argv)
   srv_add = 
     n.serviceClient<particle_filter::AddObservation>("/particle_filter_add");
   sub_probe = n.subscribe("/probe_point", 10, probePointHnd);
+
+  processFinishedPub = n.advertise<std_msgs::String>("/process_finished",10);
+
+
 
   ipcInit();
 

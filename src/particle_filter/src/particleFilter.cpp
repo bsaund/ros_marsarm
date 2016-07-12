@@ -27,6 +27,7 @@ using namespace std;
 typedef array<array<float, 3>, 4> vec4x3;
 typedef unordered_map<string, string> hashmap;
 #define epsilon 0.0001
+#define ARM_LENGTH 0.2
 
 //vector<vec4x3> importSTL(string filename);
 
@@ -47,7 +48,7 @@ particleFilter::particleFilter(int n_particles, cspace b_init[2],
 	Xstd_scatter(Xstd_scatter), R(R), firstObs(true)
 {
 	memcpy(b_Xprior, b_init, 2 * sizeof(cspace));
-	memcpy(b_Xpre, b_Xprior, 2 * sizeof(cspace));
+	//memcpy(b_Xpre, b_Xprior, 2 * sizeof(cspace));
 
 	particles = new cspace[numParticles];
 	bzero(particles, numParticles*sizeof(cspace));
@@ -57,13 +58,13 @@ particleFilter::particleFilter(int n_particles, cspace b_init[2],
 	createParticles(particles0, b_Xprior, numParticles);
 
 	particles_1 = new cspace[numParticles];
-	W = new double[numParticles];
+	//W = new double[numParticles];
 }
 void particleFilter::getAllParticles(cspace *particles_dest)
 {
   for(int i=0; i<numParticles; i++){
     for(int j=0; j<cdim; j++){
-      particles_dest[i][j] = particles[i][j];
+      particles_dest[i][j] = particles0[i][j];
     }
   }
 }
@@ -81,17 +82,17 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 	normal_distribution<double> dist2(0, Xstd_scatter);
 
 	if (!firstObs) {
-		bzero(b_Xpre, 2 * sizeof(cspace));
+		//bzero(b_Xpre, 2 * sizeof(cspace));
 		for (int k = 0; k < cdim; k++) {
 			for (int j = 0; j < numParticles; j++) {
 				particles0[j][k] += dist2(generator);
-				b_Xpre[0][k] += particles0[j][k];
+				//b_Xpre[0][k] += particles0[j][k];
 			}
-			b_Xpre[0][k] /= numParticles;
+			/*b_Xpre[0][k] /= numParticles;
 			for (int j = 0; j < numParticles; j++) {
 				b_Xpre[1][k] += SQ(particles0[j][k] - b_Xpre[0][k]);
 			}
-			b_Xpre[1][k] = sqrt(b_Xpre[1][k] / numParticles);
+			b_Xpre[1][k] = sqrt(b_Xpre[1][k] / numParticles);*/
 		}
 	}
 	bool iffar = updateParticles(particles_1, particles0, particles, obs, mesh, idx_obs, dist_transform, numParticles, R, Xstd_ob, Xstd_tran);
@@ -101,10 +102,10 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 		memcpy(particles0, particles, numParticles*sizeof(cspace));
 		memcpy(particles_1, particles, numParticles*sizeof(cspace));
 	}
-	else if (iffar == true)
+	/*else if (iffar == true)
 	{
 		memcpy(particles0, particles_1, numParticles*sizeof(cspace));
-	}
+	}*/
 	//calcWeight(W, numParticles, Xstd_tran, particles0, particles);
 	memcpy(particles_1, particles0, numParticles*sizeof(cspace));
 	//resampleParticles(particles0, particles, W, numParticles);
@@ -126,7 +127,7 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 	}
 	particles_est_stat[1] = sqrt(particles_est_stat[1] / numParticles);
 
-	if (particles_est_stat[1] < 0.005 && (abs(particles_est[0] - b_Xpre[0][0])>0.001 ||
+	/*if (particles_est_stat[1] < 0.005 && (abs(particles_est[0] - b_Xpre[0][0])>0.001 ||
 		abs(particles_est[1] - b_Xpre[0][1])>0.001 ||
 		abs(particles_est[2] - b_Xpre[0][2])>0.001 ||
 		abs(particles_est[3] - b_Xpre[0][3])>0.001 ||
@@ -134,7 +135,7 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 		abs(particles_est[5] - b_Xpre[0][5]) > 0.001))
 		Xstd_scatter = 0.01;
 	else
-		Xstd_scatter = 0.0001;
+		Xstd_scatter = 0.0001;*/
 }
 
 /*
@@ -144,18 +145,17 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
  *        n_partcles: number of particles
  * output: none
  */
-void particleFilter::createParticles(cspace *particles, cspace b_Xprior[2],
+void particleFilter::createParticles(cspace *particles_dest, cspace b_Xprior[2],
 	int n_particles)
 {
 	random_device rd;
-	mt19937 e2(rd());
 	normal_distribution<double> dist(0, 1);
 	int cdim = sizeof(cspace) / sizeof(double);
 	for (int i = 0; i < n_particles; i++)
 	{
 		for (int j = 0; j < cdim; j++)
 		{
-			particles[i][j] = b_Xprior[0][j] + b_Xprior[1][j] * (dist(e2));
+			particles_dest[i][j] = b_Xprior[0][j] + b_Xprior[1][j] * (dist(rd));
 		}
 	}
 };
@@ -179,7 +179,6 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 		double R, double Xstd_ob, double Xstd_tran)
 {
 	random_device rd;
-	mt19937 e2(rd());
 	normal_distribution<double> dist(0, 1);
 	uniform_real_distribution<double> distribution(0, n_particles);
 	int cdim = sizeof(cspace) / sizeof(double);
@@ -201,9 +200,10 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 	double voxel_size;
 	double distTransSize;
 	double mean_inv_M[3];
+	double safe_point[2][3];
 	for (int t = 0; t < num_Mean; t++) {
 		measure_workspace[t] = new double[3];
-		int index = int(floor(distribution(e2)));
+		int index = int(floor(distribution(rd)));
 		//memcpy(sampleConfig[t], b_X[index], sizeof(cspace));
 		for (int m = 0; m < cdim; m++) {
 			meanConfig[m] += b_X[index][m] / num_Mean;
@@ -221,7 +221,8 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 	var_measure[1] /= num_Mean;
 	var_measure[2] /= num_Mean;
 	distTransSize = 4 * max3(sqrt(var_measure[0]), sqrt(var_measure[1]), sqrt(var_measure[2]));
-	distTransSize = 100 * 0.0005;
+	distTransSize = 150 * 0.001;
+	// distTransSize = 150 * 0.0005;
 	cout << "Touch Std: " << sqrt(var_measure[0]) << "  " << sqrt(var_measure[1]) << "  " << sqrt(var_measure[2]) << endl;
 	double world_range[3][2];
 	cout << "Current Inv_touch: " << mean_inv_M[0] << "    " << mean_inv_M[1] << "    " << mean_inv_M[2] << endl;
@@ -230,7 +231,7 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 		world_range[t][1] = mean_inv_M[t] + distTransSize;
 		/*cout << world_range[t][0] << " to " << world_range[t][1] << endl;*/
 	}
-	voxel_size = distTransSize / 100;
+	voxel_size = distTransSize / 150;
 	cout << "Voxel Size: " << voxel_size << endl;
 	dist_transform->voxelizeSTL(mesh, world_range);
 	dist_transform->build();
@@ -248,10 +249,10 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 		//	//count = 0;
 		//	i = 0;
 		//}
-		idx = int(floor(distribution(e2)));
+		idx = int(floor(distribution(rd)));
 		for (int j = 0; j < cdim; j++)
 		{
-			tempState[j] = b_X[idx][j] + Xstd_tran * dist(e2);
+			tempState[j] = b_X[idx][j] + Xstd_tran * dist(rd);
 		}
 		inverseTransform(cur_M, tempState, cur_inv_M);
 		touch_dir << cur_inv_M[1][0], cur_inv_M[1][1], cur_inv_M[1][2];
@@ -321,6 +322,15 @@ bool particleFilter::updateParticles(cspace *particles_1, cspace *particles0, cs
 		}*/
 		if (D >= -Xstd_ob && D <= Xstd_ob)
 		{
+			
+			safe_point[1][0] = cur_M[1][0];
+			safe_point[1][1] = cur_M[1][1];
+			safe_point[1][2] = cur_M[1][2];
+			safe_point[0][0] = cur_M[0][0] - cur_M[1][0] * ARM_LENGTH;
+			safe_point[0][1] = cur_M[0][1] - cur_M[1][1] * ARM_LENGTH;
+			safe_point[0][2] = cur_M[0][2] - cur_M[1][2] * ARM_LENGTH;
+			if (checkObstacles(mesh, tempState, safe_point , D + R) == 1)
+				continue;
 			for (int j = 0; j < cdim; j++)
 			{
 				particles[i][j] = tempState[j];
@@ -398,18 +408,18 @@ int main()
 	double Xstd_tran = 0.0035;
 	double Xstd_scatter = 0.0001;
 	//double voxel_size = 0.0005; // voxel size for distance transform.
-	int num_voxels[3] = { 200,200,200 };
+	int num_voxels[3] = { 300,300,300 };
 	//double range = 0.1; //size of the distance transform
 	double R = 0.001; // radius of the touch probe
 
 	double cube_para[3] = { 6, 4, 2 }; // cube size: 6m x 4m x 2m with center at the origin.
 	//double range[3][2] = { {-3.5, 3.5}, {-2.5, 2.5}, {-1.5, 1.5} };
-	particleFilter::cspace X_true = { 2.12, 1.388, 0.818, Pi / 6 + Pi / 400, Pi / 12 + Pi / 420, Pi / 18 - Pi / 380 }; // true state of configuration
+	particleFilter::cspace X_true = { 2.12, 1.388, 0.818, Pi / 6 + Pi / 400, Pi / 12 + Pi / 220, Pi / 18 - Pi / 180 }; // true state of configuration
 	//particleFilter::cspace X_true = { 0, 0, 0.818, 0, 0, 0 }; // true state of configuration
 	cout << "True state: " << X_true[0] << ' ' << X_true[1] << ' ' << X_true[2] << ' ' 
 		 << X_true[3] << ' ' << X_true[4] << ' ' << X_true[5] << endl;
 	particleFilter::cspace b_Xprior[2] = { { 2.11, 1.4, 0.81, Pi / 6, Pi / 12, Pi / 18 },
-										   { 0.03, 0.03, 0.03, Pi / 360, Pi / 360, Pi / 360 } }; // our prior belief
+										   { 0.03, 0.03, 0.03, Pi / 180, Pi / 180, Pi / 180 } }; // our prior belief
 	//particleFilter::cspace b_Xprior[2] = { { 0, 0, 0.81, 0, 0, 0 },
 	//									 { 0.001, 0.001, 0.001, Pi / 3600, Pi / 3600, Pi / 3600 } }; // our prior belief
 
@@ -637,7 +647,7 @@ int getIntersection(vector<vec4x3> &mesh, double pstart[3], double dir[3], doubl
  * Input: mesh: mesh arrays
  *        config: estimated mean configuration
  *        touch: touch point in particle frame
- *        dir: direction of the touch
+ *        R: radius of the touch probe
  * Output: distance
  */
 double testResult(vector<vec4x3> &mesh, double config[6], double touch[2][3], double R)
@@ -671,6 +681,60 @@ double testResult(vector<vec4x3> &mesh, double config[6], double touch[2][3], do
 		return 0;
 
 	return tMin - R;
+}
+
+/*
+ * Raytrace checker. Check obstacle along the ray
+ * Input: mesh: mesh arrays
+ *        config: estimated mean configuration
+ *        start: safepoint of the joint
+ *        dist: distance between center of touch probe and object
+ * Output: 1 if obstacle exists
+ */
+int checkObstacles(vector<vec4x3> &mesh, double config[6], double start[2][3], double dist)
+{
+	double inv_start[2][3];
+	inverseTransform(start, config, inv_start);
+	int num_mesh = int(mesh.size());
+	double vert0[3], vert1[3], vert2[3]; 
+	double *t = new double;
+	double *u = new double;
+	double *v = new double;
+	double tMin = 100000;
+	Eigen::Vector3d normal_dir;
+	Eigen::Vector3d ray_length;
+	double length;
+	for (int i = 0; i < num_mesh; i++)
+	{
+		vert0[0] = mesh[i][1][0];
+		vert0[1] = mesh[i][1][1];
+		vert0[2] = mesh[i][1][2];
+		vert1[0] = mesh[i][2][0];
+		vert1[1] = mesh[i][2][1];
+		vert1[2] = mesh[i][2][2];
+		vert2[0] = mesh[i][3][0];
+		vert2[1] = mesh[i][3][1];
+		vert2[2] = mesh[i][3][2];
+		if (intersect_triangle(inv_start[0], inv_start[1], vert0, vert1, vert2, t, u, v) == 1 && *t < tMin)
+		{
+			tMin = *t;
+			normal_dir << mesh[i][0][0], mesh[i][0][1], mesh[i][0][2];
+			length = ARM_LENGTH - tMin;
+			ray_length << length * inv_start[1][0], length * inv_start[1][1], length * inv_start[1][2];
+		}
+	}
+	delete t, u, v;
+	if (tMin >= ARM_LENGTH)
+		return 0;
+	else if (dist < 0)
+	{
+		double inter_dist = normal_dir.dot(ray_length);
+		//cout << "inter_dist: " << inter_dist << endl;
+		if (inter_dist >= dist - epsilon && inter_dist <= dist + epsilon)
+			return 0;
+	}
+		
+	return 1;
 }
 //void voxelizeSTL(vector<vec4x3> &mesh, hashmap &boundary_voxel, double voxel_size, double R, double Xstd_ob,
 //	double cube_center, double cube_size)

@@ -21,7 +21,7 @@ vector<vec4x3> importSTL(string filename)
 	short attribute;
 	stlFile.open(filename, ios::binary | ios::in);
 	if (!stlFile) {
-		cerr << "Cant open " << endl;
+	  cerr << "Cant open " << filename << endl;
 	}
 	stlFile.read((char *)&title, 80 * sizeof(char));
 	stlFile.read((char *)&num_triangles, sizeof(num_triangles));

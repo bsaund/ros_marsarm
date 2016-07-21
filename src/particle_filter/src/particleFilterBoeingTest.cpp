@@ -145,7 +145,7 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
 
   ROS_INFO("...Done adding observation");
   pub_particles.publish(getParticlePoseArray());
-
+  return true;
 }
 
 
@@ -177,28 +177,6 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   tf::Transform trans = pHandler.getTransformToPartFrame();
 
 
-  boost::mutex::scoped_lock updateLock(updateModelMutex);	
-  basic_cloud_ptr1->points.clear();
-  basic_cloud_ptr2->points.clear();
-  for (int j = 0; j < NUM_PARTICLES; j++ ) {
-	pcl::PointXYZ basic_point;
-	basic_point.x = particles[j][0] * 2;
-	basic_point.y = particles[j][1] * 2;
-	basic_point.z = particles[j][2] * 2;
-	basic_cloud_ptr1->points.push_back(basic_point);
-        basic_point.x = particles[j][3] * 2;
-	basic_point.y = particles[j][4] * 2;
-	basic_point.z = particles[j][5] * 2;
-	basic_cloud_ptr2->points.push_back(basic_point);
-  }
-  basic_cloud_ptr1->width = (int) basic_cloud_ptr1->points.size ();
-  basic_cloud_ptr1->height = 1;
-  basic_cloud_ptr2->width = (int) basic_cloud_ptr2->points.size ();
-  basic_cloud_ptr2->height = 1;
-  update = true;
-  updateLock.unlock();
-
-
   #ifdef POINT_CLOUD
   boost::mutex::scoped_lock updateLock(updateModelMutex);	
   basic_cloud_ptr1->points.clear();
@@ -226,7 +204,7 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   particleFilter::cspace particles_est;
   pFilter_.estimatedDistribution(particles_est, particles_est_stat);
   geometry_msgs::PoseArray poseArray;
-  for(int i=0; i<NUM_PARTICLES; i++){
+  for(int i=0; i<50; i++){
     tf::Pose pose = poseAt(particles[i]);
     geometry_msgs::Pose pose_msg;
     tf::poseTFToMsg(trans*pose, pose_msg);

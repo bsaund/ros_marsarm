@@ -7,9 +7,9 @@
   <arg name="localization_object" default="boeing_part"/>
 
   <param name="localization_object_cad" type="str" 
-	 value="package://gazebo_ray_trace/sdf/$(arg localization_object).stl"/>
+	 value="package://custom_ray_trace/sdf/$(arg localization_object).stl"/>
   <param name="localization_object_filepath" type="str"
-	 value="$(find gazebo_ray_trace)/sdf/$(arg localization_object).stl"/>
+	 value="$(find custom_ray_trace)/sdf/$(arg localization_object).stl"/>
   <param name="localization_object" type="str"
 	 value="$(arg localization_object)"/>
 
@@ -32,10 +32,10 @@
   <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
 
 <!-- Gazebo ray tracing service used to calculate values of a touch -->
-  <include file="$(find gazebo_ray_trace)/launch/headless_ray_tracing_service.launch">
-    <arg name="world_name" 
-	 value="$(find gazebo_ray_trace)/worlds/$(arg localization_object).world"/>
-  </include>
+  <!-- <include file="$(find gazebo_ray_trace)/launch/headless_ray_tracing_service.launch"> -->
+  <!--   <arg name="world_name"  -->
+  <!--   value="$(find gazebo_ray_trace)/worlds/$(arg localization_object).world"/> -->
+  <!-- </include> -->
 
 
 

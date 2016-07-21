@@ -11,6 +11,7 @@
 #include "geometry_msgs/Point.h"
 #include <tf/transform_broadcaster.h>
 #include "custom_ray_trace/plotRayUtils.h"
+#include "custom_ray_trace/rayTracer.h"
 
 #define NUM_TOUCHES 20
 /**
@@ -74,7 +75,7 @@ void randomSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_e
 
 bool getIntersection(PlotRayUtils &plt, tf::Point start, tf::Point end, tf::Point &intersection){
   bool intersectionExists = plt.getIntersectionWithPart(start, end, intersection);
-  double radius = 0.000;
+  double radius = 0.001;
   intersection = intersection - (end-start).normalize() * radius;
   return intersectionExists;
 }

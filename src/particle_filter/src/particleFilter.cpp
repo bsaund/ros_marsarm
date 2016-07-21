@@ -590,7 +590,7 @@ int main()
 	double Xstd_tran = 0.0035;
 	double Xstd_scatter = 0.0001;
 	//double voxel_size = 0.0005; // voxel size for distance transform.
-	int num_voxels[3] = { 300,300,300 };
+	int num_voxels[3] = { 200,200,200 };
 	//double range = 0.1; //size of the distance transform
 	double R = 0.001; // radius of the touch probe
 

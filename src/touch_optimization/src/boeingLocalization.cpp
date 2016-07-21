@@ -11,6 +11,7 @@
 #include "geometry_msgs/Point.h"
 #include <tf/transform_broadcaster.h>
 #include "custom_ray_trace/plotRayUtils.h"
+#include "custom_ray_trace/rayTracer.h"
 
 #define NUM_TOUCHES 20
 /**
@@ -42,7 +43,7 @@ particle_filter::PFilterInit getInitialPoints(PlotRayUtils &plt)
  * Randomly chooses vectors, gets the Information Gain for each of 
  *  those vectors, and returns the ray (start and end) with the highest information gain
  */
-void randomSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_end)
+void randomSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, tf::Point &best_end)
 {
   // tf::Point best_start, best_end;
 
@@ -64,7 +65,7 @@ void randomSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_e
       best_end = end;
     }
   }
-
+  Ray measurement(best_start, best_end);
   // plt.plotCylinder(best_start, best_end, 0.01, 0.002, true);
   ROS_INFO("Ray is: %f, %f, %f.  %f, %f, %f", 
 	   best_start.getX(), best_start.getY(), best_start.getZ(),
@@ -74,7 +75,7 @@ void randomSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_e
 
 bool getIntersection(PlotRayUtils &plt, tf::Point start, tf::Point end, tf::Point &intersection){
   bool intersectionExists = plt.getIntersectionWithPart(start, end, intersection);
-  double radius = 0.000;
+  double radius = 0.001;
   intersection = intersection - (end-start).normalize() * radius;
   return intersectionExists;
 }

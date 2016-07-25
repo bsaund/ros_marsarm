@@ -60,18 +60,25 @@ particleFilter::particleFilter(int n_particles, cspace b_init[2],
   : numParticles(n_particles), maxNumParticles(n_particles), Xstd_ob(Xstd_ob),
 	Xstd_tran(Xstd_tran), Xstd_scatter(Xstd_scatter), R(R), firstObs(true)
 {
-  memcpy(b_Xprior, b_init, 2 * sizeof(cspace));
+  // memcpy(b_Xprior, b_init, 2 * sizeof(cspace));
+  b_Xprior[0] = b_init[0];
+  b_Xprior[1] = b_init[1];
   //memcpy(b_Xpre, b_Xprior, 2 * sizeof(cspace));
-  particles = new cspace[numParticles];
-  bzero(particles, numParticles*sizeof(cspace));
-  particles0 = new cspace[numParticles];
-  bzero(particles0, numParticles*sizeof(cspace));
-  particles_1 = new cspace[numParticles];
+  // particles = new cspace[numParticles];
+  particles.resize(numParticles);
+  // bzero(particles, numParticles*sizeof(cspace));
+  // particles0 = new cspace[numParticles];
+  // bzero(particles0, numParticles*sizeof(cspace));
+  // particles_1 = new cspace[numParticles];
+  particles0.resize(numParticles);
+  particles_1.resize(numParticles);
 
   createParticles(particles0, b_Xprior, numParticles);
 
 #ifdef ADAPTIVE_BANDWIDTH
-  Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)particles0, cdim, numParticles);
+  Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)particles0.data(), cdim, numParticles);
+  // Eigen::MatrixXd mat(cdim, numParticles);
+  // mat << particles;0
   Eigen::MatrixXd mat_centered = mat.colwise() - mat.rowwise().mean();
   cov_mat = (mat_centered * mat_centered.adjoint()) / double(mat.cols());
   cout << cov_mat << endl;
@@ -94,7 +101,7 @@ void particleFilter::getAllParticles(cspace *particles_dest)
  *        n_partcles: number of particles
  * output: none
  */
-void particleFilter::createParticles(cspace *particles_dest, cspace b_Xprior[2],
+void particleFilter::createParticles(std::vector<cspace> &particles_dest, cspace b_Xprior[2],
 									 int n_particles)
 {
   random_device rd;
@@ -144,11 +151,19 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 	memcpy(particles0, particles_1, numParticles*sizeof(cspace));
 	}*/
   //calcWeight(W, numParticles, Xstd_tran, particles0, particles);
-  memcpy(particles_1, particles0, numParticles*sizeof(cspace));
+  // memcpy(particles_1, particles0, numParticles*sizeof(cspace));
+
+  particles_1 = particles0;
   //resampleParticles(particles0, particles, W, numParticles);
-  memcpy(particles0, particles, numParticles*sizeof(cspace));
+  particles0 = particles;
+  // for(int i=0; i<numParticles; i++){
+  // 	for(int j=0; j<6; i++){
+  // 	  particles0[i][j] = particles[i][j];
+  // 	}
+  // }
+  // memcpy(particles0, particles, numParticles*sizeof(cspace));
 #ifdef ADAPTIVE_BANDWIDTH
-  Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)particles0, cdim, numParticles);
+  Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)particles0.data(), cdim, numParticles);
   Eigen::MatrixXd mat_centered = mat.colwise() - mat.rowwise().mean();
   cov_mat = (mat_centered * mat_centered.adjoint()) / double(mat.cols());
 #endif
@@ -226,9 +241,9 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
   int count2 = 0;
   int count3 = 0;
   bool iffar = false;
-  cspace *b_X = particles0;
+  std::vector<cspace> b_X = particles0;
   int idx = 0;
-  double tempState[6];
+  cspace tempState;
   double D;
   //double D2;
   double cur_inv_M[2][3];
@@ -826,7 +841,7 @@ int getIntersection(vector<vec4x3> &mesh, double pstart[3], double dir[3], doubl
  *        R: radius of the touch probe
  * Output: distance
  */
-double testResult(vector<vec4x3> &mesh, double config[6], double touch[2][3], double R)
+double testResult(vector<vec4x3> &mesh, particleFilter::cspace config, double touch[2][3], double R)
 {
   double inv_touch[2][3];
   inverseTransform(touch, config, inv_touch);
@@ -888,11 +903,11 @@ int checkEmptyBin(std::unordered_set<string> *set, particleFilter::cspace config
  *        dist: distance between center of touch probe and object
  * Output: 1 if obstacle exists
  */
-int checkObstacles(vector<vec4x3> &mesh, double config[6], double start[2][3], double dist)
+int checkObstacles(vector<vec4x3> &mesh, particleFilter::cspace config, double start[2][3], double dist)
 {
   return checkObstacles(mesh, config, start, ARM_LENGTH, dist);
 }
-int checkObstacles(vector<vec4x3> &mesh, double config[6], double start[2][3], double check_length, double dist)
+int checkObstacles(vector<vec4x3> &mesh, particleFilter::cspace config, double start[2][3], double check_length, double dist)
 {
   double inv_start[2][3];
   int countIntersections = 0;

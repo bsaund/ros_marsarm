@@ -172,7 +172,7 @@ bool PFilterTest::getMesh(std::string filename){
 
 geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
 {
-  particleFilter::cspace particles[NUM_PARTICLES];
+  std::vector<particleFilter::cspace> particles;
   pFilter_.getAllParticles(particles);
   tf::Transform trans = pHandler.getTransformToPartFrame();
 
@@ -289,7 +289,7 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
   dist_transform = new distanceTransform(num_voxels);
 
   #ifdef POINT_CLOUD
-  particleFilter::cspace particles[NUM_PARTICLES];
+  std::vector<particleFilter::cspace> particles;
   pFilter_.getAllParticles(particles);
   boost::mutex::scoped_lock updateLock(updateModelMutex);	
   basic_cloud_ptr1->points.clear();

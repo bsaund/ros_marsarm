@@ -76,13 +76,9 @@ particleFilter::particleFilter(int n_particles, cspace b_init[2],
 #endif
   //W = new double[numParticles];
 }
-void particleFilter::getAllParticles(cspace *particles_dest)
+void particleFilter::getAllParticles(Particles &particles_dest)
 {
-  for(int i=0; i<numParticles; i++) {
-    for(int j=0; j<cdim; j++) {
-      particles_dest[i][j] = particles0[i][j];
-    }
-  }
+  particles_dest = particles0;
 }
 
 /*
@@ -92,7 +88,7 @@ void particleFilter::getAllParticles(cspace *particles_dest)
  *        n_partcles: number of particles
  * output: none
  */
-void particleFilter::createParticles(std::vector<cspace> &particles_dest, cspace b_Xprior[2],
+void particleFilter::createParticles(Particles &particles_dest, cspace b_Xprior[2],
 									 int n_particles)
 {
   random_device rd;
@@ -226,7 +222,7 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
   int count2 = 0;
   int count3 = 0;
   bool iffar = false;
-  std::vector<cspace> b_X = particles0;
+  Particles b_X = particles0;
   int idx = 0;
   cspace tempState;
   double D;

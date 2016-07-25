@@ -14,6 +14,7 @@ class particleFilter
  public:
   static const int cdim = 6;
   typedef std::array<double,cdim> cspace; // configuration space of the particles
+  typedef std::vector<cspace> Particles;
   int numParticles; // number of particles
   int maxNumParticles;
 
@@ -29,7 +30,7 @@ class particleFilter
     /* memcpy(x_mean, particles_mean, sizeof(cspace)); */
     /* memcpy(x_est_stat, particles_est_stat, sizeof(cspace)); */
   }
-  void getAllParticles(cspace *particles_dest);
+  void getAllParticles(Particles &particles_dest);
 
  protected:
   // Parameters of filter
@@ -43,16 +44,16 @@ class particleFilter
   // internal variables
   cspace b_Xprior[2]; // Initial distribution (mean and variance)
   //cspace b_Xpre[2];   // Previous (estimated) distribution (mean and variance)
-  std::vector<cspace> particles;  // Current set of particles
-  std::vector<cspace> particles0; // Previous set of particles
-  std::vector<cspace> particles_1; // Previous previous set of particles
+  Particles particles;  // Current set of particles
+  Particles particles0; // Previous set of particles
+  Particles particles_1; // Previous previous set of particles
   cspace particles_mean; // Estimated distribution
   cspace particles_est_stat;
   Eigen::MatrixXd cov_mat;
   //double *W;
 
   // Local functions
-  void createParticles(std::vector<cspace> &particles, cspace b_Xprior[2], int n_particles);
+  void createParticles(Particles &particles, cspace b_Xprior[2], int n_particles);
   bool updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss);
   //void calcWeight(double *W, int n_particles, double Xstd_tran, 
 		//   cspace *particles0, cspace *particles);

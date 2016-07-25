@@ -75,6 +75,7 @@ particleFilter::particleFilter(int n_particles, cspace b_init[2],
 #endif
   //W = new double[numParticles];
 }
+
 void particleFilter::getAllParticles(Particles &particles_dest)
 {
   particles_dest = particlesPrev;
@@ -126,26 +127,8 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
   auto timer_end = std::chrono::high_resolution_clock::now();
   auto timer_dur = timer_end - timer_begin;
 
-  cout << "Estimated Mean: ";
-  for (int k = 0; k < cdim; k++) {
-	particles_mean[k] = 0;
-	for (int j = 0; j < numParticles; j++) {
-	  particles_mean[k] += particlesPrev[j][k];
-	}
-	particles_mean[k] /= numParticles;
-	cout << particles_mean[k] << "  ";
-  }
-  cout << endl;
-  cout << "Estimated Std: ";
-  for (int k = 0; k < cdim; k++) {
-	particles_est_stat[k] = 0;
-	for (int j = 0; j < numParticles; j++) {
-	  particles_est_stat[k] += SQ(particlesPrev[j][k] - particles_mean[k]);
-	}
-	particles_est_stat[k] = sqrt(particles_est_stat[k] / numParticles);
-	cout << particles_est_stat[k] << "  ";
-  }
-  cout << endl;
+  cspace particles_mean, tmp2;
+  estimateGaussian(particles_mean, tmp2);
   cout << "Estimate diff: ";
   double est_diff = sqrt(SQ(particles_mean[0] - 0.3) + SQ(particles_mean[1] - 0.3) + SQ(particles_mean[2] - 0.3)
 						 + SQ(particles_mean[3] - 0.5) + SQ(particles_mean[4] - 0.7) + SQ(particles_mean[5] - 0.5));
@@ -160,6 +143,31 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
   cout << "Average time: " << total_time / 20.0 << endl << endl;
 
 }
+
+void particleFilter::estimateGaussian(cspace &x_mean, cspace &x_est_stat) {
+  cout << "Estimated Mean: ";
+  for (int k = 0; k < cdim; k++) {
+	x_mean[k] = 0;
+	for (int j = 0; j < numParticles; j++) {
+	  x_mean[k] += particlesPrev[j][k];
+	}
+	x_mean[k] /= numParticles;
+	cout << x_mean[k] << "  ";
+  }
+  cout << endl;
+  cout << "Estimated Std: ";
+  for (int k = 0; k < cdim; k++) {
+	x_est_stat[k] = 0;
+	for (int j = 0; j < numParticles; j++) {
+	  x_est_stat[k] += SQ(particlesPrev[j][k] - x_mean[k]);
+	}
+	x_est_stat[k] = sqrt(x_est_stat[k] / numParticles);
+	cout << x_est_stat[k] << "  ";
+  }
+  cout << endl;
+
+}
+
 
 /*
  * Update particles (Build distance transform and sampling)
@@ -516,7 +524,7 @@ int main()
 	auto tstart = chrono::high_resolution_clock::now();
 	pfilter.addObservation(M, mesh, dist_transform, i); // update particles
 	//pfilter.addObservation(M, cube_para, i);
-	pfilter.estimatedDistribution(particles_est, particles_est_stat);
+	pfilter.estimateGaussian(particles_est, particles_est_stat);
 	auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(chrono::high_resolution_clock::now() - tstart);
 	particle_est_diff = 0;
 	for (int k = 0; k < particleFilter::cdim; k++) {

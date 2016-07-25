@@ -24,12 +24,7 @@ class particleFilter
 
   void addObservation (double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss = false);
   //void addObservation (double obs[3], double cube[3], int idx_obs);
-  void estimatedDistribution (cspace &x_mean, cspace &x_est_stat) {
-    x_mean = particles_mean;
-    x_est_stat = particles_est_stat;
-    /* memcpy(x_mean, particles_mean, sizeof(cspace)); */
-    /* memcpy(x_est_stat, particles_est_stat, sizeof(cspace)); */
-  }
+  void estimateGaussian(cspace &x_mean, cspace &x_est_stat);
   void getAllParticles(Particles &particles_dest);
 
  protected:
@@ -46,8 +41,6 @@ class particleFilter
   Particles particles;  // Current set of particles
   Particles particlesPrev; // Previous set of particles
   Particles particles_1; // Previous previous set of particles
-  cspace particles_mean; // Estimated distribution
-  cspace particles_est_stat;
   Eigen::MatrixXd cov_mat;
 
   // Local functions

@@ -39,25 +39,21 @@ class particleFilter
   double Xstd_tran;
   double Xstd_scatter; // default scattering of particles
   double R; // probe radius
-  bool firstObs;
 
   // internal variables
   cspace b_Xprior[2]; // Initial distribution (mean and variance)
   //cspace b_Xpre[2];   // Previous (estimated) distribution (mean and variance)
   Particles particles;  // Current set of particles
-  Particles particles0; // Previous set of particles
+  Particles particlesPrev; // Previous set of particles
   Particles particles_1; // Previous previous set of particles
   cspace particles_mean; // Estimated distribution
   cspace particles_est_stat;
   Eigen::MatrixXd cov_mat;
-  //double *W;
 
   // Local functions
   void createParticles(Particles &particles, cspace b_Xprior[2], int n_particles);
   bool updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss);
-  //void calcWeight(double *W, int n_particles, double Xstd_tran, 
-		//   cspace *particles0, cspace *particles);
-  //void resampleParticles(cspace *particles0, cspace *particles, double *W, int n_particles);
+
 };
 void Transform(double measure[2][3], particleFilter::cspace src, double dest[2][3]);
 void inverseTransform(double measure[3], particleFilter::cspace src, double dest[3]);

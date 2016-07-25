@@ -58,18 +58,17 @@ particleFilter::particleFilter(int n_particles, cspace b_init[2],
 							   double Xstd_ob, double Xstd_tran,
 							   double Xstd_scatter, double R)
   : numParticles(n_particles), maxNumParticles(n_particles), Xstd_ob(Xstd_ob),
-	Xstd_tran(Xstd_tran), Xstd_scatter(Xstd_scatter), R(R), firstObs(true)
+	Xstd_tran(Xstd_tran), Xstd_scatter(Xstd_scatter), R(R)
 {
   b_Xprior[0] = b_init[0];
   b_Xprior[1] = b_init[1];
   particles.resize(numParticles);
-  particles0.resize(numParticles);
-  particles_1.resize(numParticles);
+  particlesPrev.resize(numParticles);
 
-  createParticles(particles0, b_Xprior, numParticles);
+  createParticles(particlesPrev, b_Xprior, numParticles);
 
 #ifdef ADAPTIVE_BANDWIDTH
-  Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)particles0.data(), cdim, numParticles);
+  Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)particlesPrev.data(), cdim, numParticles);
   Eigen::MatrixXd mat_centered = mat.colwise() - mat.rowwise().mean();
   cov_mat = (mat_centered * mat_centered.adjoint()) / double(mat.cols());
   cout << cov_mat << endl;
@@ -78,7 +77,7 @@ particleFilter::particleFilter(int n_particles, cspace b_init[2],
 }
 void particleFilter::getAllParticles(Particles &particles_dest)
 {
-  particles_dest = particles0;
+  particles_dest = particlesPrev;
 }
 
 /*
@@ -115,36 +114,12 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
   std::random_device generator;
   normal_distribution<double> dist2(0, Xstd_scatter);
 
-  // if (!firstObs) {
-  // 	//bzero(b_Xpre, 2 * sizeof(cspace));
-  // 	for (int k = 0; k < cdim; k++) {
-  // 		for (int j = 0; j < numParticles; j++) {
-  // 			particles0[j][k] += dist2(generator);
-  // 			//b_Xpre[0][k] += particles0[j][k];
-  // 		}
-  // 		/*b_Xpre[0][k] /= numParticles;
-  // 		for (int j = 0; j < numParticles; j++) {
-  // 			b_Xpre[1][k] += SQ(particles0[j][k] - b_Xpre[0][k]);
-  // 		}
-  // 		b_Xpre[1][k] = sqrt(b_Xpre[1][k] / numParticles);*/
-  // 	}
-  // }
   bool iffar = updateParticles(obs, mesh, dist_transform, miss);
-  if (firstObs) {
-	firstObs = false;
-  }
-  /*else if (iffar == true)
-	{
-	memcpy(particles0, particles_1, numParticles*sizeof(cspace));
-	}*/
-  //calcWeight(W, numParticles, Xstd_tran, particles0, particles);
-  // memcpy(particles_1, particles0, numParticles*sizeof(cspace));
 
-  particles_1 = particles0;
-  particles0 = particles;
+  particlesPrev = particles;
 
 #ifdef ADAPTIVE_BANDWIDTH
-  Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)particles0.data(), cdim, numParticles);
+  Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)particlesPrev.data(), cdim, numParticles);
   Eigen::MatrixXd mat_centered = mat.colwise() - mat.rowwise().mean();
   cov_mat = (mat_centered * mat_centered.adjoint()) / double(mat.cols());
 #endif
@@ -155,7 +130,7 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
   for (int k = 0; k < cdim; k++) {
 	particles_mean[k] = 0;
 	for (int j = 0; j < numParticles; j++) {
-	  particles_mean[k] += particles0[j][k];
+	  particles_mean[k] += particlesPrev[j][k];
 	}
 	particles_mean[k] /= numParticles;
 	cout << particles_mean[k] << "  ";
@@ -165,7 +140,7 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
   for (int k = 0; k < cdim; k++) {
 	particles_est_stat[k] = 0;
 	for (int j = 0; j < numParticles; j++) {
-	  particles_est_stat[k] += SQ(particles0[j][k] - particles_mean[k]);
+	  particles_est_stat[k] += SQ(particlesPrev[j][k] - particles_mean[k]);
 	}
 	particles_est_stat[k] = sqrt(particles_est_stat[k] / numParticles);
 	cout << particles_est_stat[k] << "  ";
@@ -184,23 +159,11 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
   cout << "Total time: " << total_time << endl;
   cout << "Average time: " << total_time / 20.0 << endl << endl;
 
-  //Eigen::MatrixXd centered = mat.rowwise() - mat.colwise().mean();
-  //Eigen::MatrixXd cov = (centered.adjoint() * centered) / double(mat.rows() - 1);
-  /*if (particles_est_stat[1] < 0.005 && (abs(particles_est[0] - b_Xpre[0][0])>0.001 ||
-	abs(particles_est[1] - b_Xpre[0][1])>0.001 ||
-	abs(particles_est[2] - b_Xpre[0][2])>0.001 ||
-	abs(particles_est[3] - b_Xpre[0][3])>0.001 ||
-	abs(particles_est[4] - b_Xpre[0][4]) > 0.001 ||
-	abs(particles_est[5] - b_Xpre[0][5]) > 0.001))
-	Xstd_scatter = 0.01;
-	else
-	Xstd_scatter = 0.0001;*/
 }
 
 /*
  * Update particles (Build distance transform and sampling)
- * Input: particles_1: estimated particles before previous ones (not used here)
- *        particles0: previous estimated particles
+ * Input: particlesPrev: previous estimated particles
  *        particles: current particles
  *        cur_M: current observation
  *        mesh: object mesh arrays
@@ -216,17 +179,15 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
   std::random_device rd;
   std::normal_distribution<double> dist(0, 1);
   std::uniform_real_distribution<double> distribution(0, numParticles);
-  int cdim = sizeof(cspace) / sizeof(double);
   int i = 0;
   int count = 0;
   int count2 = 0;
   int count3 = 0;
   bool iffar = false;
-  Particles b_X = particles0;
+  Particles b_X = particlesPrev;
   int idx = 0;
   cspace tempState;
   double D;
-  //double D2;
   double cur_inv_M[2][3];
   int num_Mean = SAMPLE_RATE * numParticles;
   double **measure_workspace = new double*[num_Mean];
@@ -245,7 +206,6 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 	for (int t = 0; t < num_Mean; t++) {
 	  measure_workspace[t] = new double[3];
 	  int index = int(floor(distribution(rd)));
-	  //memcpy(sampleConfig[t], b_X[index], sizeof(cspace));
 	  for (int m = 0; m < cdim; m++) {
 		meanConfig[m] += b_X[index][m];
 	  }
@@ -311,27 +271,6 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 	//touch_dir << cur_M[1][0], cur_M[1][1], cur_M[1][2];
 
 	while (i < numParticles && i < maxNumParticles) {
-	  // if(count > MAX_ITERATION || count2 > 4000 || count3 > 3000)
-	  // {
-	  // 	H_cov = COV_MULTIPLIER * H_cov;
-	  // 	Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigenSolver(H_cov);
-	  // 	rot = eigenSolver.eigenvectors(); 
-	  // 	scl = eigenSolver.eigenvalues();
-
-	  // 	for (int j = 0; j < cdim; j++) {
-	  // 	  scl(j, 0) = sqrt(scl(j, 0));
-	  // 	}
-	  // 	cout << count << "  " << count2 << "  " << count3 << endl;
-	  // 	count = 0;
-	  // 	count2 = 0;
-	  // 	count3 = 0;
-	  // 	cout << "increasing !!!" << endl;
-	  // 	//cout << "Oops, increase cov_mat" << endl << endl;
-	  // 	//cout << " H  : " << H_cov << endl;
-	  // 	//cout << "Sampled Co_std_deviation: " << scl << endl;
-	  // }
-			
-			
 	  idx = int(floor(distribution(rd)));
 #ifdef ADAPTIVE_BANDWIDTH
 	  for (int j = 0; j < cdim; j++) {
@@ -380,18 +319,6 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 	  double dist_adjacent[3] = { 0, 0, 0 };
 	  count += 1;
 	  if (D <= unsigned_dist_check) {
-		// if (xind < (dist_transform->num_voxels[0] - 1) && yind < (dist_transform->num_voxels[1] - 1) && zind < (dist_transform->num_voxels[2] - 1))
-		// {
-		// 	dist_adjacent[0] = (*dist_transform->dist_transform)[xind + 1][yind][zind];
-		// 	dist_adjacent[1] = (*dist_transform->dist_transform)[xind][yind + 1][zind];
-		// 	dist_adjacent[2] = (*dist_transform->dist_transform)[xind][yind][zind + 1];
-		// 	//gradient /= gradient.norm();
-		// }
-		// else
-		// 	continue;
-		// gradient[0] = dist_adjacent[0] - D;
-		// gradient[1] = dist_adjacent[1] - D;
-		// gradient[2] = dist_adjacent[2] - D;
 		count2 ++;
 #ifdef COMBINE_RAYCASTING
 		if (checkIntersections(mesh, cur_inv_M[0], cur_inv_M[1], ARM_LENGTH, D)) {
@@ -409,19 +336,6 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 		  D = -D - R;
 		}
 		else if (D == 0) {
-		  // double tmp[3] = { cur_inv_M[0][0] + dist_transform->voxel_size, cur_inv_M[0][1], cur_inv_M[0][2] };
-		  // if (checkInObject(mesh, tmp) == 1)
-		  // 	gradient[0] = -gradient[0];
-		  // tmp[0] -= dist_transform->voxel_size;
-		  // tmp[1] += dist_transform->voxel_size;
-		  // if (checkInObject(mesh, tmp) == 1)
-		  // 	gradient[1] = -gradient[1];
-		  // tmp[1] -= dist_transform->voxel_size;
-		  // tmp[2] += dist_transform->voxel_size;
-		  // if (checkInObject(mesh, tmp) == 1)
-		  // 	gradient[2] = -gradient[2];
-		  // if (gradient.dot(touch_dir) >= -epsilon)
-		  // 	continue;
 		  D = - R;
 		}
 		else {
@@ -515,57 +429,6 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
   return iffar;
 };
 
-//void particleFilter::calcWeight(double *W, int n_particles, double Xstd_tran,
-//	cspace *particles0, cspace *particles)
-//{
-//	double A = 1.0 / (sqrt(2 * Pi) * Xstd_tran);
-//	double B = -0.5 / SQ(Xstd_tran);
-//	double sum = 0;
-//	for (int k = 0; k < n_particles; k++) {
-//		for (int m = 0; m < n_particles; m++) {
-//			W[k] += A*exp(B*(SQ(particles0[m][0] - particles[k][0]) + SQ(particles0[m][1] - particles[k][1]) +
-//				SQ(particles0[m][2] - particles[k][2])));
-//		}
-//		sum += W[k];
-//	}
-//	for (int k = 0; k < n_particles; k++) {
-//		W[k] /= sum;
-//	}
-//};
-
-//void particleFilter::resampleParticles(cspace *particles0, cspace *particles, double *W,
-//	int n_particles)
-//{
-//	double *Cum_sum = new double[n_particles];
-//	Cum_sum[0] = W[0];
-//	std::default_random_engine generator;
-//	std::uniform_real_distribution<double> rd(0, 1);
-//	for (int i = 1; i < n_particles; i++)
-//	{
-//		Cum_sum[i] = Cum_sum[i - 1] + W[i];
-//
-//	}
-//	double t;
-//	for (int i = 0; i < n_particles; i++)
-//	{
-//		t = rd(generator);
-//		for (int j = 0; j < n_particles; j++)
-//		{
-//			if (j == 0 && t <= Cum_sum[0])
-//			{
-//				particles0[i][0] = particles[0][0];
-//				particles0[i][1] = particles[0][1];
-//				particles0[i][2] = particles[0][2];
-//			}
-//			else if (Cum_sum[j - 1] < t && t <= Cum_sum[j])
-//			{
-//				particles0[i][0] = particles[j][0];
-//				particles0[i][1] = particles[j][1];
-//				particles0[i][2] = particles[j][2];
-//			}
-//		}
-//	}
-//}
 
 int main()
 {

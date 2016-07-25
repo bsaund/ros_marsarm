@@ -60,16 +60,9 @@ particleFilter::particleFilter(int n_particles, cspace b_init[2],
   : numParticles(n_particles), maxNumParticles(n_particles), Xstd_ob(Xstd_ob),
 	Xstd_tran(Xstd_tran), Xstd_scatter(Xstd_scatter), R(R), firstObs(true)
 {
-  // memcpy(b_Xprior, b_init, 2 * sizeof(cspace));
   b_Xprior[0] = b_init[0];
   b_Xprior[1] = b_init[1];
-  //memcpy(b_Xpre, b_Xprior, 2 * sizeof(cspace));
-  // particles = new cspace[numParticles];
   particles.resize(numParticles);
-  // bzero(particles, numParticles*sizeof(cspace));
-  // particles0 = new cspace[numParticles];
-  // bzero(particles0, numParticles*sizeof(cspace));
-  // particles_1 = new cspace[numParticles];
   particles0.resize(numParticles);
   particles_1.resize(numParticles);
 
@@ -77,8 +70,6 @@ particleFilter::particleFilter(int n_particles, cspace b_init[2],
 
 #ifdef ADAPTIVE_BANDWIDTH
   Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)particles0.data(), cdim, numParticles);
-  // Eigen::MatrixXd mat(cdim, numParticles);
-  // mat << particles;0
   Eigen::MatrixXd mat_centered = mat.colwise() - mat.rowwise().mean();
   cov_mat = (mat_centered * mat_centered.adjoint()) / double(mat.cols());
   cout << cov_mat << endl;
@@ -154,14 +145,8 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
   // memcpy(particles_1, particles0, numParticles*sizeof(cspace));
 
   particles_1 = particles0;
-  //resampleParticles(particles0, particles, W, numParticles);
   particles0 = particles;
-  // for(int i=0; i<numParticles; i++){
-  // 	for(int j=0; j<6; i++){
-  // 	  particles0[i][j] = particles[i][j];
-  // 	}
-  // }
-  // memcpy(particles0, particles, numParticles*sizeof(cspace));
+
 #ifdef ADAPTIVE_BANDWIDTH
   Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)particles0.data(), cdim, numParticles);
   Eigen::MatrixXd mat_centered = mat.colwise() - mat.rowwise().mean();

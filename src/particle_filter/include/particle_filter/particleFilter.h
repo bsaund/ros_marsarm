@@ -24,7 +24,7 @@ class particleFilter
 
   void addObservation (double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss = false);
   //void addObservation (double obs[3], double cube[3], int idx_obs);
-  void estimatedDistribution (cspace x_mean, cspace x_est_stat) {
+  void estimatedDistribution (cspace &x_mean, cspace &x_est_stat) {
     x_mean = particles_mean;
     x_est_stat = particles_est_stat;
     /* memcpy(x_mean, particles_mean, sizeof(cspace)); */

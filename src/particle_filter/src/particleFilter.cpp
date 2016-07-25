@@ -190,7 +190,8 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
   double D;
   double cur_inv_M[2][3];
   int num_Mean = SAMPLE_RATE * numParticles;
-  double **measure_workspace = new double*[num_Mean];
+  std::vector<std::array<double,3>> measure_workspace;
+  measure_workspace.resize(num_Mean);
   double var_measure[3] = { 0, 0, 0 };
   cspace meanConfig = { 0, 0, 0, 0, 0, 0 };
   double unsigned_dist_check = R + Xstd_ob;
@@ -204,12 +205,11 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
   int count_bar = 0;
   if (!miss) {
 	for (int t = 0; t < num_Mean; t++) {
-	  measure_workspace[t] = new double[3];
 	  int index = int(floor(distribution(rd)));
 	  for (int m = 0; m < cdim; m++) {
 		meanConfig[m] += b_X[index][m];
 	  }
-	  inverseTransform(cur_M[0], b_X[index], measure_workspace[t]);
+	  inverseTransform(cur_M[0], b_X[index], measure_workspace[t].data());
 	}
 	for (int m = 0; m < cdim; m++) {
 	  meanConfig[m] /= num_Mean;
@@ -220,9 +220,7 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 	  var_measure[0] += SQ(measure_workspace[t][0] - mean_inv_M[0]);
 	  var_measure[1] += SQ(measure_workspace[t][1] - mean_inv_M[1]);
 	  var_measure[2] += SQ(measure_workspace[t][2] - mean_inv_M[2]);
-	  delete [] measure_workspace[t];
 	}
-	delete [] measure_workspace;
 	var_measure[0] /= num_Mean;
 	var_measure[1] /= num_Mean;
 	var_measure[2] /= num_Mean;

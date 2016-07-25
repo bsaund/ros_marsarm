@@ -3,6 +3,8 @@
 #include <vector>
 #include <array>
 #include <cstring>
+#include <unordered_set>
+#include <Eigen/Dense>
 #include "distanceTransformNew.h"
 using namespace std;
 typedef array<array<float, 3>, 4> vec4x3;
@@ -12,23 +14,24 @@ class particleFilter
  public:
   static const int cdim = 6;
   typedef double cspace[cdim]; // configuration space of the particles
+  int numParticles; // number of particles
+  int maxNumParticles;
 
   particleFilter (int n_particles, cspace b_init[2], 
 				double Xstd_ob=0.0001, double Xstd_tran=0.0025,
 				double Xstd_scatter=0.0001, double R=0.01);
 
-  void addObservation (double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, int idx_obs);
+  void addObservation (double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss = false);
   //void addObservation (double obs[3], double cube[3], int idx_obs);
-  void estimatedDistribution (cspace x_est, double x_est_stat [2]) {
-    memcpy(x_est, particles_est, sizeof(cspace));
-	x_est_stat[0] = particles_est_stat[0];
-	x_est_stat[1] = particles_est_stat[1];
+  void estimatedDistribution (cspace x_mean, cspace x_est_stat) {
+    memcpy(x_mean, particles_mean, sizeof(cspace));
+    memcpy(x_est_stat, particles_est_stat, sizeof(cspace));
   }
   void getAllParticles(cspace *particles_dest);
 
  protected:
   // Parameters of filter
-  int numParticles; // number of particles
+  
   double Xstd_ob; // observation measurement error
   double Xstd_tran;
   double Xstd_scatter; // default scattering of particles
@@ -41,15 +44,14 @@ class particleFilter
   cspace *particles;  // Current set of particles
   cspace *particles0; // Previous set of particles
   cspace *particles_1; // Previous previous set of particles
-  cspace particles_est; // Estimated distribution
-  double particles_est_stat[2];
+  cspace particles_mean; // Estimated distribution
+  cspace particles_est_stat;
+  Eigen::MatrixXd cov_mat;
   //double *W;
 
   // Local functions
   void createParticles(cspace *particles, cspace b_Xprior[2], int n_particles);
-  bool updateParticles(cspace *particles_1, cspace *particles0, cspace *particles, double cur_M[2][3],
-			vector<vec4x3> &mesh, int idx_Measure, distanceTransform *dist_transform,
-			int n_particles, double R, double Xstd_ob, double Xstd_tran);
+  bool updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss);
   //void calcWeight(double *W, int n_particles, double Xstd_tran, 
 		//   cspace *particles0, cspace *particles);
   //void resampleParticles(cspace *particles0, cspace *particles, double *W, int n_particles);
@@ -61,5 +63,8 @@ int checkInObject(vector<vec4x3> &mesh, double voxel_center[3]);
 int getIntersection(vector<vec4x3> &mesh, double pstart[3], double dir[3], double intersection[3]);
 double testResult(vector<vec4x3> &mesh, double config[6], double touch[2][3], double R);
 int checkObstacles(vector<vec4x3> &mesh, double config[6], double touch[2][3], double dist);
+int checkObstacles(vector<vec4x3> &mesh, double config[6], double start[2][3], double check_length, double dist);
+int checkIntersections(vector<vec4x3> &mesh, double voxel_center[3], double dir[3], double check_length, double &dist);
+int checkEmptyBin(std::unordered_set<string> *set, particleFilter::cspace config);
 #endif // PARTICLE_FILTER_H
 

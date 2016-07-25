@@ -4,14 +4,16 @@
  *   This node is made to work with a particle filter node, a node that 
  *    publishes visualization messages, and RViz.
  */
-
+#include <iostream>
 #include <ros/ros.h>
 #include "particle_filter/PFilterInit.h"
 #include "particle_filter/AddObservation.h"
 #include "geometry_msgs/Point.h"
 #include <tf/transform_broadcaster.h>
 #include "custom_ray_trace/plotRayUtils.h"
+#include "custom_ray_trace/rayTracer.h"
 
+#define NUM_TOUCHES 20
 /**
  * Gets initial points for the particle filter by shooting
  * rays at the object
@@ -71,13 +73,13 @@ void randomSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_e
   
 }
 
-
 bool getIntersection(PlotRayUtils &plt, tf::Point start, tf::Point end, tf::Point &intersection){
   bool intersectionExists = plt.getIntersectionWithPart(start, end, intersection);
-  double radius = 0.000;
+  double radius = 0.001;
   intersection = intersection - (end-start).normalize() * radius;
   return intersectionExists;
 }
+
 
 int main(int argc, char **argv)
 {
@@ -86,7 +88,7 @@ int main(int argc, char **argv)
   PlotRayUtils plt;
 
   std::random_device rd;
-  std::normal_distribution<double> randn(0.0,0.003);
+  std::normal_distribution<double> randn(0.0,0.0005);
 
   ROS_INFO("Running...");
 
@@ -102,8 +104,11 @@ int main(int argc, char **argv)
  
   geometry_msgs::Point obs;
   geometry_msgs::Point dir;
-  for(int i=0; i<20; i++){
-    ros::Duration(1).sleep();
+
+  int i = 0;
+  //for(int i=0; i<20; i++){
+  while (i < NUM_TOUCHES) {
+    ros::Duration(2).sleep();
     //tf::Point start(0.95,0,-0.15);
     //tf::Point end(0.95,2,-0.15);
     tf::Point start, end;
@@ -114,6 +119,7 @@ int main(int argc, char **argv)
       ROS_INFO("NO INTERSECTION, Skipping");
       continue;
     }
+	std::cout << "Intersection at: " << intersection.getX() << "  " << intersection.getY() << "   " << intersection.getZ() << std::endl;
     tf::Point ray_dir(end.x()-start.x(),end.y()-start.y(),end.z()-start.z());
     ray_dir = ray_dir.normalize();
     obs.x=intersection.getX() + randn(rd); 
@@ -137,9 +143,9 @@ int main(int argc, char **argv)
     if(!srv_add.call(pfilter_obs)){
       ROS_INFO("Failed to call add observation");
     }
-
+    i ++;
   }
-
+  
   ROS_INFO("Finished all action");
 
 }

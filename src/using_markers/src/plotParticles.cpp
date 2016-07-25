@@ -75,7 +75,6 @@ void ShapePlotter::externalParticleUpdate(geometry_msgs::PoseArray p)
 void ShapePlotter::generateTransforms()
 {
   std::random_device rd;
-  std::mt19937 gen(rd());
   std::normal_distribution<> randn(0, 1);
   
   particles_.poses.resize(numParticles);
@@ -90,7 +89,7 @@ void ShapePlotter::generateTransforms()
     geometry_msgs::Pose particleTransform;
     // particleTransform.position.x = randn(gen)/50;
     // particleTransform.position.y = randn(gen)/50;
-    // particleTransform.position.z = randn(gen)/50;
+    // particleTransform.position.z = randn(gen)/50;s
 
 
     // particleTransform.position.x = randn(gen)*uncertainties[0];
@@ -170,12 +169,12 @@ void ShapePlotter::updateMarkers()
 
 void ShapePlotter::updateTrueMarker()
 {
-    part.header.frame_id = "particle_frame";
+    part.header.frame_id = "true_frame";
     part.header.stamp = ros::Time(0);
     part.ns = "true_part";
     part.action = visualization_msgs::Marker::ADD;
 
-    tf::Pose pose;
+    //tf::Pose pose;
     part.pose.position.x = 0;
     part.pose.position.y = 0;
     part.pose.position.z = 0;
@@ -235,8 +234,23 @@ void ShapePlotter::plotParticles(){
   // q.setRPY(-.7, 1.5, 0);
   q.setRPY(pFrame[3],pFrame[4], pFrame[5]);
   particleTransform.setRotation(q);
+  
+  tf::Transform trueTransform;
+  std::vector<double> trueFrame;
+  if(!n.getParam("/true_frame", trueFrame)){
+    ROS_INFO("Failed to get param true_frame");
+    trueFrame.resize(6);
+  }
 
+  trueTransform.setOrigin(tf::Vector3(trueFrame[0],trueFrame[1],trueFrame[2]));
+  q.setRPY(trueFrame[3],trueFrame[4], trueFrame[5]);
+  trueTransform.setRotation(q);
+  
   tf::StampedTransform tfstmp(particleTransform, ros::Time::now(),"my_frame", "particle_frame");
+  tf::transformStampedTFToMsg(tfstmp, trans);
+    br.sendTransform(trans);
+
+  tfstmp = tf::StampedTransform(trueTransform, ros::Time::now(),"my_frame", "true_frame");
   tf::transformStampedTFToMsg(tfstmp, trans);
     br.sendTransform(trans);
 

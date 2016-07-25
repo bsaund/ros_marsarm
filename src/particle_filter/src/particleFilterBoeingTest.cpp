@@ -20,13 +20,17 @@
 #include <string>
 #include <array>
 
+//#define POINT_CLOUD
 #define NUM_PARTICLES 500
 typedef array<array<float, 3>, 4> vec4x3;
+
+#ifdef POINT_CLOUD
 pcl::PointCloud<pcl::PointXYZ>::Ptr basic_cloud_ptr1(new pcl::PointCloud<pcl::PointXYZ>);
 pcl::PointCloud<pcl::PointXYZ>::Ptr basic_cloud_ptr2(new pcl::PointCloud<pcl::PointXYZ>);
 bool update;
 boost::mutex updateModelMutex;
 void visualize();
+#endif
 
 class PFilterTest
 {
@@ -70,12 +74,12 @@ void computeInitialDistribution(particleFilter::cspace binit[2], ros::NodeHandle
   }
 
 
-  binit[0][0] = pFrame[0] + 0.01;
-  binit[0][1] = pFrame[1] + 0.015;
-  binit[0][2] = pFrame[2] - 0.015;
-  binit[0][3] = pFrame[3] - 0.02;
-  binit[0][4] = pFrame[4] + 0.01;
-  binit[0][5] = pFrame[5] + 0.03;
+  binit[0][0] = pFrame[0] + 0.02;
+  binit[0][1] = pFrame[1] - 0.01;
+  binit[0][2] = pFrame[2] + 0.02;
+  binit[0][3] = pFrame[3] - 0.04;
+  binit[0][4] = pFrame[4] + 0.05;
+  binit[0][5] = pFrame[5] - 0.01;
 
   binit[1][0] = uncertainties[0];
   binit[1][1] = uncertainties[1];
@@ -141,7 +145,7 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
 
   ROS_INFO("...Done adding observation");
   pub_particles.publish(getParticlePoseArray());
-
+  return true;
 }
 
 
@@ -168,24 +172,25 @@ bool PFilterTest::getMesh(std::string filename){
 
 geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
 {
-  particleFilter::cspace particles[NUM_PARTICLES];
+  std::vector<particleFilter::cspace> particles;
   pFilter_.getAllParticles(particles);
   tf::Transform trans = pHandler.getTransformToPartFrame();
 
 
+  #ifdef POINT_CLOUD
   boost::mutex::scoped_lock updateLock(updateModelMutex);	
   basic_cloud_ptr1->points.clear();
   basic_cloud_ptr2->points.clear();
-  for (int j = 0; j < NUM_PARTICLES; j++ ) {
-	pcl::PointXYZ basic_point;
-	basic_point.x = particles[j][0] * 2;
-	basic_point.y = particles[j][1] * 2;
-	basic_point.z = particles[j][2] * 2;
-	basic_cloud_ptr1->points.push_back(basic_point);
-        basic_point.x = particles[j][3] * 2;
-	basic_point.y = particles[j][4] * 2;
-	basic_point.z = particles[j][5] * 2;
-	basic_cloud_ptr2->points.push_back(basic_point);
+  for (int j = 0; j < pFilter_.numParticles; j++ ) {
+  	pcl::PointXYZ basic_point;
+  	basic_point.x = particles[j][0] * 2;
+  	basic_point.y = particles[j][1] * 2;
+  	basic_point.z = particles[j][2] * 2;
+  	basic_cloud_ptr1->points.push_back(basic_point);
+    basic_point.x = particles[j][3] * 2;
+  	basic_point.y = particles[j][4] * 2;
+  	basic_point.z = particles[j][5] * 2;
+  	basic_cloud_ptr2->points.push_back(basic_point);
   }
   basic_cloud_ptr1->width = (int) basic_cloud_ptr1->points.size ();
   basic_cloud_ptr1->height = 1;
@@ -193,10 +198,13 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   basic_cloud_ptr2->height = 1;
   update = true;
   updateLock.unlock();
+  #endif
 
-
+  particleFilter::cspace particles_est_stat;
+  particleFilter::cspace particles_est;
+  pFilter_.estimateGaussian(particles_est, particles_est_stat);
   geometry_msgs::PoseArray poseArray;
-  for(int i=0; i<NUM_PARTICLES; i++){
+  for(int i=0; i<50; i++){
     tf::Pose pose = poseAt(particles[i]);
     geometry_msgs::Pose pose_msg;
     tf::poseTFToMsg(trans*pose, pose_msg);
@@ -209,6 +217,7 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   return poseArray;
 }
 
+#ifdef POINT_CLOUD
 /*
  * Visualize particles
  */
@@ -250,10 +259,10 @@ void visualize()
 		return;
 	}
 }
-
+#endif
 
 PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
-  pFilter_(n_particles, b_init, 0.002, 0.0035, 0.0001, 0.00),
+  pFilter_(n_particles, b_init, 0.001, 0.0035, 0.0001, 0.001),
   num_voxels{200, 200, 200}//,
   // pFilter_(n_particles, b_init, 0.001, 0.0025, 0.0001, 0.00),
   // num_voxels{300, 300, 300}//,
@@ -279,21 +288,22 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
   ROS_INFO("start create dist_transform");
   dist_transform = new distanceTransform(num_voxels);
 
-  particleFilter::cspace particles[NUM_PARTICLES];
+  #ifdef POINT_CLOUD
+  std::vector<particleFilter::cspace> particles;
   pFilter_.getAllParticles(particles);
   boost::mutex::scoped_lock updateLock(updateModelMutex);	
   basic_cloud_ptr1->points.clear();
   basic_cloud_ptr2->points.clear();
   for (int j = 0; j < NUM_PARTICLES; j++ ) {
-	pcl::PointXYZ basic_point;
-	basic_point.x = particles[j][0] * 2;
-	basic_point.y = particles[j][1] * 2;
-	basic_point.z = particles[j][2] * 2;
-	basic_cloud_ptr1->points.push_back(basic_point);
-        basic_point.x = particles[j][3] * 2;
-	basic_point.y = particles[j][4] * 2;
-	basic_point.z = particles[j][5] * 2;
-	basic_cloud_ptr2->points.push_back(basic_point);
+  	pcl::PointXYZ basic_point;
+  	basic_point.x = particles[j][0] * 2;
+  	basic_point.y = particles[j][1] * 2;
+  	basic_point.z = particles[j][2] * 2;
+  	basic_cloud_ptr1->points.push_back(basic_point);
+    basic_point.x = particles[j][3] * 2;
+  	basic_point.y = particles[j][4] * 2;
+  	basic_point.z = particles[j][5] * 2;
+  	basic_cloud_ptr2->points.push_back(basic_point);
   }
   basic_cloud_ptr1->width = (int) basic_cloud_ptr1->points.size ();
   basic_cloud_ptr1->height = 1;
@@ -301,6 +311,7 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
   basic_cloud_ptr2->height = 1;
   update = true;
   updateLock.unlock();
+  #endif
   ros::Duration(1.0).sleep();
   pub_particles.publish(getParticlePoseArray());
 }
@@ -308,9 +319,11 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
 
 
 int main(int argc, char **argv)
-{ 
-  //update = false;
+{
+  #ifdef POINT_CLOUD
+  update = false;
   boost::thread workerThread(visualize);
+  #endif
   ros::init(argc, argv, "pfilterTest");
   ros::NodeHandle n;
   // ros::Publisher pub = n.advertise<geometry_msgs::PoseArray>("/particles_from_filter", 5);
@@ -322,7 +335,8 @@ int main(int argc, char **argv)
   PFilterTest pFilterTest(NUM_PARTICLES, b_Xprior);
   
   ros::spin();
+  #ifdef POINT_CLOUD
   workerThread.interrupt();
   workerThread.join();
-
+  #endif
 }

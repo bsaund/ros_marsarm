@@ -5,39 +5,41 @@
  *    publishes visualization messages, and RViz.
  */
 #include <iostream>
+#include <chrono>
 #include <ros/ros.h>
 #include "particle_filter/PFilterInit.h"
 #include "particle_filter/AddObservation.h"
 #include "geometry_msgs/Point.h"
+ #include "std_msgs/String.h"
 #include <tf/transform_broadcaster.h>
 #include "custom_ray_trace/plotRayUtils.h"
 #include "custom_ray_trace/rayTracer.h"
-
+#include <ros/console.h>
 #define NUM_TOUCHES 20
-/**
- * Gets initial points for the particle filter by shooting
- * rays at the object
- */
-particle_filter::PFilterInit getInitialPoints(PlotRayUtils &plt)
-{
-  particle_filter::PFilterInit init_points;
+// /**
+//  * Gets initial points for the particle filter by shooting
+//  * rays at the object
+//  */
+// particle_filter::PFilterInit getInitialPoints(PlotRayUtils &plt)
+// {
+//   particle_filter::PFilterInit init_points;
 
-  tf::Point start1(1,1,0);
-  tf::Point end1(-1,-1,0);
-  tf::Point start2(1,1,.2);
-  tf::Point end2(-1,-1,.2);
-  tf::Point start3(1.1,0.9,0);
-  tf::Point end3(-0.9,-1.1,0);
+//   tf::Point start1(1,1,0);
+//   tf::Point end1(-1,-1,0);
+//   tf::Point start2(1,1,.2);
+//   tf::Point end2(-1,-1,.2);
+//   tf::Point start3(1.1,0.9,0);
+//   tf::Point end3(-0.9,-1.1,0);
   
-  tf::Point intersection;
-  plt.getIntersectionWithPart(start1,end1, intersection);
-  tf::pointTFToMsg(intersection,  init_points.p1);
-  plt.getIntersectionWithPart(start2,end2, intersection);
-  tf::pointTFToMsg(intersection, init_points.p2);
-  plt.getIntersectionWithPart(start3,end3, intersection);
-  tf::pointTFToMsg(intersection, init_points.p3);
-  return init_points;
-}
+//   tf::Point intersection;
+//   plt.getIntersectionWithPart(start1,end1, intersection);
+//   tf::pointTFToMsg(intersection,  init_points.p1);
+//   plt.getIntersectionWithPart(start2,end2, intersection);
+//   tf::pointTFToMsg(intersection, init_points.p2);
+//   plt.getIntersectionWithPart(start3,end3, intersection);
+//   tf::pointTFToMsg(intersection, init_points.p3);
+//   return init_points;
+// }
 
 /**
  * Randomly chooses vectors, gets the Information Gain for each of 
@@ -53,19 +55,28 @@ void randomSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, 
   std::uniform_real_distribution<double> rand(-2.0,2.0);
 
 
-  for(int i=0; i<500; i++){
+  cout << "Start!!" << endl;
+  for(int i=0; i<50; i++){
     tf::Point start(rand(rd), rand(rd), rand(rd));
-    start = start.normalize();
+    // start = start.normalize();
     tf::Point end(rand(rd), rand(rd), rand(rd));
-    end.normalized();
-    double IG = plt.getIG(start, end, 0.01, 0.002);
+    // end.normalized();
+    Ray measurement(start, end);
+    auto timer_begin = std::chrono::high_resolution_clock::now();
+    double IG = rayt.getIG(measurement, 0.01, 0.002);
+    auto timer_end = std::chrono::high_resolution_clock::now();
+    auto timer_dur = timer_end - timer_begin;
+    cout << "IG: " << IG << endl;
+    cout << "Elapsed time for ray: " << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << endl;
+    // double IG = plt.getIG(start, end, 0.01, 0.002);
     if (IG > bestIG){
       bestIG = IG;
       best_start = start;
       best_end = end;
     }
   }
-  Ray measurement(best_start, best_end);
+  cout << "End!!" << endl;
+  //Ray measurement(best_start, best_end);
   // plt.plotCylinder(best_start, best_end, 0.01, 0.002, true);
   ROS_INFO("Ray is: %f, %f, %f.  %f, %f, %f", 
 	   best_start.getX(), best_start.getY(), best_start.getZ(),
@@ -73,12 +84,12 @@ void randomSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, 
   
 }
 
-bool getIntersection(PlotRayUtils &plt, tf::Point start, tf::Point end, tf::Point &intersection){
-  bool intersectionExists = plt.getIntersectionWithPart(start, end, intersection);
-  double radius = 0.001;
-  intersection = intersection - (end-start).normalize() * radius;
-  return intersectionExists;
-}
+// bool getIntersection(PlotRayUtils &plt, tf::Point start, tf::Point end, tf::Point &intersection){
+//   bool intersectionExists = plt.getIntersectionWithPart(start, end, intersection);
+//   double radius = 0.001;
+//   intersection = intersection - (end-start).normalize() * radius;
+//   return intersectionExists;
+// }
 
 
 int main(int argc, char **argv)
@@ -86,6 +97,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "updating_particles");
   ros::NodeHandle n;
   PlotRayUtils plt;
+  RayTracer rayt;
 
   std::random_device rd;
   std::normal_distribution<double> randn(0.0,0.0005);
@@ -99,26 +111,30 @@ int main(int argc, char **argv)
 
 
  
-  ros::Duration(2).sleep();
+  ros::Duration(1).sleep();
   // pub_init.publish(getInitialPoints(plt));
  
   geometry_msgs::Point obs;
   geometry_msgs::Point dir;
+  double radius = 0.001;
 
   int i = 0;
   //for(int i=0; i<20; i++){
   while (i < NUM_TOUCHES) {
-    ros::Duration(2).sleep();
+    ros::Duration(1).sleep();
     //tf::Point start(0.95,0,-0.15);
     //tf::Point end(0.95,2,-0.15);
     tf::Point start, end;
-    randomSelection(plt, start, end);
-
-    tf::Point intersection;
-    if(!getIntersection(plt, start, end, intersection)){
+    randomSelection(plt, rayt, start, end);
+    Ray measurement(start, end);
+    
+    double distToPart;
+    if(!rayt.traceRay(measurement, distToPart)){
       ROS_INFO("NO INTERSECTION, Skipping");
       continue;
     }
+    tf::Point intersection(start.getX(), start.getY(), start.getZ());
+    intersection = intersection + (end-start).normalize() * (distToPart - radius);
 	std::cout << "Intersection at: " << intersection.getX() << "  " << intersection.getY() << "   " << intersection.getZ() << std::endl;
     tf::Point ray_dir(end.x()-start.x(),end.y()-start.y(),end.z()-start.z());
     ray_dir = ray_dir.normalize();

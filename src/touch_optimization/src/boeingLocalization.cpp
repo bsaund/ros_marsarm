@@ -15,6 +15,8 @@
 #include "custom_ray_trace/plotRayUtils.h"
 #include "custom_ray_trace/rayTracer.h"
 #include <ros/console.h>
+#include <Eigen/Dense>
+
 #define NUM_TOUCHES 20
 // /**
 //  * Gets initial points for the particle filter by shooting
@@ -41,6 +43,102 @@
 //   return init_points;
 // }
 
+void fixedSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, tf::Point &best_end, int index)
+{
+  double bestIG;
+  tf::Point tf_start;
+  tf::Point tf_end;
+  bestIG = 0;
+  std::random_device rd;
+  std::uniform_real_distribution<double> rand(0, 1);
+  Eigen::Vector3d start;
+  Eigen::Vector3d end;
+  double state[6] = {0.3, 0.3, 0.3, 0.5, 0.7, 0.5};
+  Eigen::Matrix3d rotationC;
+  rotationC << cos(state[5]), -sin(state[5]), 0,
+               sin(state[5]), cos(state[5]), 0,
+               0, 0, 1;
+  Eigen::Matrix3d rotationB;
+  rotationB << cos(state[4]), 0 , sin(state[4]),
+               0, 1, 0,
+               -sin(state[4]), 0, cos(state[4]);
+  Eigen::Matrix3d rotationA;
+  rotationA << 1, 0, 0 ,
+               0, cos(state[3]), -sin(state[3]),
+               0, sin(state[3]), cos(state[3]);
+  Eigen::Matrix3d rotationM = rotationC * rotationB * rotationA;
+  Eigen::Vector3d displaceV(state[0], state[1], state[2]);
+  for(int i=0; i<500; i++){
+    if (index % 6 == 0)
+    {
+      double y = rand(rd) * 0.2 - 0.35;
+      double z = rand(rd) * 0.12 + 0.03;
+       start << 2, y, z;
+       end << 0, y, z;
+
+    }
+    else if (index % 6 == 1)
+    {
+      double x = rand(rd) * 1.1 + 0.1;
+      double z = rand(rd) * 0.12 + 0.03;
+      start << x, 1, z;
+      end << x, 0, z;
+    }
+    else if (index % 6 == 2)
+    {
+      double x = rand(rd) * 1.1 + 0.1;
+      double y = rand(rd) * 0.01 - 0.02;
+      start << x, y, 1;
+      end << x, y, 0;
+    }
+    else if (index % 6 == 3)
+    {
+      double y = rand(rd) * 0.2 - 0.35;
+      double z = rand(rd) * 0.12 + 0.03;
+       start << 2, y, z;
+       end << 0, y, z;
+    }
+    else if (index % 6 == 4)
+    {
+      double x = rand(rd) * 1.1 + 0.1;
+      double z = rand(rd) * 0.12 + 0.03;
+      start << x, 1, z;
+      end << x, 0, z;
+    }
+    else
+    {
+      double x = rand(rd) * 0.02 + 0.33;
+      double y = rand(rd) * 0.2 - 0.35;
+      start << x, y, 1;
+      end << x, y, 0;
+    }
+    
+    Eigen::Vector3d tran_start = rotationM * start + displaceV;
+    Eigen::Vector3d tran_end = rotationM * end + displaceV;
+
+    tf_start.setValue(tran_start(0, 0), tran_start(1, 0), tran_start(2, 0));
+    tf_end.setValue(tran_end(0, 0), tran_end(1, 0), tran_end(2, 0));
+    Ray measurement(tf_start, tf_end);
+    // auto timer_begin = std::chrono::high_resolution_clock::now();
+    double IG = rayt.getIG(measurement, 0.01, 0.002);
+    // auto timer_end = std::chrono::high_resolution_clock::now();
+    // auto timer_dur = timer_end - timer_begin;
+    // cout << "IG: " << IG << endl;
+    // cout << "Elapsed time for ray: " << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << endl;
+    // double IG = plt.getIG(start, end, 0.01, 0.002);
+    if (IG > bestIG){
+      bestIG = IG;
+      best_start = tf_start;
+      best_end = tf_end;
+    }
+  }
+  // plt.plotCylinder(best_start, best_end, 0.01, 0.002, true);
+  ROS_INFO("Ray is: %f, %f, %f.  %f, %f, %f", 
+     best_start.getX(), best_start.getY(), best_start.getZ(),
+     best_end.getX(), best_end.getY(), best_end.getZ());
+  plt.plotRay(Ray(best_start, best_end));
+}
+
 /**
  * Randomly chooses vectors, gets the Information Gain for each of 
  *  those vectors, and returns the ray (start and end) with the highest information gain
@@ -55,19 +153,18 @@ void randomSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, 
   std::uniform_real_distribution<double> rand(-2.0,2.0);
 
 
-  cout << "Start!!" << endl;
-  for(int i=0; i<50; i++){
+  for(int i=0; i<500; i++){
     tf::Point start(rand(rd), rand(rd), rand(rd));
     // start = start.normalize();
     tf::Point end(rand(rd), rand(rd), rand(rd));
     // end.normalized();
     Ray measurement(start, end);
-    auto timer_begin = std::chrono::high_resolution_clock::now();
+    // auto timer_begin = std::chrono::high_resolution_clock::now();
     double IG = rayt.getIG(measurement, 0.01, 0.002);
-    auto timer_end = std::chrono::high_resolution_clock::now();
-    auto timer_dur = timer_end - timer_begin;
-    cout << "IG: " << IG << endl;
-    cout << "Elapsed time for ray: " << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << endl;
+    // auto timer_end = std::chrono::high_resolution_clock::now();
+    // auto timer_dur = timer_end - timer_begin;
+    // cout << "IG: " << IG << endl;
+    // cout << "Elapsed time for ray: " << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << endl;
     // double IG = plt.getIG(start, end, 0.01, 0.002);
     if (IG > bestIG){
       bestIG = IG;
@@ -75,7 +172,6 @@ void randomSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, 
       best_end = end;
     }
   }
-  cout << "End!!" << endl;
   //Ray measurement(best_start, best_end);
   // plt.plotCylinder(best_start, best_end, 0.01, 0.002, true);
   ROS_INFO("Ray is: %f, %f, %f.  %f, %f, %f", 
@@ -100,7 +196,7 @@ int main(int argc, char **argv)
   RayTracer rayt;
 
   std::random_device rd;
-  std::normal_distribution<double> randn(0.0,0.0005);
+  std::normal_distribution<double> randn(0.0,0.0002);
 
   ROS_INFO("Running...");
 
@@ -126,6 +222,8 @@ int main(int argc, char **argv)
     //tf::Point end(0.95,2,-0.15);
     tf::Point start, end;
     randomSelection(plt, rayt, start, end);
+    // fixedSelection(plt, rayt, start, end, i);
+
     Ray measurement(start, end);
     
     double distToPart;
@@ -150,7 +248,8 @@ int main(int argc, char **argv)
 
     // pub_add.publish(obs);
     
-    plt.plotCylinder(start, end, 0.01, 0.002, true);
+    // plt.plotCylinder(start, end, 0.01, 0.002, true);
+    plt.plotRay(Ray(start, end));
     ros::Duration(1).sleep();
 
     particle_filter::AddObservation pfilter_obs;

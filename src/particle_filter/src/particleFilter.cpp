@@ -378,10 +378,10 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 #ifdef ADAPTIVE_NUMBER
 		if (checkEmptyBin(&bins, particles[i]) == 1) {
 		  num_bins++;
-		  if (i >= N_MIN) {
+		  // if (i >= N_MIN) {
 			//int numBins = bins.size();
-			numParticles = min2(maxNumParticles, max2((num_bins - 1) * 2, N_MIN));
-		  }
+		  numParticles = min2(maxNumParticles, max2(((num_bins - 1) * 2), N_MIN));
+		  // }
 		}
 #endif
 		//double d = testResult(mesh, particles[i], cur_M, R);

@@ -160,8 +160,8 @@ void ShapePlotter::updateMarkers()
     points.markers[i].color.b = 0.8f;
 
     //alpha to make the particles transparent
-    // points.markers[i].color.a = 0.07;
-    points.markers[i].color.a = 0.2;
+    points.markers[i].color.a = 0.07;
+    // points.markers[i].color.a = 0.2;
 
   }
 }
@@ -234,10 +234,26 @@ void ShapePlotter::plotParticles(){
   // q.setRPY(-.7, 1.5, 0);
   q.setRPY(pFrame[3],pFrame[4], pFrame[5]);
   particleTransform.setRotation(q);
-  
+
+  tf::Transform trueTransform;
+  std::vector<double> trueFrame;
+  if(!n.getParam("/true_frame", trueFrame)){
+    ROS_INFO("Failed to get param true_frame");
+    trueFrame.resize(6);
+  }
+
+  trueTransform.setOrigin(tf::Vector3(trueFrame[0],trueFrame[1],trueFrame[2]));
+  q.setRPY(trueFrame[3],trueFrame[4], trueFrame[5]);
+  trueTransform.setRotation(q);
+
   tf::StampedTransform tfstmp(particleTransform, ros::Time::now(),"my_frame", "particle_frame");
   tf::transformStampedTFToMsg(tfstmp, trans);
     br.sendTransform(trans);
+
+  tfstmp = tf::StampedTransform(trueTransform, ros::Time::now(),"my_frame", "true_frame");
+  tf::transformStampedTFToMsg(tfstmp, trans);
+    br.sendTransform(trans);
+
 
   tfstmp = tf::StampedTransform(unityTransform, ros::Time::now(),"base_plate", "my_frame");
     tf::transformStampedTFToMsg(tfstmp, trans);
@@ -268,13 +284,13 @@ int main(int argc, char **argv)
 
   // plt.generateTransforms();
   plt.updateMarkers();
-  // plt.updateTrueMarker();
+  plt.updateTrueMarker();
 
 
   while (ros::ok()) {
     waitForRViz.sleep();
     plt.plotParticles();
-    // plt.plotTruePart();
+    plt.plotTruePart();
     // ROS_INFO("spinning");
     ros::spinOnce();
   }

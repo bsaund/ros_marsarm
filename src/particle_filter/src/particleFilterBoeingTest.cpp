@@ -262,7 +262,7 @@ void visualize()
 #endif
 
 PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
-  pFilter_(n_particles, b_init, 0.001, 0.0035, 0.0001, 0.001),
+  pFilter_(n_particles, b_init, 0.0005, 0.0035, 0.0001, 0.001),
   num_voxels{200, 200, 200}//,
   // pFilter_(n_particles, b_init, 0.001, 0.0025, 0.0001, 0.00),
   // num_voxels{300, 300, 300}//,

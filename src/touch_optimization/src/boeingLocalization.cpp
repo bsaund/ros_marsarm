@@ -45,7 +45,7 @@
 
 void fixedSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, tf::Point &best_end, int index)
 {
-  double bestIG;
+  double bestIG = 0;
   tf::Point tf_start;
   tf::Point tf_end;
   bestIG = 0;
@@ -72,45 +72,45 @@ void fixedSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, t
     if (index % 6 == 0)
     {
       double y = rand(rd) * 0.2 - 0.35;
-      double z = rand(rd) * 0.12 + 0.03;
-       start << 2, y, z;
-       end << 0, y, z;
+      double z = rand(rd) * 0.18 + 0.03;
+       start << 1, y, z;
+       end << -1, y, z;
 
     }
     else if (index % 6 == 1)
     {
       double x = rand(rd) * 1.1 + 0.1;
-      double z = rand(rd) * 0.12 + 0.03;
-      start << x, 1, z;
-      end << x, 0, z;
+      double z = rand(rd) * 0.18 + 0.03;
+      start << x, -1, z;
+      end << x, 1, z;
     }
     else if (index % 6 == 2)
     {
       double x = rand(rd) * 1.1 + 0.1;
       double y = rand(rd) * 0.01 - 0.02;
       start << x, y, 1;
-      end << x, y, 0;
+      end << x, y, -1;
     }
     else if (index % 6 == 3)
     {
       double y = rand(rd) * 0.2 - 0.35;
-      double z = rand(rd) * 0.12 + 0.03;
-       start << 2, y, z;
-       end << 0, y, z;
+      double z = rand(rd) * 0.18 + 0.03;
+       start << 1, y, z;
+       end << -1, y, z;
     }
     else if (index % 6 == 4)
     {
       double x = rand(rd) * 1.1 + 0.1;
-      double z = rand(rd) * 0.12 + 0.03;
-      start << x, 1, z;
-      end << x, 0, z;
+      double z = rand(rd) * 0.18 + 0.03;
+      start << x, -1, z;
+      end << x, 1, z;
     }
     else
     {
       double x = rand(rd) * 0.02 + 0.33;
       double y = rand(rd) * 0.2 - 0.35;
       start << x, y, 1;
-      end << x, y, 0;
+      end << x, y, -1;
     }
     
     Eigen::Vector3d tran_start = rotationM * start + displaceV;
@@ -121,6 +121,8 @@ void fixedSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, t
     Ray measurement(tf_start, tf_end);
     // auto timer_begin = std::chrono::high_resolution_clock::now();
     double IG = rayt.getIG(measurement, 0.01, 0.002);
+    plt.plotRay(measurement);
+    plt.labelRay(measurement, IG);
     // auto timer_end = std::chrono::high_resolution_clock::now();
     // auto timer_dur = timer_end - timer_begin;
     // cout << "IG: " << IG << endl;
@@ -150,14 +152,14 @@ void randomSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, 
   double bestIG;
   bestIG = 0;
   std::random_device rd;
-  std::uniform_real_distribution<double> rand(-2.0,2.0);
+  std::uniform_real_distribution<double> rand(-4.0,3.0);
 
 
   for(int i=0; i<500; i++){
     tf::Point start(rand(rd), rand(rd), rand(rd));
-    // start = start.normalize();
+    start = start.normalize();
     tf::Point end(rand(rd), rand(rd), rand(rd));
-    // end.normalized();
+    end.normalized();
     Ray measurement(start, end);
     // auto timer_begin = std::chrono::high_resolution_clock::now();
     double IG = rayt.getIG(measurement, 0.01, 0.002);
@@ -196,7 +198,7 @@ int main(int argc, char **argv)
   RayTracer rayt;
 
   std::random_device rd;
-  std::normal_distribution<double> randn(0.0,0.0002);
+  std::normal_distribution<double> randn(0.0,0.0005);
 
   ROS_INFO("Running...");
 
@@ -221,8 +223,8 @@ int main(int argc, char **argv)
     //tf::Point start(0.95,0,-0.15);
     //tf::Point end(0.95,2,-0.15);
     tf::Point start, end;
-    randomSelection(plt, rayt, start, end);
-    // fixedSelection(plt, rayt, start, end, i);
+    // randomSelection(plt, rayt, start, end);
+    fixedSelection(plt, rayt, start, end, i);
 
     Ray measurement(start, end);
     

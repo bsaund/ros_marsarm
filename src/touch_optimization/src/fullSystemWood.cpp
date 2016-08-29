@@ -16,31 +16,32 @@
 #include <ros/console.h>
 # define M_PI       3.14159265358979323846  /* pi */
 
+bool movementFinished = false;
 
 /**
  * Gets initial points for the particle filter by shooting
  * rays at the object
  */
-particle_filter::PFilterInit getInitialPoints(PlotRayUtils &plt)
-{
-  particle_filter::PFilterInit init_points;
+// particle_filter::PFilterInit getInitialPoints(PlotRayUtils &plt)
+// {
+//   particle_filter::PFilterInit init_points;
 
-  tf::Point start1(1,1,0);
-  tf::Point end1(-1,-1,0);
-  tf::Point start2(1,1,.2);
-  tf::Point end2(-1,-1,.2);
-  tf::Point start3(1.1,0.9,0);
-  tf::Point end3(-0.9,-1.1,0);
+//   tf::Point start1(1,1,0);
+//   tf::Point end1(-1,-1,0);
+//   tf::Point start2(1,1,.2);
+//   tf::Point end2(-1,-1,.2);
+//   tf::Point start3(1.1,0.9,0);
+//   tf::Point end3(-0.9,-1.1,0);
   
-  tf::Point intersection;
-  plt.getIntersectionWithPart(start1,end1, intersection);
-  tf::pointTFToMsg(intersection,  init_points.p1);
-  plt.getIntersectionWithPart(start2,end2, intersection);
-  tf::pointTFToMsg(intersection, init_points.p2);
-  plt.getIntersectionWithPart(start3,end3, intersection);
-  tf::pointTFToMsg(intersection, init_points.p3);
-  return init_points;
-}
+//   tf::Point intersection;
+//   plt.getIntersectionWithPart(start1,end1, intersection);
+//   tf::pointTFToMsg(intersection,  init_points.p1);
+//   plt.getIntersectionWithPart(start2,end2, intersection);
+//   tf::pointTFToMsg(intersection, init_points.p2);
+//   plt.getIntersectionWithPart(start3,end3, intersection);
+//   tf::pointTFToMsg(intersection, init_points.p3);
+//   return init_points;
+// }
 
 void generateRandomTouchWith(tf::Pose &probePose, double tbX, double tbY, double tbZ, double tbRR, double tbRP, double tbRY, double rotateR, double rotateP, double rotateY, double offX, double offY, double offZ)
 {
@@ -208,6 +209,7 @@ void randomSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Pose &probePose)
   ROS_INFO("Ray is: %f, %f, %f.  %f, %f, %f", 
   	   best_start.getX(), best_start.getY(), best_start.getZ(),
   	   best_end.getX(), best_end.getY(), best_end.getZ());
+  ROS_INFO("IG is: %f", bestIG);
   
 }
 
@@ -232,6 +234,10 @@ geometry_msgs::Pose probeAt(tf::Transform rotate, tf::Transform base, double x, 
 }
 
 
+void setProcFinished(std_msgs::String msg){
+  movementFinished = true;
+}
+
 int main(int argc, char **argv)
 {
   if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
@@ -251,6 +257,10 @@ int main(int argc, char **argv)
 
   ros::Publisher probe_pub = 
     n.advertise<geometry_msgs::Pose>("/probe_point", 5);
+
+  ros::Subscriber movementSub = n.subscribe("/process_finished", 1000, 
+					    &setProcFinished);
+
  
   ros::Duration(2).sleep();
   
@@ -261,19 +271,38 @@ int main(int argc, char **argv)
   tf::Pose probePose;
   geometry_msgs::Pose probe_msg; 
 
-  tf::Point rStart(0.8, -0.21, 0.45);
-  tf::Point rEnd(0.8, -0.21, 0.35);
+  // tf::Point rStart(0.8, -0.21, 0.45);
+  // tf::Point rEnd(0.8, -0.21, 0.35);
 
 
-  plt.plotRay(Ray(rStart, rEnd));
+  // plt.plotRay(Ray(rStart, rEnd));
 
 
-
+  movementFinished = true;
   for(int i=0; i<7; i++){
+
     randomSelection(plt, rayt, probePose);
     tf::poseTFToMsg(probePose, probe_msg);
+
+
+    while(!movementFinished){
+      ROS_INFO_THROTTLE(10, "Waiting for previous movement to finish...");
+      ros::spinOnce();
+      ros::Duration(.1).sleep();
+    }
+
+    movementFinished = false;
+
     probe_pub.publish(probe_msg);
-    ros::topic::waitForMessage<std_msgs::String>(std::string("/process_finished"));
+    ros::spinOnce();
+
+
+    while(!rayt.particleHandler.newParticles){
+      ROS_INFO_THROTTLE(10, "Waiting for new particles...");
+      ros::spinOnce();
+      ros::Duration(.1).sleep();
+    }
+
   }
 
 

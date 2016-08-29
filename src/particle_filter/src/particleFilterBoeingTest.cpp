@@ -10,12 +10,13 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/console/parse.h>
+#include <tf/transform_listener.h>
 
 #include "particle_filter/PFilterInit.h"
 #include "particle_filter/AddObservation.h"
 #include "stlParser.h"
 // #include <custom_ray_trace/stlParser.h>
-#include <custom_ray_trace/rayTracer.h>
+// #include <custom_ray_trace/rayTracer.h>
 #include <math.h>
 #include <string>
 #include <array>
@@ -40,9 +41,10 @@ private:
   ros::Subscriber sub_request_particles;
   ros::ServiceServer srv_add_obs;
   ros::Publisher pub_particles;
+  tf::StampedTransform trans_;
   
   distanceTransform *dist_transform;
-  ParticleHandler pHandler;
+  // ParticleHandler pHandler;
 
   bool getMesh(std::string filename);
 
@@ -174,8 +176,8 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
 {
   std::vector<particleFilter::cspace> particles;
   pFilter_.getAllParticles(particles);
-  tf::Transform trans = pHandler.getTransformToPartFrame();
-
+  // tf::Transform trans = pHandler.getTransformToPartFrame();
+  tf::Transform trans = trans_;
 
   #ifdef POINT_CLOUD
   boost::mutex::scoped_lock updateLock(updateModelMutex);	
@@ -287,6 +289,11 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
   //dist_transform(num_voxels);
   ROS_INFO("start create dist_transform");
   dist_transform = new distanceTransform(num_voxels);
+
+  tf::TransformListener tf_listener_;
+  tf_listener_.waitForTransform("/my_frame", "/particle_frame", ros::Time(0), ros::Duration(10.0));
+  tf_listener_.lookupTransform("/particle_frame", "/my_frame", ros::Time(0), trans_);
+
 
   #ifdef POINT_CLOUD
   std::vector<particleFilter::cspace> particles;

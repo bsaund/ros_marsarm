@@ -202,9 +202,9 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   updateLock.unlock();
   #endif
 
-  particleFilter::cspace particles_est_stat;
-  particleFilter::cspace particles_est;
-  pFilter_.estimateGaussian(particles_est, particles_est_stat);
+  // particleFilter::cspace particles_est_stat;
+  // particleFilter::cspace particles_est;
+  // pFilter_.estimateGaussian(particles_est, particles_est_stat);
   geometry_msgs::PoseArray poseArray;
   for(int i=0; i<50; i++){
     tf::Pose pose = poseAt(particles[i]);
@@ -307,7 +307,7 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
   	basic_point.y = particles[j][1] * 2;
   	basic_point.z = particles[j][2] * 2;
   	basic_cloud_ptr1->points.push_back(basic_point);
-    basic_point.x = particles[j][3] * 2;
+	basic_point.x = particles[j][3] * 2;
   	basic_point.y = particles[j][4] * 2;
   	basic_point.z = particles[j][5] * 2;
   	basic_cloud_ptr2->points.push_back(basic_point);

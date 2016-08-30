@@ -65,7 +65,10 @@ particleFilter::particleFilter(int n_particles, cspace b_init[2],
   particles.resize(numParticles);
   particlesPrev.resize(numParticles);
 
+
   createParticles(particlesPrev, b_Xprior, numParticles);
+
+
 
 #ifdef ADAPTIVE_BANDWIDTH
   Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)particlesPrev.data(), cdim, numParticles);
@@ -111,6 +114,8 @@ void particleFilter::createParticles(Particles &particles_dest, cspace b_Xprior[
  */
 void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss)
 {
+  numObs++;
+
   auto timer_begin = std::chrono::high_resolution_clock::now();
   std::random_device generator;
   normal_distribution<double> dist2(0, Xstd_scatter);
@@ -145,6 +150,13 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 }
 
 void particleFilter::estimateGaussian(cspace &x_mean, cspace &x_est_stat) {
+  cout << "\n\n\nWriting some data\n\n\n";
+  ofstream outputData;
+  outputData.open("/home/bsaund/MeanCov.txt", std::ios_base::app);
+  outputData << numObs << "\t";
+
+
+
   cout << "Estimated Mean: ";
   for (int k = 0; k < cdim; k++) {
 	x_mean[k] = 0;
@@ -153,6 +165,7 @@ void particleFilter::estimateGaussian(cspace &x_mean, cspace &x_est_stat) {
 	}
 	x_mean[k] /= numParticles;
 	cout << x_mean[k] << "  ";
+	outputData << x_mean[k] << "\t";
   }
   cout << endl;
   cout << "Estimated Std: ";
@@ -163,9 +176,11 @@ void particleFilter::estimateGaussian(cspace &x_mean, cspace &x_est_stat) {
 	}
 	x_est_stat[k] = sqrt(x_est_stat[k] / numParticles);
 	cout << x_est_stat[k] << "  ";
+	outputData << x_est_stat[k] << "\t";
   }
   cout << endl;
-
+  outputData << "\n";
+  outputData.close();
 }
 
 

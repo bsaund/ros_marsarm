@@ -60,7 +60,9 @@ tf::StampedTransform ParticleHandler::getTransformToPartFrame()
 
 void ParticleHandler::setParticles(geometry_msgs::PoseArray p)
 {
+  ROS_INFO("setParticles called");
   particles.resize(p.poses.size());
+
   
   for(int i=0; i<p.poses.size(); i++){
 
@@ -79,6 +81,9 @@ void ParticleHandler::setParticles(geometry_msgs::PoseArray p)
   subsetParticles = vector<tf::Transform>(particles);
   subsetParticles.resize(num);
 
+  ROS_INFO("First Subset Particle: %f, %f, %f", subsetParticles[0].getOrigin().getX(),
+	   subsetParticles[0].getOrigin().getY(),
+	   subsetParticles[0].getOrigin().getZ());
   
   ROS_INFO("Subset Particles Size %d", subsetParticles.size());
   
@@ -93,10 +98,12 @@ std::vector<tf::Transform> ParticleHandler::getParticles()
     int count = 0;
 
     while(!particlesInitialized){
+      // ROS_INFO_THROTTLE(10, "Requesting Particles");
+      ROS_INFO("Requesting Particles all");
       requestParticlesPub.publish(std_msgs::Empty());
+      ros::Duration(.2).sleep();
       ros::spinOnce();
-      ros::Duration(.1).sleep();
-      ROS_INFO_THROTTLE(10, "Requesting Particles");
+
       count++;
       if(count > 100){
 	ROS_INFO("Never Received Particles");
@@ -130,10 +137,12 @@ int ParticleHandler::getNumSubsetParticles()
 
 
 bool ParticleHandler::theseAreNewParticles(){
-  bool tmp = newParticles;
-  newParticles = false;
-  return tmp;
+  // bool tmp = newParticles;
+  // newParticles = false;
+  // return tmp;
+  return newParticles;
 }
+
 
 
 
@@ -222,8 +231,14 @@ bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart, bool
   transformRayToPartFrame(ray);
   std::vector<tf::Transform> particles = particleHandler.getParticleSubset();
 
+  // ROS_INFO("First particle for traceAll: %f, %f, %f", particles[0].getOrigin().getX(),
+  // 	   particles[0].getOrigin().getY(),
+  // 	   particles[0].getOrigin().getZ());
+
+
   //Quick check to see if ray even has a chance of hitting any particle
   if(particleHandler.theseAreNewParticles()){
+    particleHandler.newParticles = false;
     surroundingBoxAllParticles = getBoxAroundAllParticles(mesh);
   }
   

@@ -28,7 +28,7 @@ class ParticleHandler
   ros::Subscriber particleSub;
   ros::Publisher requestParticlesPub;
   bool particlesInitialized;
-  bool newParticles;
+
 
  public:
   ParticleHandler();
@@ -36,7 +36,7 @@ class ParticleHandler
   tf::StampedTransform trans_;
   std::vector<tf::Transform> particles;
   std::vector<tf::Transform> subsetParticles;
-  
+  bool newParticles;  
 
   tf::StampedTransform getTransformToPartFrame();  
   void setParticles(geometry_msgs::PoseArray p);
@@ -45,6 +45,7 @@ class ParticleHandler
   int getNumParticles();
   int getNumSubsetParticles();
   bool theseAreNewParticles();
+
 };
 
 
@@ -57,9 +58,10 @@ class RayTracer
   stl::Mesh mesh;
   stl::Mesh surroundingBox;
   stl::Mesh surroundingBoxAllParticles;
-  ParticleHandler particleHandler;
+
   
  public:
+
   RayTracer();
   bool loadMesh();
   bool tracePartFrameRay(const Ray &ray, double &distToPart, bool quick=false);
@@ -76,6 +78,7 @@ class RayTracer
   stl::Mesh getBoxAroundAllParticles(stl::Mesh mesh);
 
   void transformRayToPartFrame(Ray &ray);
+  ParticleHandler particleHandler;
 };
 
 

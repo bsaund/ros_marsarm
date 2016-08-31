@@ -142,6 +142,17 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
   cout << "Total time: " << total_time << endl;
   cout << "Average time: " << total_time / 20.0 << endl << endl;
 
+  ofstream myfile;
+  myfile.open("/home/shiyuan/Documents/ros_marsarm/diff.csv", ios::out|ios::app);
+  myfile << est_diff << ",";
+  myfile.close();
+  myfile.open("/home/shiyuan/Documents/ros_marsarm/time.csv", ios::out|ios::app);
+  myfile << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << ",";
+  myfile.close();
+  // myfile.open("/home/shiyuan/Documents/ros_marsarm/workspace.csv", ios::out|ios::app);
+  // myfile << dist_part << ",";
+  // myfile.close();
+
 }
 
 void particleFilter::estimateGaussian(cspace &x_mean, cspace &x_est_stat) {

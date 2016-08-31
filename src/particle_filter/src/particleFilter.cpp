@@ -202,7 +202,8 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
   measure_workspace.resize(num_Mean);
   double var_measure[3] = { 0, 0, 0 };
   cspace meanConfig = { 0, 0, 0, 0, 0, 0 };
-  double unsigned_dist_check = R + Xstd_ob;
+  double unsigned_dist_check = R + 2 * Xstd_ob;
+  double signed_dist_check = 2 * Xstd_ob;
   double voxel_size;
   double distTransSize;
   double mean_inv_M[3];
@@ -233,7 +234,7 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 	var_measure[1] /= num_Mean;
 	var_measure[2] /= num_Mean;
 	distTransSize = 4 * max3(sqrt(var_measure[0]), sqrt(var_measure[1]), sqrt(var_measure[2]));
-	distTransSize = 100 * 0.0005;
+	// distTransSize = 100 * 0.0005;
 	cout << "Touch Std: " << sqrt(var_measure[0]) << "  " << sqrt(var_measure[1]) << "  " << sqrt(var_measure[2]) << endl;
 	double world_range[3][2];
 	cout << "Current Inv_touch: " << mean_inv_M[0] << "    " << mean_inv_M[1] << "    " << mean_inv_M[2] << endl;
@@ -252,15 +253,16 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 	double coeff = pow(numParticles, -0.2)/1.2155;
 	Eigen::MatrixXd H_cov = coeff * cov_mat;
 	cout << "H_cov: " << H_cov << endl;
-	double tmp_min = 1000000.0;
-	for (int t = 0; t < 3; t++) {
-	  if (H_cov(t, t) < tmp_min) {
-		tmp_min = H_cov(t, t);
-	  }
-	}
-	if (tmp_min < MIN_STD) {
-	  H_cov = MIN_STD / tmp_min * H_cov;
-	}
+	// Lower Bound
+	// double tmp_min = 1000000.0;
+	// for (int t = 0; t < 3; t++) {
+	//   if (H_cov(t, t) < tmp_min) {
+	// 	tmp_min = H_cov(t, t);
+	//   }
+	// }
+	// if (tmp_min < MIN_STD) {
+	//   H_cov = MIN_STD / tmp_min * H_cov;
+	// }
 	//cout << " H  : " << H_cov << endl;
 	Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigenSolver(H_cov);
 	Eigen::MatrixXd rot = eigenSolver.eigenvectors(); 
@@ -353,7 +355,7 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 	  }
 	  else
 		continue;
-	  if (D >= -Xstd_ob && D <= Xstd_ob) {
+	  if (D >= -signed_dist_check && D <= signed_dist_check) {
 #ifndef COMBINE_RAYCASTING	
 		safe_point[1][0] = cur_M[1][0];
 		safe_point[1][1] = cur_M[1][1];
@@ -376,10 +378,10 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 #ifdef ADAPTIVE_NUMBER
 		if (checkEmptyBin(&bins, particles[i]) == 1) {
 		  num_bins++;
-		  if (i >= N_MIN) {
+		  // if (i >= N_MIN) {
 			//int numBins = bins.size();
-			numParticles = min2(maxNumParticles, max2((num_bins - 1) * 2, N_MIN));
-		  }
+		  numParticles = min2(maxNumParticles, max2(((num_bins - 1) * 2), N_MIN));
+		  // }
 		}
 #endif
 		//double d = testResult(mesh, particles[i], cur_M, R);

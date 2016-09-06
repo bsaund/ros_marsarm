@@ -48,9 +48,14 @@ class particleFilter
   bool updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss);
 
 };
+// void Transform(double measure[3], particleFilter::cspace src, double dest[3]);
 void Transform(double measure[2][3], particleFilter::cspace src, double dest[2][3]);
 void inverseTransform(double measure[3], particleFilter::cspace src, double dest[3]);
 void inverseTransform(double measure[2][3], particleFilter::cspace src, double dest[2][3]);
+
+void Transform(Eigen::Vector3d src, particleFilter::cspace config, Eigen::Vector3d &dest);
+void inverseTransform(Eigen::Vector3d src, particleFilter::cspace config, Eigen::Vector3d &dest);
+
 int checkInObject(vector<vec4x3> &mesh, double voxel_center[3]);
 int getIntersection(vector<vec4x3> &mesh, double pstart[3], double dir[3], double intersection[3]);
 double testResult(vector<vec4x3> &mesh, particleFilter::cspace config, double touch[2][3], double R);
@@ -58,5 +63,6 @@ int checkObstacles(vector<vec4x3> &mesh, particleFilter::cspace config, double t
 int checkObstacles(vector<vec4x3> &mesh, particleFilter::cspace config, double start[2][3], double check_length, double dist);
 int checkIntersections(vector<vec4x3> &mesh, double voxel_center[3], double dir[3], double check_length, double &dist);
 int checkEmptyBin(std::unordered_set<string> *set, particleFilter::cspace config);
+void calcDistance(vector<vec4x3> &mesh, particleFilter::cspace trueConfig, particleFilter::cspace meanConfig, double euclDist[2]);
 #endif // PARTICLE_FILTER_H
 

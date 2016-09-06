@@ -99,7 +99,7 @@ void fixedSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, t
     {
       double y = rand(rd) * 0.01 - 0.02;
       double z = rand(rd) * 0.18 + 0.03;
-       start << 1, y, z;
+       start << 2, y, z;
        end << -1, y, z;
     }
     else

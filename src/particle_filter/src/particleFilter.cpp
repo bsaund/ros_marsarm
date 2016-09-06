@@ -32,7 +32,7 @@ using namespace std;
 #define min2(a,b) (a<b?a:b)
 typedef array<array<float, 3>, 4> vec4x3;
 #define epsilon 0.0001
-#define ARM_LENGTH 0.2
+#define ARM_LENGTH 0.8
 #define N_MIN 50
 #define DISPLACE_INTERVAL 0.015
 #define SAMPLE_RATE 0.50
@@ -111,6 +111,7 @@ void particleFilter::createParticles(Particles &particles_dest, cspace b_Xprior[
  */
 void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss)
 {
+  cspace trueConfig = {0.3, 0.3, 0.3, 0.5, 0.7, 0.5};
   auto timer_begin = std::chrono::high_resolution_clock::now();
   std::random_device generator;
   normal_distribution<double> dist2(0, Xstd_scatter);
@@ -130,8 +131,8 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
   cspace particles_mean, tmp2;
   estimateGaussian(particles_mean, tmp2);
   cout << "Estimate diff: ";
-  double est_diff = sqrt(SQ(particles_mean[0] - 0.3) + SQ(particles_mean[1] - 0.3) + SQ(particles_mean[2] - 0.3)
-						 + SQ(particles_mean[3] - 0.5) + SQ(particles_mean[4] - 0.7) + SQ(particles_mean[5] - 0.5));
+  double est_diff = sqrt(SQ(particles_mean[0] - trueConfig[0]) + SQ(particles_mean[1] - trueConfig[1]) + SQ(particles_mean[2] - trueConfig[2])
+						           + SQ(particles_mean[3] - trueConfig[3]) + SQ(particles_mean[4] - trueConfig[4]) + SQ(particles_mean[5] - trueConfig[5]));
   cout << est_diff << endl;
   if (est_diff >= 0.005) {
 	converge_count ++;
@@ -140,7 +141,11 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
   cout << "Elapsed time: " << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << endl;
   total_time += std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count();
   cout << "Total time: " << total_time << endl;
-  cout << "Average time: " << total_time / 20.0 << endl << endl;
+  cout << "Average time: " << total_time / 20.0 << endl;
+  double euclideanDist[2];
+  calcDistance(mesh, trueConfig, particles_mean, euclideanDist);
+  cout << "Maximum workspace distance: " << euclideanDist[0] << endl;
+  cout << "Minimum workspace distanceL " << euclideanDist[1] << endl << endl;
 
   ofstream myfile;
   myfile.open("/home/shiyuan/Documents/ros_marsarm/diff.csv", ios::out|ios::app);
@@ -149,6 +154,9 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
   myfile.open("/home/shiyuan/Documents/ros_marsarm/time.csv", ios::out|ios::app);
   myfile << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << ",";
   myfile.close();
+  // myfile.open("/home/shiyuan/Documents/ros_marsarm/workspace.csv", ios::out|ios::app);
+  // myfile << maxDist << ",";
+  // myfile.close();
   // myfile.open("/home/shiyuan/Documents/ros_marsarm/workspace.csv", ios::out|ios::app);
   // myfile << dist_part << ",";
   // myfile.close();
@@ -565,6 +573,26 @@ int main()
 /*
  * Transform the touch point from particle frame
  */
+void Transform(Eigen::Vector3d src, particleFilter::cspace config, Eigen::Vector3d &dest)
+{
+    Eigen::Matrix3d rotationC;
+    rotationC << cos(config[5]), -sin(config[5]), 0,
+               sin(config[5]), cos(config[5]), 0,
+               0, 0, 1;
+    Eigen::Matrix3d rotationB;
+    rotationB << cos(config[4]), 0 , sin(config[4]),
+               0, 1, 0,
+               -sin(config[4]), 0, cos(config[4]);
+    Eigen::Matrix3d rotationA;
+    rotationA << 1, 0, 0 ,
+               0, cos(config[3]), -sin(config[3]),
+               0, sin(config[3]), cos(config[3]);
+    Eigen::Vector3d transitionV(config[0], config[1], config[2]);
+    dest = rotationC * rotationB * rotationA * src + transitionV;
+}
+/*
+ * Transform the touch point from particle frame
+ */
 void Transform(double measure[2][3], particleFilter::cspace src, double dest[2][3])
 {
   double rotation[3][3];
@@ -601,7 +629,24 @@ void inverseTransform(double measure[2][3], particleFilter::cspace src, double d
   multiplyM(invRot, tempM, dest[0]);
   multiplyM(invRot, measure[1], dest[1]);
 }
-
+void inverseTransform(Eigen::Vector3d src, particleFilter::cspace config, Eigen::Vector3d &dest)
+{
+    Eigen::Matrix3d rotationC;
+    rotationC << cos(config[5]), -sin(config[5]), 0,
+               sin(config[5]), cos(config[5]), 0,
+               0, 0, 1;
+    Eigen::Matrix3d rotationB;
+    rotationB << cos(config[4]), 0 , sin(config[4]),
+               0, 1, 0,
+               -sin(config[4]), 0, cos(config[4]);
+    Eigen::Matrix3d rotationA;
+    rotationA << 1, 0, 0 ,
+               0, cos(config[3]), -sin(config[3]),
+               0, sin(config[3]), cos(config[3]);
+    Eigen::Vector3d transitionV(config[0], config[1], config[2]);
+    Eigen::Matrix3d rotationM = rotationC * rotationB * rotationA;
+    dest = rotationM.inverse() * (src - transitionV);
+}
 
 /*
  * Check if the center of a voxel is within the object
@@ -886,4 +931,48 @@ int checkIntersections(vector<vec4x3> &mesh, double voxel_center[3], double dir[
 	}
 	return 1;
   }
+}
+
+void calcDistance(vector<vec4x3> &mesh, particleFilter::cspace trueConfig, particleFilter::cspace meanConfig, double euclDist[2])
+{
+    int num_mesh = int(mesh.size());
+    euclDist[0] = 0;
+    euclDist[1] = 10000000;
+    double dist = 0;
+    Eigen::Vector3d meshPoint;
+    Eigen::Vector3d transMeanPoint;
+    Eigen::Vector3d transTruePoint;
+    cout << meanConfig[0] << "   " << meanConfig[1] << endl;
+    for (int i = 0; i < num_mesh; i++) {
+        meshPoint << mesh[i][1][0], mesh[i][1][1], mesh[i][1][2];
+        Transform(meshPoint, meanConfig, transMeanPoint);
+        Transform(meshPoint, trueConfig, transTruePoint);
+        dist = (transMeanPoint - transTruePoint).norm();
+        if (dist > euclDist[0]) {
+            euclDist[0] = dist;
+        }
+        if (dist < euclDist[1]) {
+            euclDist[1] = dist;
+        }
+        meshPoint << mesh[i][2][0], mesh[i][2][1], mesh[i][2][2];
+        Transform(meshPoint, meanConfig, transMeanPoint);
+        Transform(meshPoint, trueConfig, transTruePoint);
+        dist = (transMeanPoint - transTruePoint).norm();
+        if (dist > euclDist[0]) {
+            euclDist[0] = dist;
+        }
+        if (dist < euclDist[1]) {
+            euclDist[1] = dist;
+        }
+        meshPoint << mesh[i][3][0], mesh[i][3][1], mesh[i][3][2];
+        Transform(meshPoint, meanConfig, transMeanPoint);
+        Transform(meshPoint, trueConfig, transTruePoint);
+        dist = (transMeanPoint - transTruePoint).norm();
+        if (dist > euclDist[0]) {
+            euclDist[0] = dist;
+        }
+        if (dist < euclDist[1]) {
+            euclDist[1] = dist;
+        }
+    }
 }

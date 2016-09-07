@@ -53,7 +53,7 @@ void fixedSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, t
   bestIG = 0;
   std::random_device rd;
   std::uniform_real_distribution<double> rand(0, 1);
-  std::uniform_int_distribution<> int_rand(0, 4);
+  std::uniform_int_distribution<> int_rand(0, 3);
   Eigen::Vector3d start;
   Eigen::Vector3d end;
   double state[6] = {0.3, 0.3, 0.3, 0.5, 0.7, 0.5};
@@ -75,10 +75,10 @@ void fixedSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, t
     index = int_rand(rd);
     if (index == 0)
     {
-      double y = rand(rd) * 0.2 - 0.35;
+      double y = rand(rd) * 0.31 - 0.35;
       double z = rand(rd) * 0.18 + 0.03;
-       start << 1, y, z;
-       end << -1, y, z;
+      start << 2, y, z;
+      end << -1, y, z;
 
     }
     else if (index == 1)
@@ -94,13 +94,6 @@ void fixedSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, t
       double y = rand(rd) * 0.01 - 0.02;
       start << x, y, 1;
       end << x, y, -1;
-    }
-    else if (index == 3)
-    {
-      double y = rand(rd) * 0.01 - 0.02;
-      double z = rand(rd) * 0.18 + 0.03;
-       start << 2, y, z;
-       end << -1, y, z;
     }
     else
     {
@@ -216,7 +209,7 @@ int main(int argc, char **argv)
   int i = 0;
   //for(int i=0; i<20; i++){
   while (i < NUM_TOUCHES) {
-    ros::Duration(1).sleep();
+    // ros::Duration(1).sleep();
     //tf::Point start(0.95,0,-0.15);
     //tf::Point end(0.95,2,-0.15);
     tf::Point start, end;
@@ -249,7 +242,7 @@ int main(int argc, char **argv)
     
     // plt.plotCylinder(start, end, 0.01, 0.002, true);
     plt.plotRay(Ray(start, end));
-    ros::Duration(1).sleep();
+    // ros::Duration(1).sleep();
 
     particle_filter::AddObservation pfilter_obs;
     pfilter_obs.request.p = obs;
@@ -273,9 +266,18 @@ int main(int argc, char **argv)
   myfile.open("/home/shiyuan/Documents/ros_marsarm/time.csv", std::ios::out|std::ios::app);
   myfile << "\n";
   myfile.close();
-  // myfile.open("/home/shiyuan/Documents/ros_marsarm/workspace.csv", std::ios::out|std::ios::app);
-  // myfile << "\n";
-  // myfile.close();
+  myfile.open("/home/shiyuan/Documents/ros_marsarm/diff_trans.csv", std::ios::out|std::ios::app);
+  myfile << "\n";
+  myfile.close();
+  myfile.open("/home/shiyuan/Documents/ros_marsarm/diff_rot.csv", std::ios::out|std::ios::app);
+  myfile << "\n";
+  myfile.close();
+  myfile.open("/home/shiyuan/Documents/ros_marsarm/workspace_max.csv", std::ios::out|std::ios::app);
+  myfile << "\n";
+  myfile.close();
+  myfile.open("/home/shiyuan/Documents/ros_marsarm/workspace_min.csv", std::ios::out|std::ios::app);
+  myfile << "\n";
+  myfile.close();
   ROS_INFO("Finished all action");
 
 }

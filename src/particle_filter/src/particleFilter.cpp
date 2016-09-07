@@ -112,6 +112,7 @@ void particleFilter::createParticles(Particles &particles_dest, cspace b_Xprior[
 void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss)
 {
   cspace trueConfig = {0.3, 0.3, 0.3, 0.5, 0.7, 0.5};
+  cout << "Xstd_Ob: " << Xstd_ob << endl;
   auto timer_begin = std::chrono::high_resolution_clock::now();
   std::random_device generator;
   normal_distribution<double> dist2(0, Xstd_scatter);
@@ -135,8 +136,11 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 						           + SQ(particles_mean[3] - trueConfig[3]) + SQ(particles_mean[4] - trueConfig[4]) + SQ(particles_mean[5] - trueConfig[5]));
   cout << est_diff << endl;
   if (est_diff >= 0.005) {
-	converge_count ++;
+		converge_count ++;
   }
+	double est_diff_trans = sqrt(SQ(particles_mean[0] - trueConfig[0]) + SQ(particles_mean[1] - trueConfig[1]) + SQ(particles_mean[2] - trueConfig[2]));
+	double est_diff_rot = sqrt(SQ(particles_mean[3] - trueConfig[3]) + SQ(particles_mean[4] - trueConfig[4]) + SQ(particles_mean[5] - trueConfig[5]));
+
   cout << "Converge count: " << converge_count << endl;
   cout << "Elapsed time: " << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << endl;
   total_time += std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count();
@@ -154,13 +158,18 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
   myfile.open("/home/shiyuan/Documents/ros_marsarm/time.csv", ios::out|ios::app);
   myfile << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << ",";
   myfile.close();
-  // myfile.open("/home/shiyuan/Documents/ros_marsarm/workspace.csv", ios::out|ios::app);
-  // myfile << maxDist << ",";
-  // myfile.close();
-  // myfile.open("/home/shiyuan/Documents/ros_marsarm/workspace.csv", ios::out|ios::app);
-  // myfile << dist_part << ",";
-  // myfile.close();
-
+  myfile.open("/home/shiyuan/Documents/ros_marsarm/diff_trans.csv", ios::out|ios::app);
+  myfile << est_diff_trans << ",";
+  myfile.close();
+  myfile.open("/home/shiyuan/Documents/ros_marsarm/diff_rot.csv", ios::out|ios::app);
+  myfile << est_diff_rot << ",";
+  myfile.close();
+  myfile.open("/home/shiyuan/Documents/ros_marsarm/workspace_max.csv", ios::out|ios::app);
+  myfile << euclideanDist[0] << ",";
+  myfile.close();
+  myfile.open("/home/shiyuan/Documents/ros_marsarm/workspace_min.csv", ios::out|ios::app);
+  myfile << euclideanDist[1] << ",";
+  myfile.close();
 }
 
 void particleFilter::estimateGaussian(cspace &x_mean, cspace &x_est_stat) {
@@ -373,7 +382,7 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 #endif
 	  }
 	  else
-		continue;
+			continue;
 	  if (D >= -signed_dist_check && D <= signed_dist_check) {
 #ifndef COMBINE_RAYCASTING	
 		safe_point[1][0] = cur_M[1][0];
@@ -731,7 +740,7 @@ int getIntersection(vector<vec4x3> &mesh, double pstart[3], double dir[3], doubl
 	}
   delete t, u, v;
   if (tMin == 100000)
-	return 0;
+		return 0;
   for (int i = 0; i < 3; i++)
 	{
 	  intersection[i] = pstart[i] + dir[i] * tMin;
@@ -777,7 +786,7 @@ double testResult(vector<vec4x3> &mesh, particleFilter::cspace config, double to
 	}
   delete t, u, v;
   if (tMin == 100000)
-	return 0;
+		return 0;
 
   return tMin - R;
 }
@@ -793,12 +802,12 @@ int checkEmptyBin(std::unordered_set<string> *set, particleFilter::cspace config
 {
   string s = "";
   for (int i = 0; i < particleFilter::cdim; i++) {
-	s += floor(config[i] / DISPLACE_INTERVAL);
-	s += ":";
+		s += floor(config[i] / DISPLACE_INTERVAL);
+		s += ":";
   }
   if (set->find(s) == set->end()) {
-	set->insert(s);
-	return 1;
+		set->insert(s);
+		return 1;
   }
   return 0;
 }
@@ -863,13 +872,13 @@ int checkObstacles(vector<vec4x3> &mesh, particleFilter::cspace config, double s
 	  return 1;
 	}
   if (tMin >= check_length)
-	return 0;
+		return 0;
   else if (dist < 0)
 	{
 	  double inter_dist = normal_dir.dot(ray_length);
 	  //cout << "inter_dist: " << inter_dist << endl;
 	  if (inter_dist >= dist - epsilon && inter_dist <= dist + epsilon)
-		return 0;
+			return 0;
 	}
 		
   return 1;
@@ -892,34 +901,34 @@ int checkIntersections(vector<vec4x3> &mesh, double voxel_center[3], double dir[
   std::unordered_set<double> hashset;
   //std::unordered_map<double, int> hashmap;
   for (int i = 0; i < num_mesh; i++) {
-	vert0[0] = mesh[i][1][0];
-	vert0[1] = mesh[i][1][1];
-	vert0[2] = mesh[i][1][2];
-	vert1[0] = mesh[i][2][0];
-	vert1[1] = mesh[i][2][1];
-	vert1[2] = mesh[i][2][2];
-	vert2[0] = mesh[i][3][0];
-	vert2[1] = mesh[i][3][1];
-	vert2[2] = mesh[i][3][2];
- 	if (intersect_triangle(voxel_center, ray_dir, vert0, vert1, vert2, t, u, v) == 1) {
-	  if (hashset.find(*t) == hashset.end()) {
-		if (*t < check_length && *t > tMax) {
-		  countIntRod++;
-		  tMax = *t;
-		  normal_dir << mesh[i][0][0], mesh[i][0][1], mesh[i][0][2];
+		vert0[0] = mesh[i][1][0];
+		vert0[1] = mesh[i][1][1];
+		vert0[2] = mesh[i][1][2];
+		vert1[0] = mesh[i][2][0];
+		vert1[1] = mesh[i][2][1];
+		vert1[2] = mesh[i][2][2];
+		vert2[0] = mesh[i][3][0];
+		vert2[1] = mesh[i][3][1];
+		vert2[2] = mesh[i][3][2];
+	 	if (intersect_triangle(voxel_center, ray_dir, vert0, vert1, vert2, t, u, v) == 1) {
+		  if (hashset.find(*t) == hashset.end()) {
+				if (*t < check_length && *t > tMax) {
+				  countIntRod++;
+				  tMax = *t;
+				  normal_dir << mesh[i][0][0], mesh[i][0][1], mesh[i][0][2];
+				}
+				else if (*t < check_length)
+				  countIntRod++;
+				hashset.insert(*t);
+				countIntersections++;
+		  }
 		}
-		else if (*t < check_length)
-		  countIntRod++;
-		hashset.insert(*t);
-		countIntersections++;
-	  }
-	}
   }
   delete t, u, v;
   if (countIntersections % 2 == 0) {
-	if (tMax > 0)
-	  return 1;
-	return 0;
+		if (tMax > 0)
+		  return 1;
+		return 0;
   }
   else {
 	dist = -dist;
@@ -927,7 +936,7 @@ int checkIntersections(vector<vec4x3> &mesh, double voxel_center[3], double dir[
 	  ray_length << tMax * dir[0], tMax * dir[1], tMax * dir[2];
 	  double inter_dist = normal_dir.dot(ray_length);
 	  if (inter_dist >= dist - epsilon && inter_dist <= dist + epsilon)
-		return 0;
+			return 0;
 	}
 	return 1;
   }
@@ -942,7 +951,6 @@ void calcDistance(vector<vec4x3> &mesh, particleFilter::cspace trueConfig, parti
     Eigen::Vector3d meshPoint;
     Eigen::Vector3d transMeanPoint;
     Eigen::Vector3d transTruePoint;
-    cout << meanConfig[0] << "   " << meanConfig[1] << endl;
     for (int i = 0; i < num_mesh; i++) {
         meshPoint << mesh[i][1][0], mesh[i][1][1], mesh[i][1][2];
         Transform(meshPoint, meanConfig, transMeanPoint);

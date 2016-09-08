@@ -25,7 +25,7 @@ class particleFilter
 
   void addObservation (double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss = false);
   //void addObservation (double obs[3], double cube[3], int idx_obs);
-  void estimateGaussian(cspace &x_mean, cspace &x_est_stat);
+  void estimateGaussian(cspace &x_mean, cspace &x_est_stat, bool record = false);
   void getAllParticles(Particles &particles_dest);
 
 

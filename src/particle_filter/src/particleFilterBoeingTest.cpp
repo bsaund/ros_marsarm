@@ -202,9 +202,9 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   updateLock.unlock();
   #endif
 
-  // particleFilter::cspace particles_est_stat;
-  // particleFilter::cspace particles_est;
-  // pFilter_.estimateGaussian(particles_est, particles_est_stat);
+  particleFilter::cspace particles_est_stat;
+  particleFilter::cspace particles_est;
+  pFilter_.estimateGaussian(particles_est, particles_est_stat, true);
   geometry_msgs::PoseArray poseArray;
   for(int i=0; i<50; i++){
     tf::Pose pose = poseAt(particles[i]);

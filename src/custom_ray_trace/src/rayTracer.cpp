@@ -60,7 +60,7 @@ tf::StampedTransform ParticleHandler::getTransformToPartFrame()
 
 void ParticleHandler::setParticles(geometry_msgs::PoseArray p)
 {
-  ROS_INFO("setParticles called");
+  // ROS_INFO("setParticles called");
   particles.resize(p.poses.size());
 
   
@@ -81,11 +81,11 @@ void ParticleHandler::setParticles(geometry_msgs::PoseArray p)
   subsetParticles = vector<tf::Transform>(particles);
   subsetParticles.resize(num);
 
-  ROS_INFO("First Subset Particle: %f, %f, %f", subsetParticles[0].getOrigin().getX(),
+  ROS_INFO_THROTTLE(10, "First Subset Particle: %f, %f, %f", subsetParticles[0].getOrigin().getX(),
 	   subsetParticles[0].getOrigin().getY(),
 	   subsetParticles[0].getOrigin().getZ());
   
-  ROS_INFO("Subset Particles Size %d", subsetParticles.size());
+  // ROS_INFO("Subset Particles Size %d", subsetParticles.size());
   
   particlesInitialized = true;
   newParticles = true;
@@ -230,6 +230,9 @@ bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart, bool
 {
   transformRayToPartFrame(ray);
   std::vector<tf::Transform> particles = particleHandler.getParticleSubset();
+  // ROS_INFO("First Particle %f, %f, %f", particles[0].getOrigin().getX(),
+  // 	   particles[0].getOrigin().getY(),
+  // 	   particles[0].getOrigin().getZ());
 
   // ROS_INFO("First particle for traceAll: %f, %f, %f", particles[0].getOrigin().getX(),
   // 	   particles[0].getOrigin().getY(),

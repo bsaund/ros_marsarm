@@ -279,14 +279,17 @@ int main(int argc, char **argv)
 
 
   movementFinished = true;
-  for(int i=0; i<7; i++){
+  for(int i=0; i<10; i++){
+    ROS_INFO("\n------------------------------------------");
+    ROS_INFO("Measurement %d", i);
+    ROS_INFO("--------------------------------------------");
 
     randomSelection(plt, rayt, probePose);
     tf::poseTFToMsg(probePose, probe_msg);
 
 
     while(!movementFinished){
-      ROS_INFO_THROTTLE(10, "Waiting for previous movement to finish...");
+      ROS_INFO_THROTTLE(30, "Waiting for previous movement to finish...");
       ros::spinOnce();
       ros::Duration(.1).sleep();
     }
@@ -298,7 +301,7 @@ int main(int argc, char **argv)
 
 
     while(!rayt.particleHandler.newParticles){
-      ROS_INFO_THROTTLE(10, "Waiting for new particles...");
+      ROS_INFO_THROTTLE(30, "Waiting for new particles...");
       ros::spinOnce();
       ros::Duration(.1).sleep();
     }

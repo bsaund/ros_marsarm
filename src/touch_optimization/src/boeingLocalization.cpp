@@ -188,7 +188,7 @@ int main(int argc, char **argv)
   RayTracer rayt;
 
   std::random_device rd;
-  std::normal_distribution<double> randn(0.0,0.0005);
+  std::normal_distribution<double> randn(0.0,0.0001);
 
   ROS_INFO("Running...");
 
@@ -204,7 +204,7 @@ int main(int argc, char **argv)
  
   geometry_msgs::Point obs;
   geometry_msgs::Point dir;
-  double radius = 0.001;
+  double radius = 0.00;
 
   int i = 0;
   //for(int i=0; i<20; i++){

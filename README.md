@@ -3,7 +3,15 @@ Code for the mars arm particle filter and touch planning
 
 ## Dependencies - be sure to get the following:
 ROS indigo
-Eigen
+
+Eigen 
+```sudo apt-get install eigen3```
+
+*Note - you may have to create a symlink to eigen in eigen3
+```cd /usr/include && sudo ln -sf eigen3/Eigen Eigen``
+
+PCL
+```sudo apt-get install libpcl1```
 
 ## Compilation and usage
 Clone this project and run

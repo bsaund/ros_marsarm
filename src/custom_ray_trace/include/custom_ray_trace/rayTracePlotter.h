@@ -12,14 +12,23 @@ class RayTracePlotter: public RayTracer
   ros::Publisher marker_pub_array;
 
   visualization_msgs::Marker createRayMarker(Ray ray, int index);
+  visualization_msgs::Marker getIntersectionMarker(tf::Point intersection, int id);
+  void label(tf::Point start, int id, std::string text);
+
 
  public:
   RayTracePlotter();
   void plotRay(Ray ray, int index = 0);
+  void plotIntersections(Ray ray, int id = 0);
+  void plotIntersections(const std::vector<double> &dist,
+			 Ray ray, int id = 0);
+
   void plotCylinder(Ray ray, double radius);
   void plotIG(Ray ray);
   void plotRayWithIntersections(Ray ray);
   void plotCylinderWithIntersections(Ray ray, double radius);
+  void labelRay(tf::Point start, std::string text, int id=0);
+  void labelRay(Ray ray, double d, int id=0);
 
 
 };

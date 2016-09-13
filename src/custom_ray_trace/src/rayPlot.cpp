@@ -30,8 +30,9 @@ int main(int argc, char **argv){
 
 
   plt.plotRay(ray);
+  plt.plotIntersections(ray);
   double IG = plt.getIG(ray, radErr, binSize);
-  // plt.labelRay(ray, IG);
+  plt.labelRay(ray, IG);
   ROS_INFO("IG: %f", IG);
 
 

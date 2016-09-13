@@ -17,6 +17,13 @@ RayTracePlotter::RayTracePlotter(){
 
 
 void RayTracePlotter::plotRay(Ray ray, int index){
+  //wait until subscribed
+  ros::Rate poll_rate(100);
+  int i = 0;
+  while(marker_pub.getNumSubscribers() == 0 && i < 100){
+    poll_rate.sleep();
+    i++;
+  }
 
   visualization_msgs::Marker marker = createRayMarker(ray, index);
   marker_pub.publish(marker);
@@ -24,6 +31,72 @@ void RayTracePlotter::plotRay(Ray ray, int index){
 }
 
 
+void RayTracePlotter::plotIntersections(Ray ray, int id){
+  std::vector<double> dist;
+  traceAllParticles(ray, dist, false);
+  plotIntersections(dist, ray, id);
+}
+
+/**
+ *  Plots intersections of a ray with all particles as red dots
+ */
+void RayTracePlotter::plotIntersections(const std::vector<double> &dist, 
+					Ray ray, int id){
+  visualization_msgs::MarkerArray m;
+
+  for(int i = 0; i < dist.size(); i++){
+    tf::Point intersection = ray.start + dist[i] * (ray.end-ray.start).normalized();
+    m.markers.push_back(getIntersectionMarker(intersection, id));
+    id++;
+  }
+  marker_pub_array.publish(m);
+}
+
+
+
+// LABELING
+
+
+
+void RayTracePlotter::labelRay(Ray ray, double d, int id){
+  std::stringstream s;
+  s << d;
+  labelRay(ray.start, s.str(), id);
+}
+
+void RayTracePlotter::labelRay(tf::Point start, std::string text, int id){
+  label(start, id, text);
+}
+
+
+void RayTracePlotter::label(tf::Point start, int id, std::string text){
+  visualization_msgs::Marker marker;
+  marker.header.frame_id = "/my_frame";
+  marker.header.stamp = ros::Time::now();
+ 
+  // Set the namespace and id for this marker.  This serves to create a unique ID
+  // Any marker sent with the same namespace and id will overwrite the old one
+  marker.ns = "ray_label";
+  marker.id = id;
+  marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+  marker.action = visualization_msgs::Marker::ADD;
+ 
+  tf::pointTFToMsg(start, marker.pose.position);
+ 
+  marker.scale.z = 0.05;
+ 
+  // Set the color -- be sure to set alpha to something non-zero!
+  marker.color.r = 0.0f;
+  marker.color.g = 0.0f;
+  marker.color.b = 0.7f;
+  marker.color.a = 1.0;
+
+  marker.text = text;
+ 
+  marker.lifetime = ros::Duration();
+
+  marker_pub.publish(marker);
+}
 
 
 
@@ -60,5 +133,37 @@ visualization_msgs::Marker RayTracePlotter::createRayMarker(Ray ray, int index)
  
   marker.lifetime = ros::Duration();
 
+  return marker;
+}
+
+
+visualization_msgs::Marker RayTracePlotter::getIntersectionMarker(tf::Point intersection, 
+								  int id){
+  visualization_msgs::Marker marker;
+  marker.header.frame_id = "/my_frame";
+  marker.header.stamp = ros::Time::now();
+ 
+  // Set the namespace and id for this marker.  This serves to create a unique ID
+  // Any marker sent with the same namespace and id will overwrite the old one
+  marker.ns = "ray_intersection";
+  marker.id = id;
+ 
+  marker.type = visualization_msgs::Marker::SPHERE;
+ 
+  marker.action = visualization_msgs::Marker::ADD;
+ 
+  tf::pointTFToMsg(intersection, marker.pose.position);
+
+  marker.scale.x = 0.02;
+  marker.scale.y = 0.02;
+  marker.scale.z = 0.02;
+ 
+  // Set the color -- be sure to set alpha to something non-zero!
+  marker.color.r = 1.0f;
+  marker.color.g = 0.0f;
+  marker.color.b = 0.0f;
+  marker.color.a = 1.0;
+ 
+  marker.lifetime = ros::Duration();
   return marker;
 }

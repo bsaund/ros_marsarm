@@ -149,11 +149,14 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 
 }
 
-void particleFilter::estimateGaussian(cspace &x_mean, cspace &x_est_stat) {
-  cout << "\n\n\nWriting some data\n\n\n";
+void particleFilter::estimateGaussian(cspace &x_mean, cspace &x_est_stat, bool record) {
+
   ofstream outputData;
-  outputData.open("/home/bsaund/MeanCov.txt", std::ios_base::app);
-  outputData << numObs << "\t";
+  if(record){
+    cout << "Saving data to file\n";
+    outputData.open("/home/bsaund/MeanCov.txt", std::ios_base::app);
+    outputData << numObs << "\t";
+  }
 
 
 
@@ -165,7 +168,8 @@ void particleFilter::estimateGaussian(cspace &x_mean, cspace &x_est_stat) {
 	}
 	x_mean[k] /= numParticles;
 	cout << x_mean[k] << "  ";
-	outputData << x_mean[k] << "\t";
+	if(record)
+	  outputData << x_mean[k] << "\t";
   }
   cout << endl;
   cout << "Estimated Std: ";
@@ -176,13 +180,19 @@ void particleFilter::estimateGaussian(cspace &x_mean, cspace &x_est_stat) {
 	}
 	x_est_stat[k] = sqrt(x_est_stat[k] / numParticles);
 	cout << x_est_stat[k] << "  ";
-	outputData << x_est_stat[k] << "\t";
+	if(record)
+	  outputData << x_est_stat[k] << "\t";
   }
   cout << endl;
-  outputData << "\n";
-  outputData.close();
+  if(record){
+    outputData << "\n";
+    outputData.close();
+  }
 }
 
+int isPowerOfTwo (unsigned int x){
+  return ((x != 0) && ((x & (~x + 1)) == x));
+}
 
 /*
  * Update particles (Build distance transform and sampling)
@@ -248,7 +258,7 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 	var_measure[1] /= num_Mean;
 	var_measure[2] /= num_Mean;
 	distTransSize = 4 * max3(sqrt(var_measure[0]), sqrt(var_measure[1]), sqrt(var_measure[2]));
-	distTransSize = 100 * 0.0005;
+	// distTransSize = 100 * 0.0005;
 	cout << "Touch Std: " << sqrt(var_measure[0]) << "  " << sqrt(var_measure[1]) << "  " << sqrt(var_measure[2]) << endl;
 	double world_range[3][2];
 	cout << "Current Inv_touch: " << mean_inv_M[0] << "    " << mean_inv_M[1] << "    " << mean_inv_M[2] << endl;
@@ -339,6 +349,13 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 				
 	  double dist_adjacent[3] = { 0, 0, 0 };
 	  count += 1;
+	  // if(16384 % count == 0 && count > 1000)
+	  if(isPowerOfTwo(count) && count > 1000){
+	    cout << "Sampled " << count << " particles\t";
+	    cout << "count2: " << count2 << "\t count3: " << count3 << "\n";
+	    cout << "D: " << D << " currM: " << cur_M[0][0];
+	    cout << ", " << cur_M[0][1] << ", " << cur_M[0][2] << "\n";
+	  }
 	  if (D <= unsigned_dist_check) {
 		count2 ++;
 #ifdef COMBINE_RAYCASTING
@@ -391,10 +408,10 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 #ifdef ADAPTIVE_NUMBER
 		if (checkEmptyBin(&bins, particles[i]) == 1) {
 		  num_bins++;
-		  if (i >= N_MIN) {
+		  // if (i >= N_MIN) {
 			//int numBins = bins.size();
 			numParticles = min2(maxNumParticles, max2((num_bins - 1) * 2, N_MIN));
-		  }
+		  // }
 		}
 #endif
 		//double d = testResult(mesh, particles[i], cur_M, R);

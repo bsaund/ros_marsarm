@@ -1,60 +1,64 @@
-/**
- *  Plots a ray and the intersections of that ray with obstacles 
- */
+#include "rayTracePlotter.h"
 
-#include "ros/ros.h"
-
-#include "calcEntropy.h"
-#include "plotRayUtils.h"
-#include <sstream>
+  // void plotCylinder(Ray ray, double radius);
+  // void plotIG(Ray ray);
+  // void plotRayWithIntersections(Ray ray);
+  // void plotCylinderWithIntersections(Ray ray, double radius);
 
 
+RayTracePlotter::RayTracePlotter(){
+  marker_pub = 
+    n.advertise<visualization_msgs::Marker>("ray_trace_markers", 1000);
+  marker_pub_array = 
+    n.advertise<visualization_msgs::MarkerArray>("ray_trace_markers_array", 10);
 
-int main(int argc, char **argv){
-  if (argc != 7){
-    ROS_INFO("usage: x y z x y z");
-    return 1;
-  }
-  ros::init(argc, argv, "ray_trace_test");
-
-
-  //Start and end vectors of the ray
-  tf::Point start(atof(argv[1]),
-		  atof(argv[2]),
-		  atof(argv[3]));
-		  
-  tf::Point end(atof(argv[4]),
-		atof(argv[5]),
-		atof(argv[6]));
-
-  PlotRayUtils plt;
-
-  // plt.plotRay(start, end);
-  
-  plt.plotCylinder(start, end, 0.01, 0.002);
-  
-  // std::vector<double> dist = plt.getDistToParticles(start, end);
-
-  // plt.plotIntersections(start, end);
-
-  // double entropy = CalcEntropy::calcDifferentialEntropy(dist);
-  // ROS_INFO("Entropy is %f", entropy);
-  // std::stringstream s;
-  // s << entropy;
-  // plt.labelRay(start, s.str());
-
-  return 0;
 }
+
+
+
+void RayTracePlotter::plotRay(Ray ray, int index){
+
+  visualization_msgs::Marker marker = createRayMarker(ray, index);
+  marker_pub.publish(marker);
+
+}
+
+
+
+
+
+
+visualization_msgs::Marker RayTracePlotter::createRayMarker(Ray ray, int index)
+{
+  visualization_msgs::Marker marker;
+  marker.header.frame_id = "/my_frame";
+  marker.header.stamp = ros::Time::now();
+ 
+  // Set the namespace and id for this marker.  This serves to create a unique ID
+  // Any marker sent with the same namespace and id will overwrite the old one
+  marker.ns = "ray";
+  marker.id = index;
+
+  marker.type = visualization_msgs::Marker::ARROW;
+ 
+  marker.action = visualization_msgs::Marker::ADD;
+ 
   
+  marker.points.resize(2);
+  tf::pointTFToMsg(ray.start, marker.points[0]);
+  tf::pointTFToMsg(ray.end, marker.points[1]);
+ 
+  marker.scale.x = 0.005;
+  marker.scale.y = 0.04; //Head Width
+  // marker.scale.z = 1.0;
+ 
+  // Set the color -- be sure to set alpha to something non-zero!
+  marker.color.r = 0.0f;
+  marker.color.g = 1.0f;
+  marker.color.b = 0.0f;
+  marker.color.a = 0.6;
+ 
+  marker.lifetime = ros::Duration();
 
-
-
-
-
-
-
-
-
-
-
-
+  return marker;
+}

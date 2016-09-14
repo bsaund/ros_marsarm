@@ -64,14 +64,14 @@ void computeInitialDistribution(particleFilter::cspace binit[2], ros::NodeHandle
 {
 
   std::vector<double> uncertainties;
-  if(!n.getParam("/initial_uncertainties", uncertainties)){
-    ROS_INFO("Failed to get param");
+  if(!n.getParam("initial_uncertainties", uncertainties)){
+    ROS_INFO("Failed to get param: initial_uncertainties");
     uncertainties.resize(6);
   }
 
   std::vector<double> pFrame;
-  if(!n.getParam("/particle_frame", pFrame)){
-    ROS_INFO("Failed to get param particle_frame");
+  if(!n.getParam("particle_frame", pFrame)){
+    ROS_INFO("Failed to get param: particle_frame");
     pFrame.resize(6);
   }
 
@@ -153,8 +153,8 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
 
 bool PFilterTest::getMesh(std::string filename){
   std::string stlFilePath;
-  if(!n.getParam("/localization_object_filepath", stlFilePath)){
-    ROS_INFO("Failed to get param");
+  if(!n.getParam("localization_object_filepath", stlFilePath)){
+    ROS_INFO("Failed to get param: localization_object_filepath");
   }
 
   // std::string filepath = "/home/bsaund/ros/ros_marsarm/src/gazebo_ray_trace/sdf/" + localizationObject + ".stl";
@@ -189,7 +189,7 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   	basic_point.y = particles[j][1] * 2;
   	basic_point.z = particles[j][2] * 2;
   	basic_cloud_ptr1->points.push_back(basic_point);
-    basic_point.x = particles[j][3] * 2;
+	basic_point.x = particles[j][3] * 2;
   	basic_point.y = particles[j][4] * 2;
   	basic_point.z = particles[j][5] * 2;
   	basic_cloud_ptr2->points.push_back(basic_point);
@@ -282,7 +282,7 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
   // sub_init = n.subscribe("/particle_filter_init", 1, &PFilterTest::initDistribution, this);
   sub_request_particles = n.subscribe("/request_particles", 1, &PFilterTest::sendParticles, this);
   srv_add_obs = n.advertiseService("/particle_filter_add", &PFilterTest::addObs, this);
-  pub_particles = n.advertise<geometry_msgs::PoseArray>("/particles_from_filter", 5);
+  pub_particles = n.advertise<geometry_msgs::PoseArray>("particles_from_filter", 5);
   ROS_INFO("Loading Boeing Particle Filter");
   getMesh("boeing_part.stl");
   //int num_voxels[3] = { 200,200,200 };

@@ -27,29 +27,50 @@ void RayTracePlotter::plotRay(Ray ray, int index){
 
   visualization_msgs::Marker marker = createRayMarker(ray, index);
   marker_pub.publish(marker);
+}
 
+int RayTracePlotter::plotRays(std::vector<Ray> rays, int id){
+ for(Ray cylinderRay:rays){
+    plotRay(cylinderRay, id++);
+  }
+  return id; 
+}
+
+int RayTracePlotter::plotCylinder(Ray ray, double radius, int id){
+  std::vector<Ray> rays;
+  getCylinderRays(ray, radius, rays);
+  return plotRays(rays);
 }
 
 
-void RayTracePlotter::plotIntersections(Ray ray, int id){
+int RayTracePlotter::plotIntersections(Ray ray, int id){
   std::vector<double> dist;
   traceAllParticles(ray, dist, false);
-  plotIntersections(dist, ray, id);
+  return plotIntersections(dist, ray, id);
 }
 
 /**
  *  Plots intersections of a ray with all particles as red dots
  */
-void RayTracePlotter::plotIntersections(const std::vector<double> &dist, 
-					Ray ray, int id){
-  visualization_msgs::MarkerArray m;
-
+int RayTracePlotter::plotIntersections(const std::vector<double> &dist, 
+					Ray ray, int id) {
+  std::vector<tf::Point> p;
   for(int i = 0; i < dist.size(); i++){
     tf::Point intersection = ray.start + dist[i] * (ray.end-ray.start).normalized();
-    m.markers.push_back(getIntersectionMarker(intersection, id));
+    p.push_back(intersection);
+  }
+  return plotIntersections(p, id);
+}
+
+int RayTracePlotter::plotIntersections(const std::vector<tf::Point> intersections,
+					int id){
+  visualization_msgs::MarkerArray m;
+  for(int i = 0; i < intersections.size(); i++){
+    m.markers.push_back(getIntersectionMarker(intersections[i], id));
     id++;
   }
   marker_pub_array.publish(m);
+  return id;
 }
 
 
@@ -154,9 +175,9 @@ visualization_msgs::Marker RayTracePlotter::getIntersectionMarker(tf::Point inte
  
   tf::pointTFToMsg(intersection, marker.pose.position);
 
-  marker.scale.x = 0.02;
-  marker.scale.y = 0.02;
-  marker.scale.z = 0.02;
+  marker.scale.x = 0.008;
+  marker.scale.y = 0.008;
+  marker.scale.z = 0.008;
  
   // Set the color -- be sure to set alpha to something non-zero!
   marker.color.r = 1.0f;

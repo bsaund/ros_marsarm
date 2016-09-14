@@ -229,7 +229,11 @@ bool RayTracer::traceRay(Ray ray, double &distToPart){
 bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart, bool quick)
 {
   transformRayToPartFrame(ray);
-  std::vector<tf::Transform> particles = particleHandler.getParticleSubset();
+  std::vector<tf::Transform> particles;
+  if(quick)
+    particles = particleHandler.getParticleSubset();
+  else
+    particles = particleHandler.getParticles();
   // ROS_INFO("First Particle %f, %f, %f", particles[0].getOrigin().getX(),
   // 	   particles[0].getOrigin().getY(),
   // 	   particles[0].getOrigin().getZ());
@@ -303,16 +307,12 @@ bool RayTracer::traceCylinderAllParticles(Ray ray, double radius,
 					  vector<CalcEntropy::ConfigDist> &distsToPart,
 					  bool quick)
 {
-  std::vector<tf::Vector3> ray_orthog = getOrthogonalBasis(ray.getDirection());
-  int n = 12;
+  std::vector<Ray> rays;
+  getCylinderRays(ray, radius, rays);
   
   bool hitPart = false;
 
-  for(int i = 0; i < n; i ++){
-    double theta = 2*3.1415 * i / n;
-    tf::Vector3 offset = radius * (ray_orthog[0]*sin(theta) + ray_orthog[1]*cos(theta));
-
-    Ray cylinderRay(ray.start + offset, ray.end+offset);
+  for(Ray cylinderRay:rays){
     vector<double> distsTmp;
     
     hitPart = traceAllParticles(cylinderRay, distsTmp, quick) || hitPart;
@@ -325,6 +325,17 @@ bool RayTracer::traceCylinderAllParticles(Ray ray, double radius,
     }
   }
   return hitPart;
+}
+
+void RayTracer::getCylinderRays(Ray ray, double radius, std::vector<Ray> &rays){
+  std::vector<tf::Vector3> ray_orthog = getOrthogonalBasis(ray.getDirection());
+  int n = 12;
+  for(int i = 0; i < n; i ++){
+    double theta = 2*3.1415 * i / n;
+    tf::Vector3 offset = radius * (ray_orthog[0]*sin(theta) + ray_orthog[1]*cos(theta));
+
+    rays.push_back(Ray(ray.start + offset, ray.end+offset));
+  }
 }
 
 /**

@@ -29,10 +29,11 @@ int main(int argc, char **argv){
   Ray ray(start, end);
 
 
-  plt.plotRay(ray);
+  // plt.plotRay(ray);
+  plt.plotCylinder(ray, .01);
   plt.plotIntersections(ray);
   double IG = plt.getIG(ray, radErr, binSize);
-  plt.labelRay(ray, IG);
+  // plt.labelRay(ray, IG);
   ROS_INFO("IG: %f", IG);
 
 

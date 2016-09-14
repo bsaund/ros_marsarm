@@ -74,6 +74,7 @@ class RayTracer
   bool traceCylinderAllParticles(Ray ray, double radius, vector<CalcEntropy::ConfigDist> &dists,
 				 bool quick = true);
   std::vector<tf::Vector3> getOrthogonalBasis(tf::Vector3 dir);
+  void getCylinderRays(Ray ray, double radius, std::vector<Ray> &rays);
 
   stl::Mesh getBoxAroundAllParticles(stl::Mesh mesh);
 

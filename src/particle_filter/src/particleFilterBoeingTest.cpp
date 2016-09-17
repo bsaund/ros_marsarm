@@ -280,8 +280,8 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
 {
   
   // sub_init = n.subscribe("/particle_filter_init", 1, &PFilterTest::initDistribution, this);
-  sub_request_particles = n.subscribe("/request_particles", 1, &PFilterTest::sendParticles, this);
-  srv_add_obs = n.advertiseService("/particle_filter_add", &PFilterTest::addObs, this);
+  sub_request_particles = n.subscribe("request_particles", 1, &PFilterTest::sendParticles, this);
+  srv_add_obs = n.advertiseService("particle_filter_add", &PFilterTest::addObs, this);
   pub_particles = n.advertise<geometry_msgs::PoseArray>("particles_from_filter", 5);
   ROS_INFO("Loading Boeing Particle Filter");
   getMesh("boeing_part.stl");

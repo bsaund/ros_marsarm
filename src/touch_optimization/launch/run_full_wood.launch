@@ -1,0 +1,7 @@
+<launch>
+  <group ns="baseParticles">
+    <node pkg="touch_optimization" type="run_full_wood" 
+	  name="run_full_wood" output="screen"/>
+
+  </group>
+</launch>

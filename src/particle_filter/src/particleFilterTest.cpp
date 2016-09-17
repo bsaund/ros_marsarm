@@ -116,9 +116,9 @@ PFilterTest::PFilterTest(int n_particles) :
 
 {
   
-  sub_init = n.subscribe("/particle_filter_init", 1, &PFilterTest::initDistribution, this);
+  sub_init = n.subscribe("particle_filter_init", 1, &PFilterTest::initDistribution, this);
   srv_add_obs = n.advertiseService("/particle_filter_add", &PFilterTest::addObs, this);
-  pub_particles = n.advertise<geometry_msgs::PoseArray>("/particles_from_filter", 5);
+  pub_particles = n.advertise<geometry_msgs::PoseArray>("particles_from_filter", 5);
 
   // tf::Point touch1(0, 0, 0);
   // tf::Point touch2(0, 1, -1);

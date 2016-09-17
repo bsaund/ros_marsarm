@@ -108,7 +108,7 @@ static void observationHnd (MSG_INSTANCE msg, void *callData,
 
   
   if(!srv_add.call(pfilter_obs)){
-    ROS_INFO("Failed to call add observation");
+    ROS_INFO("Failed to call add observation from Bridge");
   }
 
 
@@ -171,7 +171,7 @@ int main(int argc, char **argv)
   
   pub = n.advertise<sensor_msgs::JointState>("/joints_from_marsarm",10);
   srv_add = 
-    n.serviceClient<particle_filter::AddObservation>("/particle_filter_add");
+    n.serviceClient<particle_filter::AddObservation>("/baseParticles/particle_filter_add");
   sub_probe = n.subscribe("/probe_point", 10, probePointHnd);
 
   processFinishedPub = n.advertise<std_msgs::String>("/process_finished",10);

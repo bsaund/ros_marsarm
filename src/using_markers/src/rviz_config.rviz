@@ -40,7 +40,7 @@ Visualization Manager:
       Cell Size: 1
       Class: rviz/Grid
       Color: 160; 160; 164
-      Enabled: false
+      Enabled: true
       Line Style:
         Line Width: 0.03
         Value: Lines
@@ -53,7 +53,7 @@ Visualization Manager:
       Plane: XY
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
-      Value: false
+      Value: true
     - Class: rviz/TF
       Enabled: false
       Frame Timeout: 15
@@ -70,7 +70,7 @@ Visualization Manager:
       Value: false
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: ray_trace_markers
+      Marker Topic: /baseParticles/ray_trace_markers
       Name: Marker
       Namespaces:
         {}
@@ -81,7 +81,7 @@ Visualization Manager:
       Marker Topic: /right_datum/visualization_marker
       Name: Marker
       Namespaces:
-        particles: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -97,7 +97,7 @@ Visualization Manager:
       Marker Topic: /goal_hole/visualization_marker
       Name: Marker
       Namespaces:
-        particles: true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -136,10 +136,10 @@ Visualization Manager:
         Z: -0.371553
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.360398
+      Pitch: 0.675398
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.7204
+      Yaw: 3.8854
     Saved: ~
 Window Geometry:
   Displays:

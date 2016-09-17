@@ -171,7 +171,7 @@ void ShapePlotter::updateMarkers()
     std::vector<double> color;
     if(!n.getParam("color", color)){
       ROS_INFO("Failed to get param: color");
-      color.resize(3);
+      color.resize(4);
     }
 
     points.markers[i].color.r = color[0];
@@ -181,7 +181,7 @@ void ShapePlotter::updateMarkers()
 
     //alpha to make the particles transparent
     // points.markers[i].color.a = 0.07;
-    points.markers[i].color.a = 0.2;
+    points.markers[i].color.a = color[3];
 
   }
 }

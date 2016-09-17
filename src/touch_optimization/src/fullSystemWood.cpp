@@ -13,6 +13,7 @@
 #include <tf/transform_broadcaster.h>
 #include "custom_ray_trace/plotRayUtils.h"
 #include "custom_ray_trace/rayTracer.h"
+#include "custom_ray_trace/rayTracePlotter.h"
 #include <ros/console.h>
 # define M_PI       3.14159265358979323846  /* pi */
 
@@ -22,7 +23,7 @@ bool movementFinished = false;
  * Gets initial points for the particle filter by shooting
  * rays at the object
  */
-// particle_filter::PFilterInit getInitialPoints(PlotRayUtils &plt)
+// particle_filter::PFilterInit getInitialPoints(RayTracePlotter &plt)
 // {
 //   particle_filter::PFilterInit init_points;
 
@@ -166,7 +167,7 @@ void generateRandomRay(std::mt19937 &gen, tf::Pose &probePose, tf::Point &start,
  * Randomly chooses vectors, gets the Information Gain for each of 
  *  those vectors, and returns the ray (start and end) with the highest information gain
  */
-void randomSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Pose &probePose)
+void randomSelection(RayTracePlotter &plt, tf::Pose &probePose)
 {
   // tf::Point best_start, best_end;
 
@@ -190,7 +191,8 @@ void randomSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Pose &probePose)
     generateRandomRay(gen, probePoseTmp, start, end);
     // plt.plotRay(start, end);
     Ray measurement(start, end);
-    double IG = rayt.getIG(measurement, 0.01, 0.002);
+    double IG = plt.getIG(measurement, 0.01, 0.002);
+    plt.plotRay(measurement, i);
 
     if (IG > bestIG){
       
@@ -204,7 +206,7 @@ void randomSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Pose &probePose)
     ROS_DEBUG_THROTTLE(10, "Calculating best point based on information gain...");
   }
   plt.plotRay(Ray(best_start, best_end));
-  plt.plotIntersections(best_start, best_end);
+  plt.plotIntersections(Ray(best_start, best_end));
   // plt.plotCylinder(best_start, best_end, 0.01, 0.002, true);
   ROS_INFO("Ray is: %f, %f, %f.  %f, %f, %f", 
   	   best_start.getX(), best_start.getY(), best_start.getZ(),
@@ -214,12 +216,12 @@ void randomSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Pose &probePose)
 }
 
 
-bool getIntersection(PlotRayUtils &plt, tf::Point start, tf::Point end, tf::Point &intersection){
-  bool intersectionExists = plt.getIntersectionWithPart(start, end, intersection);
-  double radius = 0.005;
-  intersection = intersection - (end-start).normalize() * radius;
-  return intersectionExists;
-}
+// bool getIntersection(RayTracePlotter &plt, tf::Point start, tf::Point end, tf::Point &intersection){
+//   bool intersectionExists = plt.getIntersectionWithPart(start, end, intersection);
+//   double radius = 0.005;
+//   intersection = intersection - (end-start).normalize() * radius;
+//   return intersectionExists;
+// }
 
 
 geometry_msgs::Pose probeAt(tf::Transform rotate, tf::Transform base, double x, double y, double z, double r, double p, double yaw){
@@ -246,12 +248,11 @@ int main(int argc, char **argv)
 
   ros::init(argc, argv, "updating_particles");
   ros::NodeHandle n;
-  PlotRayUtils plt;
-  RayTracer rayt;
+  RayTracePlotter plt;
 
   std::random_device rd;
   std::mt19937 gen(rd());
-  std::normal_distribution<double> randn(0.0,0.003);
+
 
   ROS_INFO("Running...");
 
@@ -284,7 +285,7 @@ int main(int argc, char **argv)
     ROS_INFO("Measurement %d", i);
     ROS_INFO("--------------------------------------------");
 
-    randomSelection(plt, rayt, probePose);
+    randomSelection(plt,  probePose);
     tf::poseTFToMsg(probePose, probe_msg);
 
 
@@ -300,7 +301,7 @@ int main(int argc, char **argv)
     ros::spinOnce();
 
 
-    while(!rayt.particleHandler.newParticles){
+    while(!plt.particleHandler.newParticles){
       ROS_INFO_THROTTLE(30, "Waiting for new particles...");
       ros::spinOnce();
       ros::Duration(.1).sleep();

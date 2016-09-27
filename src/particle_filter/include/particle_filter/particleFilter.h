@@ -48,6 +48,10 @@ class particleFilter
 
   // Local functions
   void createParticles(Particles &particles, cspace b_Xprior[2], int n_particles);
+
+  void buildDistTransformAroundPoint(double cur_M[2][3], vector<vec4x3> &mesh, 
+				     distanceTransform *dist_transform);
+
   bool updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss);
 
 };

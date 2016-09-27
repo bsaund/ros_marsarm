@@ -74,6 +74,18 @@ int RayTracePlotter::plotIntersections(const std::vector<tf::Point> intersection
 }
 
 
+void RayTracePlotter::deleteAll(){
+  // visualization_msgs::Marker marker = getDeleteMarker("ray", 1);
+  // marker_pub.publish(marker);
+
+  visualization_msgs::MarkerArray m;
+  for(int i = 0; i < 500; i++){
+    m.markers.push_back(getDeleteMarker("ray",i));
+  }
+  marker_pub_array.publish(m);
+
+}
+
 
 // LABELING
 
@@ -186,5 +198,16 @@ visualization_msgs::Marker RayTracePlotter::getIntersectionMarker(tf::Point inte
   marker.color.a = 1.0;
  
   marker.lifetime = ros::Duration();
+  return marker;
+}
+
+visualization_msgs::Marker RayTracePlotter::getDeleteMarker(string str, int id){
+  visualization_msgs::Marker marker;
+  marker.header.frame_id = "/my_frame";
+  marker.header.stamp = ros::Time::now();
+
+  marker.ns = str;
+  marker.id = id;
+  marker.type = visualization_msgs::Marker::DELETE;
   return marker;
 }

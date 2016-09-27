@@ -13,6 +13,7 @@ class RayTracePlotter: public RayTracer
 
   visualization_msgs::Marker createRayMarker(Ray ray, int index);
   visualization_msgs::Marker getIntersectionMarker(tf::Point intersection, int id);
+  visualization_msgs::Marker getDeleteMarker(string str, int id);
   void label(tf::Point start, int id, std::string text);
 
 
@@ -30,7 +31,7 @@ class RayTracePlotter: public RayTracer
   void labelRay(tf::Point start, std::string text, int id=0);
   void labelRay(Ray ray, double d, int id=0);
 
-
+  void deleteAll();
 };
 
 

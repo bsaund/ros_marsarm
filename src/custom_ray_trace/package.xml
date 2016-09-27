@@ -59,7 +59,7 @@
 	gazebo_media_path="${prefix}" 
 	gazebo_model_path="${prefix}/.."/>
 
-    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lcalc_entropy -lray_trace_plotter -lray_tracer"/>
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lcalc_entropy -lplot_ray_utils -lray_tracer -lray_trace_plotter"/>
 
   </export>
 </package>

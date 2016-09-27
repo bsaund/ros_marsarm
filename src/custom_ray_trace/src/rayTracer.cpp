@@ -34,6 +34,13 @@ Ray Ray::getTransformed(tf::Transform trans) const
   return newRay;
 }
 
+tf::Point Ray::travelAlongFor(double dist) const
+{
+  tf::Point p;
+  p = start + dist*getDirection();
+  return p;
+}
+
 
 /*
  **************************
@@ -65,7 +72,7 @@ tf::StampedTransform ParticleHandler::getTransformToPartFrame()
 
 void ParticleHandler::setParticles(geometry_msgs::PoseArray p)
 {
-  // ROS_INFO("setParticles called");
+  ROS_INFO("setParticles called");
   particles.resize(p.poses.size());
 
   
@@ -225,6 +232,11 @@ bool RayTracer::traceRay(Ray ray, double &distToPart){
   return tracePartFrameRay(ray, distToPart);
 }
 
+bool RayTracer::traceRay(Ray ray, tf::Point &intersection){
+  double dist;
+  traceRay(ray, dist);
+  intersection = ray.travelAlongFor(dist);
+}
 
 /*
  *  Traces a ray (specified in world frame) on all particles

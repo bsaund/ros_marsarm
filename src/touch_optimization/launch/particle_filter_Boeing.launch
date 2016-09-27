@@ -1,41 +1,46 @@
 <launch>
 
 <!-- This is used to load the cad files for visualization and ray tracing.  -->
-<!-- There needs to be corresponding files  -->
-<!-- gazebo_ray_trace/sdf/[localization_object_cad].stl -->
-<!-- gazebo_ray_trace/worlds/[localization_object_cad].world -->
-  <arg name="localization_object" default="boeing_part"/>
 
-  <param name="localization_object_cad" type="str" 
-	 value="package://custom_ray_trace/sdf/$(arg localization_object).stl"/>
-  <param name="localization_object_filepath" type="str"
-	 value="$(find custom_ray_trace)/sdf/$(arg localization_object).stl"/>
-  <param name="localization_object" type="str"
-	 value="$(arg localization_object)"/>
 
-  <rosparam param="initial_uncertainties">
-    [0.03, 0.03, 0.03, 0.05, 0.05, 0.05]
-    <!-- [.05, .05, .05, 0,0,0] -->
-  </rosparam>
+  <arg name="localization_object" default="wood_boeing"/>
 
-  <rosparam param="particle_frame">
-    [0.3, 0.3, 0.3, 0.5, 0.7, 0.5]
-  </rosparam>
-  
-  <rosparam param="true_frame">
-    [0.3, 0.3, 0.3, 0.5, 0.7, 0.5]
-  </rosparam>
+  <node pkg="rviz" type="rviz" name="ParticleViz" 
+	args="-d $(find using_markers)/src/simulation.rviz" required="true"/>
 
-<!-- Temporary file used to generate particles and send images to RViz -->
-  <include file="$(find using_markers)/launch/particles.launch"/>
+  <group ns="baseParticles">
+    <param name="localization_object_cad" type="str" 
+	   value="package://custom_ray_trace/sdf/$(arg localization_object).stl"/>
+    <param name="localization_object_filepath" type="str"
+	   value="$(find custom_ray_trace)/sdf/$(arg localization_object).stl"/>
+    <param name="localization_object" type="str"
+	   value="$(arg localization_object)"/>
 
-  <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
+    <rosparam param="initial_uncertainties">
+      [0.03, 0.03, 0.03, 0.05, 0.05, 0.05]
+      <!-- [.05, .05, .05, 0,0,0] -->
+    </rosparam>
 
-<!-- Gazebo ray tracing service used to calculate values of a touch -->
-  <!-- <include file="$(find gazebo_ray_trace)/launch/headless_ray_tracing_service.launch"> -->
-  <!--   <arg name="world_name"  -->
-  <!--   value="$(find gazebo_ray_trace)/worlds/$(arg localization_object).world"/> -->
-  <!-- </include> -->
+    <rosparam param="particle_frame">
+      [0, 0, 0, 0, 0, 0]
+    </rosparam>
+    
+    <rosparam param="true_frame">
+      [0, 0, 0, 0, 0, 0]
+    </rosparam>
+
+    <rosparam param="color">
+      [.7, .6, .5, .2]
+    </rosparam>
+
+    <node pkg="using_markers" type="plotParticles" 
+	  name="markers" output="screen"/>
+
+    <!-- Temporary file used to generate particles and send images to RViz -->
+    <!-- <include file="$(find using_markers)/launch/particles.launch"/> -->
+
+    <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
+  </group>
 
 
 

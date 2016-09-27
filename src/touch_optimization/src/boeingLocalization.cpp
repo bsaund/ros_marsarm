@@ -10,40 +10,16 @@
 #include "particle_filter/AddObservation.h"
 #include "geometry_msgs/Point.h"
 #include <tf/transform_broadcaster.h>
-#include "custom_ray_trace/plotRayUtils.h"
+#include "custom_ray_trace/rayTracePlotter.h"
 #include "custom_ray_trace/rayTracer.h"
 
 #define NUM_TOUCHES 20
-/**
- * Gets initial points for the particle filter by shooting
- * rays at the object
- */
-particle_filter::PFilterInit getInitialPoints(PlotRayUtils &plt)
-{
-  particle_filter::PFilterInit init_points;
-
-  tf::Point start1(1,1,0);
-  tf::Point end1(-1,-1,0);
-  tf::Point start2(1,1,.2);
-  tf::Point end2(-1,-1,.2);
-  tf::Point start3(1.1,0.9,0);
-  tf::Point end3(-0.9,-1.1,0);
-  
-  tf::Point intersection;
-  plt.getIntersectionWithPart(start1,end1, intersection);
-  tf::pointTFToMsg(intersection,  init_points.p1);
-  plt.getIntersectionWithPart(start2,end2, intersection);
-  tf::pointTFToMsg(intersection, init_points.p2);
-  plt.getIntersectionWithPart(start3,end3, intersection);
-  tf::pointTFToMsg(intersection, init_points.p3);
-  return init_points;
-}
 
 /**
  * Randomly chooses vectors, gets the Information Gain for each of 
  *  those vectors, and returns the ray (start and end) with the highest information gain
  */
-void randomSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_end)
+void randomSelection(RayTracePlotter &plt, tf::Point &best_start, tf::Point &best_end)
 {
   // tf::Point best_start, best_end;
 
@@ -58,7 +34,7 @@ void randomSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_e
     start = start.normalize();
     tf::Point end(rand(rd), rand(rd), rand(rd));
     end.normalized();
-    double IG = plt.getIG(start, end, 0.01, 0.002);
+    double IG = plt.getIG(Ray(start, end), 0.01, 0.002);
     if (IG > bestIG){
       bestIG = IG;
       best_start = start;
@@ -73,9 +49,12 @@ void randomSelection(PlotRayUtils &plt, tf::Point &best_start, tf::Point &best_e
   
 }
 
-bool getIntersection(PlotRayUtils &plt, tf::Point start, tf::Point end, tf::Point &intersection){
-  bool intersectionExists = plt.getIntersectionWithPart(start, end, intersection);
+bool getIntersection(RayTracePlotter &plt, tf::Point start, tf::Point end, tf::Point &intersection){
+  double dist;
+  Ray ray(start, end);
+  bool intersectionExists = plt.traceRay(ray, dist);
   double radius = 0.001;
+  intersection = ray.travelAlongFor(dist);
   intersection = intersection - (end-start).normalize() * radius;
   return intersectionExists;
 }
@@ -85,7 +64,7 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "updating_particles");
   ros::NodeHandle n;
-  PlotRayUtils plt;
+  RayTracePlotter plt;
 
   std::random_device rd;
   std::normal_distribution<double> randn(0.0,0.0005);
@@ -93,14 +72,14 @@ int main(int argc, char **argv)
   ROS_INFO("Running...");
 
   ros::Publisher pub_init = 
-    n.advertise<particle_filter::PFilterInit>("/particle_filter_init", 5);
+    n.advertise<particle_filter::PFilterInit>("particle_filter_init", 5);
   ros::ServiceClient srv_add = 
-    n.serviceClient<particle_filter::AddObservation>("/particle_filter_add");
+    n.serviceClient<particle_filter::AddObservation>("particle_filter_add");
 
 
  
   ros::Duration(2).sleep();
-  // pub_init.publish(getInitialPoints(plt));
+
  
   geometry_msgs::Point obs;
   geometry_msgs::Point dir;
@@ -134,7 +113,11 @@ int main(int argc, char **argv)
 
     // pub_add.publish(obs);
     
-    plt.plotCylinder(start, end, 0.01, 0.002, true);
+
+    // plt.plotCylinder(start, end, 0.01, 0.002, true);
+    plt.plotRay(Ray(start, end));
+    plt.plotIntersection(intersection);
+    
     ros::Duration(1).sleep();
 
     particle_filter::AddObservation pfilter_obs;
@@ -144,6 +127,9 @@ int main(int argc, char **argv)
       ROS_INFO("Failed to call add observation");
     }
     i ++;
+
+    ros::Duration(1).sleep();
+    ros::spinOnce();
   }
   
   ROS_INFO("Finished all action");

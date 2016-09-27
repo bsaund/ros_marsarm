@@ -297,6 +297,16 @@ void particleFilter::buildDistTransformAroundPoint(double cur_M[2][3], vector<ve
 
 
 
+bool insideBounds(double point[3], double bounds[3][2]){
+  for(int i=0; i<3; i++){
+    if(point[i] <= bounds[i][0])
+      return false;
+    if(point[i] >= bounds[i][1])
+      return false;
+  }
+  return true;
+}
+
 
 /*
  * Update particles (Build distance transform and sampling)
@@ -340,10 +350,7 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
     buildDistTransformAroundPoint(cur_M, mesh, dist_transform);
     cout << "Finish building DT !!" << endl;
 
-    //cout << "Sampled Co_std_deviation: " << scl << endl;
-    // sample particles
-    //touch_dir << cur_M[1][0], cur_M[1][1], cur_M[1][2];
-
+    /*   Begin Rejection Sampling */
     while (i < numParticles && i < maxNumParticles) {
       idx = int(floor(distribution(rd)));
 
@@ -352,12 +359,7 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
       inverseTransform(cur_M, tempState, cur_inv_M);
       touch_dir << cur_inv_M[1][0], cur_inv_M[1][1], cur_inv_M[1][2];
       // reject particles ourside of distance transform
-      if (cur_inv_M[0][0] >= dist_transform->world_range[0][1] || 
-	  cur_inv_M[0][0] <= dist_transform->world_range[0][0] ||
-	  cur_inv_M[0][1] >= dist_transform->world_range[1][1] || 
-	  cur_inv_M[0][1] <= dist_transform->world_range[1][0] ||
-	  cur_inv_M[0][2] >= dist_transform->world_range[2][1] || 
-	  cur_inv_M[0][2] <= dist_transform->world_range[2][0]) {
+      if (!insideBounds(cur_inv_M[0], dist_transform->world_range)) {
 	continue;
       }
 			
@@ -367,20 +369,11 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 			   dist_transform->voxel_size));
       int zind = int(floor((cur_inv_M[0][2] - dist_transform->world_range[2][0]) / 
 			   dist_transform->voxel_size));
-      // cout << "finish update1" << endl;
-
-      // cout << "x " << cur_inv_M[0][0] - dist_transform->world_range[0][0] << endl;
-      // cout << "floor " << floor((cur_inv_M[0][0] - dist_transform->world_range[0][0]) / dist_transform->voxel_size) << endl;
-      // cout << "voxel size " << dist_transform->voxel_size << endl;
-
-      // cout << "idx " << xind << "  " << yind << "  " << zind << endl;
       D = (*dist_transform->dist_transform)[xind][yind][zind];
-      // if (xind >= (dist_transform->num_voxels[0] - 1) || yind >= (dist_transform->num_voxels[1] - 1) || zind >= (dist_transform->num_voxels[2] - 1))
-      // 	continue;
-				
+
       double dist_adjacent[3] = { 0, 0, 0 };
       count += 1;
-      // if(16384 % count == 0 && count > 1000)
+
       if(isPowerOfTwo(count) && count > 1000){
 	cout << "Sampled " << count << " particles\t";
 	cout << "count2: " << count2 << "\t count3: " << count3 << "\n";
@@ -433,9 +426,8 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 	}
 	count_bar = 0;
 #endif
-	for (int j = 0; j < cdim; j++) {
-	  particles[i][j] = tempState[j];
-	}
+	particles[i] = tempState;
+
 #ifdef ADAPTIVE_NUMBER
 	if (checkEmptyBin(&bins, particles[i]) == 1) {
 	  num_bins++;

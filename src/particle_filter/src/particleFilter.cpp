@@ -70,6 +70,11 @@ cspace ParticleDistribution::sampleFrom(){
   return sampled;
 }
 
+
+/*
+ *  Update the adaptive bandwidth for the particle distribution
+ *   This should be called before sampling
+ */
 void ParticleDistribution::updateBandwidth(){
 
   Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)this->data(), cdim, this->size());
@@ -164,13 +169,10 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
   numObs++;
 
   auto timer_begin = std::chrono::high_resolution_clock::now();
-  std::random_device generator;
-  normal_distribution<double> dist2(0, Xstd_scatter);
 
   bool iffar = updateParticles(obs, mesh, dist_transform, miss);
 
   particlesPrev = particles;
-
   particlesPrev.updateBandwidth();
 
   auto timer_end = std::chrono::high_resolution_clock::now();
@@ -179,8 +181,9 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
   cspace particles_mean, tmp2;
   estimateGaussian(particles_mean, tmp2);
   cout << "Estimate diff: ";
-  double est_diff = sqrt(SQ(particles_mean[0] - 0.3) + SQ(particles_mean[1] - 0.3) + SQ(particles_mean[2] - 0.3)
-			 + SQ(particles_mean[3] - 0.5) + SQ(particles_mean[4] - 0.7) + SQ(particles_mean[5] - 0.5));
+  double est_diff = sqrt(SQ(particles_mean[0] - 0.3) + SQ(particles_mean[1] - 0.3) + 
+			 SQ(particles_mean[2] - 0.3) + SQ(particles_mean[3] - 0.5) + 
+			 SQ(particles_mean[4] - 0.7) + SQ(particles_mean[5] - 0.5));
   cout << est_diff << endl;
   if (est_diff >= 0.005) {
     converge_count ++;
@@ -245,7 +248,7 @@ int isPowerOfTwo (unsigned int x){
  *  This uses the mean and variance of the particles to determine the location
  *  and size of the distance field
  */
-void particleFilter::buildDistTransformAroundPoint(double cur_M[2][3], vector<vec4x3> &mesh,
+void particleFilter::buildDistTransformAroundPoint(const double cur_M[2][3], vector<vec4x3> &mesh,
 						   distanceTransform *dist_transform){
   int num_Mean = SAMPLE_RATE * numParticles;
   std::vector<std::array<double,3>> measure_workspace;
@@ -320,8 +323,14 @@ bool insideBounds(double point[3], double bounds[3][2]){
  *        Xstd_tran: gaussian kernel standard deviation when sampling
  * output: return whether previous estimate is bad (not used here)
  */
-bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss)
+bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss)
 {
+  FixedTransform tf(0,0,0,0,0,0);
+  return updateParticles(cur_M, mesh, dist_transform, tf, miss);
+}
+
+
+bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, RandomTransform &tf, bool miss){
   std::unordered_set<string> bins;
   std::random_device rd;
   std::normal_distribution<double> dist(0, 1);
@@ -352,11 +361,11 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 
     /*   Begin Rejection Sampling */
     while (i < numParticles && i < maxNumParticles) {
-      idx = int(floor(distribution(rd)));
 
       tempState = particlesPrev.sampleFrom();
-
-      inverseTransform(cur_M, tempState, cur_inv_M);
+      
+      inverseTransform(cur_M, tf.sampleTransform(), cur_inv_M);
+      inverseTransform(cur_inv_M, tempState, cur_inv_M);
       touch_dir << cur_inv_M[1][0], cur_inv_M[1][1], cur_inv_M[1][2];
       // reject particles ourside of distance transform
       if (!insideBounds(cur_inv_M[0], dist_transform->world_range)) {
@@ -631,7 +640,7 @@ int main()
 /*
  * Transform the touch point from particle frame
  */
-void Transform(double measure[2][3], cspace src, double dest[2][3])
+void Transform(const double measure[2][3], cspace src, double dest[2][3])
 {
   double rotation[3][3];
   double tempM[3];
@@ -644,7 +653,7 @@ void Transform(double measure[2][3], cspace src, double dest[2][3])
 /*
  * Inverse transform the touch point to particle frame using sampled configuration
  */
-void inverseTransform(double measure[3], cspace src, double dest[3])
+void inverseTransform(const double measure[3], cspace src, double dest[3])
 {
   double rotation[3][3];
   double invRot[3][3];
@@ -655,7 +664,7 @@ void inverseTransform(double measure[3], cspace src, double dest[3])
   subtractM(measure, transition, tempM);
   multiplyM(invRot, tempM, dest);
 }
-void inverseTransform(double measure[2][3], cspace src, double dest[2][3])
+void inverseTransform(const double measure[2][3], cspace src, double dest[2][3])
 {
   double rotation[3][3];
   double invRot[3][3];

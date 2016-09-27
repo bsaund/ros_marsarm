@@ -91,7 +91,7 @@ void ShapePlotter::generateTransforms()
   particles_.poses.resize(numParticles);
   std::vector<double> uncertainties;
   if(!n.getParam("/initial_uncertainties", uncertainties)){
-    ROS_INFO("Failed to get param");
+    ROS_INFO("Failed to get param initial uncertainties");
     uncertainties.resize(6);
   }
 

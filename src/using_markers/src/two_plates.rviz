@@ -10,6 +10,7 @@ Panels:
         - /TF1/Frames1
         - /Marker1
         - /Marker2
+        - /Marker3
       Splitter Ratio: 0.5
     Tree Height: 747
   - Class: rviz/Selection
@@ -82,6 +83,14 @@ Visualization Manager:
         particles: true
       Queue Size: 100
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /plate_2/ray_trace_markers
+      Name: Marker
+      Namespaces:
+        ray: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 255; 255; 255
@@ -118,10 +127,10 @@ Visualization Manager:
         Z: 0.456749
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.300398
+      Pitch: 0.265398
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.92541
+      Yaw: 3.97541
     Saved: ~
 Window Geometry:
   Displays:
@@ -139,5 +148,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1659
-  X: 55
-  Y: 14
+  X: 2119
+  Y: 69

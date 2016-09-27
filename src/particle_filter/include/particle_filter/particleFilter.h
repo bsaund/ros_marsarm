@@ -16,6 +16,13 @@ typedef std::vector<cspace> Particles;
 
 class ParticleDistribution : public Particles
 {
+ public:
+  cspace sampleFrom();
+  void updateBandwidth();
+ private:
+  Eigen::MatrixXd rot;
+  Eigen::VectorXd scl;
+  static std::random_device rd;
 };
 
 
@@ -51,10 +58,9 @@ class particleFilter
   // internal variables
   cspace b_Xprior[2]; // Initial distribution (mean and variance)
   //cspace b_Xpre[2];   // Previous (estimated) distribution (mean and variance)
-  Particles particles;  // Current set of particles
-  Particles particlesPrev; // Previous set of particles
-  Particles particles_1; // Previous previous set of particles
-  Eigen::MatrixXd cov_mat;
+  ParticleDistribution particles;  // Current set of particles
+  ParticleDistribution particlesPrev; // Previous set of particles
+  /* Eigen::MatrixXd cov_mat; */
 
   // Local functions
   void createParticles(Particles &particles, cspace b_Xprior[2], int n_particles);

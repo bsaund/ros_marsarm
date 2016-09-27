@@ -42,7 +42,64 @@ typedef array<array<float, 3>, 4> vec4x3;
 
 int total_time = 0;
 int converge_count = 0;
-//vector<vec4x3> importSTL(string filename);
+
+
+std::random_device ParticleDistribution::rd;
+
+cspace ParticleDistribution::sampleFrom(){
+
+  std::normal_distribution<double> dist(0, 1);
+  std::uniform_real_distribution<double> distribution(0, this->size());
+
+  Eigen::VectorXd samples(cdim, 1);
+  Eigen::VectorXd rot_sample(cdim, 1);
+
+  cspace sampled;
+  int idx = int(floor(distribution(rd)));
+
+  for (int j = 0; j < cdim; j++) {
+    samples(j, 0) = scl(j, 0) * dist(rd);
+  }
+
+
+  rot_sample = rot*samples;
+  for (int j = 0; j < cdim; j++) {
+    /* TODO: use quaternions instead of euler angles */
+    sampled[j] = this->at(idx).at(j) + rot_sample(j, 0);
+  }
+  return sampled;
+}
+
+void ParticleDistribution::updateBandwidth(){
+
+  Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)this->data(), cdim, this->size());
+  Eigen::MatrixXd mat_centered = mat.colwise() - mat.rowwise().mean();
+  Eigen::MatrixXd cov_mat = (mat_centered * mat_centered.adjoint()) / double(mat.cols());
+
+  double coeff = pow(size(), -0.2)/1.2155;
+  Eigen::MatrixXd H_cov = coeff * cov_mat;
+  cout << "H_cov: " << H_cov << endl;
+  double tmp_min = 1000000.0;
+  for (int t = 0; t < 3; t++) {
+    if (H_cov(t, t) < tmp_min) {
+      tmp_min = H_cov(t, t);
+    }
+  }
+  if (tmp_min < MIN_STD) {
+    H_cov = MIN_STD / tmp_min * H_cov;
+  }
+  //cout << " H  : " << H_cov << endl;
+  Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigenSolver(H_cov);
+  rot = eigenSolver.eigenvectors(); 
+  scl = eigenSolver.eigenvalues();
+
+  for (int j = 0; j < cdim; j++) {
+    scl(j, 0) = sqrt(scl(j, 0));
+  }
+    
+}
+
+
 
 /*
  * particleFilter class Construction
@@ -67,16 +124,7 @@ particleFilter::particleFilter(int n_particles, cspace b_init[2],
 
 
   createParticles(particlesPrev, b_Xprior, numParticles);
-
-
-
-#ifdef ADAPTIVE_BANDWIDTH
-  Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)particlesPrev.data(), cdim, numParticles);
-  Eigen::MatrixXd mat_centered = mat.colwise() - mat.rowwise().mean();
-  cov_mat = (mat_centered * mat_centered.adjoint()) / double(mat.cols());
-  cout << cov_mat << endl;
-#endif
-  //W = new double[numParticles];
+  particlesPrev.updateBandwidth();
 }
 
 void particleFilter::getAllParticles(std::vector<cspace> &particles_dest)
@@ -123,11 +171,8 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 
   particlesPrev = particles;
 
-#ifdef ADAPTIVE_BANDWIDTH
-  Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)particlesPrev.data(), cdim, numParticles);
-  Eigen::MatrixXd mat_centered = mat.colwise() - mat.rowwise().mean();
-  cov_mat = (mat_centered * mat_centered.adjoint()) / double(mat.cols());
-#endif
+  particlesPrev.updateBandwidth();
+
   auto timer_end = std::chrono::high_resolution_clock::now();
   auto timer_dur = timer_end - timer_begin;
 
@@ -295,51 +340,15 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
     buildDistTransformAroundPoint(cur_M, mesh, dist_transform);
     cout << "Finish building DT !!" << endl;
 
-#ifdef ADAPTIVE_BANDWIDTH
-    double coeff = pow(numParticles, -0.2)/1.2155;
-    Eigen::MatrixXd H_cov = coeff * cov_mat;
-    cout << "H_cov: " << H_cov << endl;
-    double tmp_min = 1000000.0;
-    for (int t = 0; t < 3; t++) {
-      if (H_cov(t, t) < tmp_min) {
-	tmp_min = H_cov(t, t);
-      }
-    }
-    if (tmp_min < MIN_STD) {
-      H_cov = MIN_STD / tmp_min * H_cov;
-    }
-    //cout << " H  : " << H_cov << endl;
-    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigenSolver(H_cov);
-    Eigen::MatrixXd rot = eigenSolver.eigenvectors(); 
-    Eigen::VectorXd scl = eigenSolver.eigenvalues();
-
-    for (int j = 0; j < cdim; j++) {
-      scl(j, 0) = sqrt(scl(j, 0));
-    }
-    Eigen::VectorXd samples(cdim, 1);
-    Eigen::VectorXd rot_sample(cdim, 1);
-#endif
     //cout << "Sampled Co_std_deviation: " << scl << endl;
     // sample particles
     //touch_dir << cur_M[1][0], cur_M[1][1], cur_M[1][2];
 
     while (i < numParticles && i < maxNumParticles) {
       idx = int(floor(distribution(rd)));
-#ifdef ADAPTIVE_BANDWIDTH
-      for (int j = 0; j < cdim; j++) {
-	samples(j, 0) = scl(j, 0) * dist(rd);
-      }
-      rot_sample = rot*samples;
-      for (int j = 0; j < cdim; j++) {
-	/* TODO: use quaternions instead of euler angles */
-	tempState[j] = b_X[idx][j] + rot_sample(j, 0);
-      }
-#else
-      for (int j = 0; j < cdim; j++) {
-	/* TODO: use quaternions instead of euler angles */
-	tempState[j] = b_X[idx][j] + Xstd_tran * dist(rd);
-      }
-#endif
+
+      tempState = particlesPrev.sampleFrom();
+
       inverseTransform(cur_M, tempState, cur_inv_M);
       touch_dir << cur_inv_M[1][0], cur_inv_M[1][1], cur_inv_M[1][2];
       // reject particles ourside of distance transform
@@ -436,11 +445,7 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 	  // }
 	}
 #endif
-	//double d = testResult(mesh, particles[i], cur_M, R);
-	//if (d > 0.01)
-	//	cout << cur_inv_M[0][0] << "  " << cur_inv_M[0][1] << "  " << cur_inv_M[0][2] << "   " << d << "   " << D << //"   " << gradient << "   " << gradient.dot(touch_dir) << 
-	//	     "   " << dist_adjacent[0] << "   " << dist_adjacent[1] << "   " << dist_adjacent[2] << "   " << particles[i][2] << endl;
-	i += 1;
+	i++;;
       }			
     }
     cout << "Number of total iterations: " << count << endl;

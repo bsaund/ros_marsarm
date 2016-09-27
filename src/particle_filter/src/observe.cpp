@@ -1,6 +1,6 @@
 #include "ros/ros.h"
 #include "particle_filter/AddObservation.h"
-#include "rayTracePlotter.h"
+#include "custom_ray_trace/rayTracePlotter.h"
 
 int main(int argc, char **argv){
   ros::init(argc, argv, "observe");

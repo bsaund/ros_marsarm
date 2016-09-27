@@ -79,7 +79,7 @@ particleFilter::particleFilter(int n_particles, cspace b_init[2],
   //W = new double[numParticles];
 }
 
-void particleFilter::getAllParticles(Particles &particles_dest)
+void particleFilter::getAllParticles(std::vector<cspace> &particles_dest)
 {
   particles_dest = particlesPrev;
 }
@@ -96,7 +96,6 @@ void particleFilter::createParticles(Particles &particles_dest, cspace b_Xprior[
 {
   random_device rd;
   normal_distribution<double> dist(0, 1);
-  int cdim = sizeof(cspace) / sizeof(double);
   for (int i = 0; i < n_particles; i++) {
     for (int j = 0; j < cdim; j++) {
       particles_dest[i][j] = b_Xprior[0][j] + b_Xprior[1][j] * (dist(rd));
@@ -196,6 +195,11 @@ int isPowerOfTwo (unsigned int x){
 
 
 
+/*
+ * Build a local distance field around the point (and direction) cur_M
+ *  This uses the mean and variance of the particles to determine the location
+ *  and size of the distance field
+ */
 void particleFilter::buildDistTransformAroundPoint(double cur_M[2][3], vector<vec4x3> &mesh,
 						   distanceTransform *dist_transform){
   int num_Mean = SAMPLE_RATE * numParticles;
@@ -290,6 +294,7 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
   if (!miss) {
     buildDistTransformAroundPoint(cur_M, mesh, dist_transform);
     cout << "Finish building DT !!" << endl;
+
 #ifdef ADAPTIVE_BANDWIDTH
     double coeff = pow(numParticles, -0.2)/1.2155;
     Eigen::MatrixXd H_cov = coeff * cov_mat;
@@ -527,11 +532,11 @@ int main()
 
   double cube_para[3] = { 6, 4, 2 }; // cube size: 6m x 4m x 2m with center at the origin.
   //double range[3][2] = { {-3.5, 3.5}, {-2.5, 2.5}, {-1.5, 1.5} };
-  particleFilter::cspace X_true = { 2.12, 1.388, 0.818, Pi / 6 + Pi / 400, Pi / 12 + Pi / 220, Pi / 18 - Pi / 180 }; // true state of configuration
+  cspace X_true = { 2.12, 1.388, 0.818, Pi / 6 + Pi / 400, Pi / 12 + Pi / 220, Pi / 18 - Pi / 180 }; // true state of configuration
   //particleFilter::cspace X_true = { 0, 0, 0.818, 0, 0, 0 }; // true state of configuration
   cout << "True state: " << X_true[0] << ' ' << X_true[1] << ' ' << X_true[2] << ' ' 
        << X_true[3] << ' ' << X_true[4] << ' ' << X_true[5] << endl;
-  particleFilter::cspace b_Xprior[2] = { { 2.11, 1.4, 0.81, Pi / 6, Pi / 12, Pi / 18 },
+  cspace b_Xprior[2] = { { 2.11, 1.4, 0.81, Pi / 6, Pi / 12, Pi / 18 },
 					 { 0.03, 0.03, 0.03, Pi / 180, Pi / 180, Pi / 180 } }; // our prior belief
   //particleFilter::cspace b_Xprior[2] = { { 0, 0, 0.81, 0, 0, 0 },
   //									 { 0.001, 0.001, 0.001, Pi / 3600, Pi / 3600, Pi / 3600 } }; // our prior belief
@@ -543,8 +548,8 @@ int main()
   int N_Measure = 60; // total number of measurements
   double M_std = 0.000; // measurement error
   double M[2][3]; // measurement
-  particleFilter::cspace particles_est;
-  particleFilter::cspace particles_est_stat;
+  cspace particles_est;
+  cspace particles_est_stat;
   double particle_est_diff;
 
   std::random_device generator;
@@ -604,20 +609,20 @@ int main()
     pfilter.estimateGaussian(particles_est, particles_est_stat);
     auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(chrono::high_resolution_clock::now() - tstart);
     particle_est_diff = 0;
-    for (int k = 0; k < particleFilter::cdim; k++) {
+    for (int k = 0; k < cdim; k++) {
       particle_est_diff += SQ(particles_est[k] - X_true[k]);
     }
-    particle_est_diff /= particleFilter::cdim;
+    particle_est_diff /= cdim;
     particle_est_diff = sqrt(particle_est_diff);
     cout << "est: ";
-    for (int k = 0; k < particleFilter::cdim; k++) {
+    for (int k = 0; k < cdim; k++) {
       cout << particles_est[k] << ' ';
     }
     cout << endl;
     cout << "Real distance: " << testResult(mesh, particles_est, M, R) << endl;
     cout << "Diff: " << particle_est_diff << endl;
     cout << "Var: ";
-    for (int k = 0; k < particleFilter::cdim; k++) {
+    for (int k = 0; k < cdim; k++) {
       cout << particles_est_stat[k] << ' ';
     }
     cout << endl;
@@ -629,7 +634,7 @@ int main()
 /*
  * Transform the touch point from particle frame
  */
-void Transform(double measure[2][3], particleFilter::cspace src, double dest[2][3])
+void Transform(double measure[2][3], cspace src, double dest[2][3])
 {
   double rotation[3][3];
   double tempM[3];
@@ -642,7 +647,7 @@ void Transform(double measure[2][3], particleFilter::cspace src, double dest[2][
 /*
  * Inverse transform the touch point to particle frame using sampled configuration
  */
-void inverseTransform(double measure[3], particleFilter::cspace src, double dest[3])
+void inverseTransform(double measure[3], cspace src, double dest[3])
 {
   double rotation[3][3];
   double invRot[3][3];
@@ -653,7 +658,7 @@ void inverseTransform(double measure[3], particleFilter::cspace src, double dest
   subtractM(measure, transition, tempM);
   multiplyM(invRot, tempM, dest);
 }
-void inverseTransform(double measure[2][3], particleFilter::cspace src, double dest[2][3])
+void inverseTransform(double measure[2][3], cspace src, double dest[2][3])
 {
   double rotation[3][3];
   double invRot[3][3];
@@ -768,7 +773,7 @@ int getIntersection(vector<vec4x3> &mesh, double pstart[3], double dir[3], doubl
  *        R: radius of the touch probe
  * Output: distance
  */
-double testResult(vector<vec4x3> &mesh, particleFilter::cspace config, double touch[2][3], double R)
+double testResult(vector<vec4x3> &mesh, cspace config, double touch[2][3], double R)
 {
   double inv_touch[2][3];
   inverseTransform(touch, config, inv_touch);
@@ -808,10 +813,10 @@ double testResult(vector<vec4x3> &mesh, particleFilter::cspace config, double to
  * Output: 1 if empty
  *         0 if not, and then add the bin to set
  */
-int checkEmptyBin(std::unordered_set<string> *set, particleFilter::cspace config)
+int checkEmptyBin(std::unordered_set<string> *set, cspace config)
 {
   string s = "";
-  for (int i = 0; i < particleFilter::cdim; i++) {
+  for (int i = 0; i < cdim; i++) {
     s += floor(config[i] / DISPLACE_INTERVAL);
     s += ":";
   }
@@ -830,11 +835,11 @@ int checkEmptyBin(std::unordered_set<string> *set, particleFilter::cspace config
  *        dist: distance between center of touch probe and object
  * Output: 1 if obstacle exists
  */
-int checkObstacles(vector<vec4x3> &mesh, particleFilter::cspace config, double start[2][3], double dist)
+int checkObstacles(vector<vec4x3> &mesh, cspace config, double start[2][3], double dist)
 {
   return checkObstacles(mesh, config, start, ARM_LENGTH, dist);
 }
-int checkObstacles(vector<vec4x3> &mesh, particleFilter::cspace config, double start[2][3], double check_length, double dist)
+int checkObstacles(vector<vec4x3> &mesh, cspace config, double start[2][3], double check_length, double dist)
 {
   double inv_start[2][3];
   int countIntersections = 0;

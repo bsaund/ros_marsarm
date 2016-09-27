@@ -7,14 +7,24 @@
 #include <Eigen/Dense>
 #include "distanceTransformNew.h"
 using namespace std;
+
+#define cdim 6
+
 typedef array<array<float, 3>, 4> vec4x3;
+typedef std::array<double,cdim> cspace; // configuration space of the particles
+typedef std::vector<cspace> Particles; 
+
+class ParticleDistribution : public Particles
+{
+};
+
 
 class particleFilter
 {
  public:
-  static const int cdim = 6;
-  typedef std::array<double,cdim> cspace; // configuration space of the particles
-  typedef std::vector<cspace> Particles;
+  /* static const int cdim = 6; */
+
+
   int numParticles; // number of particles
   int maxNumParticles;
   int numObs = 0;
@@ -55,15 +65,15 @@ class particleFilter
   bool updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss);
 
 };
-void Transform(double measure[2][3], particleFilter::cspace src, double dest[2][3]);
-void inverseTransform(double measure[3], particleFilter::cspace src, double dest[3]);
-void inverseTransform(double measure[2][3], particleFilter::cspace src, double dest[2][3]);
+void Transform(double measure[2][3], cspace src, double dest[2][3]);
+void inverseTransform(double measure[3], cspace src, double dest[3]);
+void inverseTransform(double measure[2][3], cspace src, double dest[2][3]);
 int checkInObject(vector<vec4x3> &mesh, double voxel_center[3]);
 int getIntersection(vector<vec4x3> &mesh, double pstart[3], double dir[3], double intersection[3]);
-double testResult(vector<vec4x3> &mesh, particleFilter::cspace config, double touch[2][3], double R);
-int checkObstacles(vector<vec4x3> &mesh, particleFilter::cspace config, double touch[2][3], double dist);
-int checkObstacles(vector<vec4x3> &mesh, particleFilter::cspace config, double start[2][3], double check_length, double dist);
+double testResult(vector<vec4x3> &mesh, cspace config, double touch[2][3], double R);
+int checkObstacles(vector<vec4x3> &mesh, cspace config, double touch[2][3], double dist);
+int checkObstacles(vector<vec4x3> &mesh, cspace config, double start[2][3], double check_length, double dist);
 int checkIntersections(vector<vec4x3> &mesh, double voxel_center[3], double dir[3], double check_length, double &dist);
-int checkEmptyBin(std::unordered_set<string> *set, particleFilter::cspace config);
+int checkEmptyBin(std::unordered_set<string> *set, cspace config);
 #endif // PARTICLE_FILTER_H
 

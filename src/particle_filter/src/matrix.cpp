@@ -50,7 +50,7 @@ void inverseMatrix(double matrix[3][3], double invMatrix[3][3])
 	invMatrix[2][1] = -(matrix[0][0] * matrix[2][1] - matrix[2][0] * matrix[0][1])*invdet;
 	invMatrix[2][2] = (matrix[0][0] * matrix[1][1] - matrix[1][0] * matrix[0][1])*invdet;
 }
-void rotationMatrix(particleFilter::cspace state, double rotationM[3][3])
+void rotationMatrix(cspace state, double rotationM[3][3])
 {
 	double rotationC[3][3] = { { cos(state[5]), -sin(state[5]), 0 },
 	{ sin(state[5]), cos(state[5]), 0 },

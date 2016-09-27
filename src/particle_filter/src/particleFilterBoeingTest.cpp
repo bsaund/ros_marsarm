@@ -53,14 +53,14 @@ public:
   int num_voxels[3];
   geometry_msgs::PoseArray getParticlePoseArray();
   particleFilter pFilter_;
-  PFilterTest(int n_particles, particleFilter::cspace b_init[2]);
+  PFilterTest(int n_particles, cspace b_init[2]);
   // void addObs(geometry_msgs::Point obs);
   bool addObs(particle_filter::AddObservation::Request &req,
 	      particle_filter::AddObservation::Response &resp);
   void sendParticles(std_msgs::Empty);
 };
 
-void computeInitialDistribution(particleFilter::cspace binit[2], ros::NodeHandle n)
+void computeInitialDistribution(cspace binit[2], ros::NodeHandle n)
 {
 
   std::vector<double> uncertainties;
@@ -110,7 +110,7 @@ double SQ(double d)
 /*
  *  Converts a cspace pose to a tf::Pose
  */
-tf::Pose poseAt(particleFilter::cspace particle_pose)
+tf::Pose poseAt(cspace particle_pose)
 {
   tf::Pose tf_pose;
   tf_pose.setOrigin(tf::Vector3(particle_pose[0], 
@@ -174,7 +174,7 @@ bool PFilterTest::getMesh(std::string filename){
 
 geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
 {
-  std::vector<particleFilter::cspace> particles;
+  std::vector<cspace> particles;
   pFilter_.getAllParticles(particles);
   // tf::Transform trans = pHandler.getTransformToPartFrame();
   tf::Transform trans = trans_;
@@ -202,8 +202,8 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   updateLock.unlock();
 #endif
 
-  particleFilter::cspace particles_est_stat;
-  particleFilter::cspace particles_est;
+  cspace particles_est_stat;
+  cspace particles_est;
   pFilter_.estimateGaussian(particles_est, particles_est_stat, true);
   geometry_msgs::PoseArray poseArray;
   for(int i=0; i<50; i++){
@@ -271,7 +271,7 @@ void visualize()
 
 
 
-PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
+PFilterTest::PFilterTest(int n_particles, cspace b_init[2]) :
   pFilter_(n_particles, b_init, 0.001, 0.0035, 0.0001, 0.001),
   num_voxels{200, 200, 200}//,
 // pFilter_(n_particles, b_init, 0.001, 0.0025, 0.0001, 0.00),
@@ -309,7 +309,7 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
 
 
 #ifdef POINT_CLOUD
-  std::vector<particleFilter::cspace> particles;
+  std::vector<cspace> particles;
   pFilter_.getAllParticles(particles);
   boost::mutex::scoped_lock updateLock(updateModelMutex);	
   basic_cloud_ptr1->points.clear();
@@ -350,7 +350,7 @@ int main(int argc, char **argv)
 
   ROS_INFO("Testing particle filter");
   
-  particleFilter::cspace b_Xprior[2];	
+  cspace b_Xprior[2];	
   computeInitialDistribution(b_Xprior, n);
   PFilterTest pFilterTest(NUM_PARTICLES, b_Xprior);
   

@@ -291,8 +291,13 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
   dist_transform = new distanceTransform(num_voxels);
 
   tf::TransformListener tf_listener_;
-  tf_listener_.waitForTransform("/my_frame", "/particle_frame", ros::Time(0), ros::Duration(10.0));
-  tf_listener_.lookupTransform("/particle_frame", "/my_frame", ros::Time(0), trans_);
+  std::string name;
+  if(!n.getParam("localization_object", name)){
+    ROS_INFO("Failed to get param: localization_object");
+  }
+
+  tf_listener_.waitForTransform("/my_frame", name, ros::Time(0), ros::Duration(10.0));
+  tf_listener_.lookupTransform(name, "/my_frame", ros::Time(0), trans_);
 
 
   #ifdef POINT_CLOUD

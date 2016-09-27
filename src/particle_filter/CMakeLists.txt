@@ -186,6 +186,11 @@ target_link_libraries(triBox
 #  pfilter6D
 # )
   
+add_executable(observe src/observe.cpp)
+target_link_libraries(observe
+  ${catkin_LIBRARIES}
+  ray_trace_plotter
+)
 
 add_executable(pfilterBoeingTest src/particleFilterBoeingTest.cpp)
 target_link_libraries(pfilterBoeingTest

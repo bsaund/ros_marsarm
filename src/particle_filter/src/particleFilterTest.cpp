@@ -4,7 +4,7 @@
 #include <geometry_msgs/PoseArray.h>
 #include "particle_filter/PFilterInit.h"
 #include "particle_filter/AddObservation.h"
-#include "gazebo_ray_trace/plotRayUtils.h"
+
 
 #define NUM_PARTICLES 1000
 

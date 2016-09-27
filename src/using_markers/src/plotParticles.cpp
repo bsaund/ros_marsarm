@@ -32,6 +32,8 @@ class ShapePlotter
   visualization_msgs::Marker part;
   geometry_msgs::PoseArray particles_;
   
+  std::string cadPath;  
+  std::string name;  
 
   int numParticles = 1;
 
@@ -54,6 +56,15 @@ ShapePlotter::ShapePlotter()
   marker_true_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 10);
   particle_pub = n.advertise<geometry_msgs::PoseArray>("/transform_particles", 10);
   sub = n.subscribe("particles_from_filter", 1, &ShapePlotter::externalParticleUpdate, this);
+
+  if(!n.getParam("localization_object_cad", cadPath)){
+    ROS_INFO("Failed to get param: localization_object_cad");
+  }
+
+  if(!n.getParam("localization_object", name)){
+    ROS_INFO("Failed to get param: localization_object");
+  }
+
 }
 
 /*
@@ -126,13 +137,9 @@ void ShapePlotter::generateTransforms()
 void ShapePlotter::updateMarkers()
 {
   points.markers.resize(particles_.poses.size());
-  // std::string name;
-  // if(!n.getParam("pName", name)){
-  //   ROS_INFO("Failed to get param: pName");
-  // }
 
   for(int i=0; i<particles_.poses.size(); i++){
-    points.markers[i].header.frame_id = "particle_frame";
+    points.markers[i].header.frame_id = name;
     points.markers[i].header.stamp = ros::Time::now();
     points.markers[i].ns = "particles";
     points.markers[i].action = visualization_msgs::Marker::ADD;
@@ -146,13 +153,10 @@ void ShapePlotter::updateMarkers()
     //Change this in two locations: Here and gazebo
     // points.markers[i].mesh_resource = "package://touch_optimization/sdf/boeing_part_binary.stl";
     // points.markers[i].mesh_resource = "package://touch_optimization/sdf/flat_plate.stl";
-    std::string s;
-   
-    if(!n.getParam("localization_object_cad", s)){
-      ROS_INFO("Failed to get param: localization_object_cad");
-    }
 
-    points.markers[i].mesh_resource = s;
+   
+
+    points.markers[i].mesh_resource = cadPath;
     
     // POINTS markers use x and y scale for width/height respectively
     // Boeing part is in inches, we are in meters
@@ -207,13 +211,8 @@ void ShapePlotter::updateTrueMarker()
     //Change this in two locations: Here and gazebo
     // part.mesh_resource = "package://touch_optimization/sdf/boeing_part_binary.stl";
     // part.mesh_resource = "package://touch_optimization/sdf/flat_plate.stl";
-    std::string s;
    
-    if(!n.getParam("localization_object_cad", s)){
-      ROS_INFO("Failed to get param: localization_object_cad");
-    }
-
-    part.mesh_resource = s;
+    part.mesh_resource = cadPath;
     
     // POINTS markers use x and y scale for width/height respectively
     // Boeing part is in inches, we are in meters
@@ -250,12 +249,13 @@ void ShapePlotter::plotParticles(){
     pFrame.resize(6);
   }
 
+
   particleTransform.setOrigin(tf::Vector3(pFrame[0],pFrame[1],pFrame[2]));
   // q.setRPY(-.7, 1.5, 0);
   q.setRPY(pFrame[3],pFrame[4], pFrame[5]);
   particleTransform.setRotation(q);
   
-  tf::StampedTransform tfstmp(particleTransform, ros::Time::now(),"my_frame", "particle_frame");
+  tf::StampedTransform tfstmp(particleTransform, ros::Time::now(),"my_frame", name);
   tf::transformStampedTFToMsg(tfstmp, trans);
     br.sendTransform(trans);
 

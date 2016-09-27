@@ -113,7 +113,7 @@ target_link_libraries(linePlot
 
 
 
-install(TARGETS calc_entropy plot_ray_utils ray_tracer
+install(TARGETS calc_entropy ray_trace_plotter ray_tracer
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})

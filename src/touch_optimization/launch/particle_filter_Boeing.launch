@@ -33,6 +33,11 @@
       [.7, .6, .5, .2]
     </rosparam>
 
+    <rosparam param="relationship">
+      [0, 0, 0, 0, 0, 0]
+    </rosparam>
+
+
     <node pkg="using_markers" type="plotParticles" 
 	  name="markers" output="screen"/>
 

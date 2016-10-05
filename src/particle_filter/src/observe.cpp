@@ -61,11 +61,14 @@ int main(int argc, char **argv){
   double dz = measurement[5];
 
   RayTracePlotter plt;
-  tf::Point start(x,y,z);
-  tf::Point end(x+dx, y+dy, z+dz);
+  // tf::Point start(x,y,z);
+  // tf::Point end(x+dx, y+dy, z+dz);
+  // Ray ray(start, end);
+  tf::Point start(0, .08, .1);
+  tf::Point end(0,0.08,-.1);
   Ray ray(start, end);
 
-
+  
   plt.plotRay(ray);
   double dist;
   plt.traceRay(ray, dist);
@@ -73,13 +76,16 @@ int main(int argc, char **argv){
 
   ros::Duration(.1).sleep();
 
-  particle_filter::AddObservation pfilter_obs = observation(intersection.getX(),
-							    intersection.getY(),
-							    intersection.getZ(),
-							    dx, dy, dz);
+  // particle_filter::AddObservation pfilter_obs = observation(intersection.getX(),
+  // 							    intersection.getY(),
+  // 							    intersection.getZ(),
+  // 							    dx, dy, dz);
+  particle_filter::AddObservation pfilter_obs = observation(0,0,0,
+							    0,0,-1);
+
   if(!srv_add.call(pfilter_obs)){
     ROS_INFO("Failed to call add observation");
     ros::Duration(5).sleep();
   }
-  
+ 
 }

@@ -88,7 +88,7 @@ Visualization Manager:
       Marker Topic: /plate_2/ray_trace_markers
       Name: Marker
       Namespaces:
-        ray: true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -115,16 +115,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.11204
+      Distance: 3.01488
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.20611
-        Y: 1.06068
-        Z: 0.456749
+        X: 1.05798
+        Y: 0.824947
+        Z: -0.551734
       Name: Current View
       Near Clip Distance: 0.01
       Pitch: 0.265398
@@ -148,5 +148,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1659
-  X: 2119
-  Y: 69
+  X: 2089
+  Y: 14

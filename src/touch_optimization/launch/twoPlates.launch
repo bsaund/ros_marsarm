@@ -16,7 +16,7 @@
     </rosparam>
 
     <rosparam param="particle_frame">
-      [0, 0, .8, 0, 0, 0]
+      [0, 0.08, 0, 0, 0, 0]
     </rosparam>
 
     <rosparam param="color">
@@ -40,17 +40,20 @@
 
   <group ns="plate_2">
     <rosparam param="initial_uncertainties">
-      [.02, .02, .02, 0.2, 0.1, 0.5]
+      [.0001, .0001, .01, 0.001, 0.001, 0.001]
     </rosparam>
 
     <rosparam param="particle_frame">
-      [0, 0, 1, 0, 0, 0]
+      [0, 0, 0, 1.57, 0, 0]
     </rosparam>
 
     <rosparam param="color">
       [0, 0, 1, .2]
     </rosparam>
 
+    <rosparam param="relationship">
+      [0, 0, 0, 1.57, 0, 0]
+    </rosparam>
 
 
     <param name="localization_object_cad" type="str"

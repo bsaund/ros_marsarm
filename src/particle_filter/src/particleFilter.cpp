@@ -156,6 +156,14 @@ void particleFilter::createParticles(Particles &particles_dest, cspace b_Xprior[
   }
 }
 
+
+void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss)
+{
+  FixedTransform tf(0,0,0,0,0,0);
+  addObservation(obs, mesh, dist_transform, tf, miss);
+}
+
+
 /*
  * Add new observation and call updateParticles() to update the particles
  * Input: obs: observation
@@ -164,13 +172,13 @@ void particleFilter::createParticles(Particles &particles_dest, cspace b_Xprior[
  *        miss: if it is a miss touch
  * output: none
  */
-void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss)
+void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, RandomTransform &tf, bool miss)
 {
   numObs++;
 
   auto timer_begin = std::chrono::high_resolution_clock::now();
 
-  bool iffar = updateParticles(obs, mesh, dist_transform, miss);
+  bool iffar = updateParticles(obs, mesh, dist_transform, tf, miss);
 
   particlesPrev = particles;
   particlesPrev.updateBandwidth();
@@ -356,16 +364,30 @@ bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &m
   int num_bins = 0;
   int count_bar = 0;
   if (!miss) {
-    buildDistTransformAroundPoint(cur_M, mesh, dist_transform);
+    double trans_M[2][3];
+    
+    inverseTransform(cur_M, tf.sampleTransform(), trans_M);
+    buildDistTransformAroundPoint(trans_M, mesh, dist_transform);
     cout << "Finish building DT !!" << endl;
 
     /*   Begin Rejection Sampling */
     while (i < numParticles && i < maxNumParticles) {
 
       tempState = particlesPrev.sampleFrom();
-      
-      inverseTransform(cur_M, tf.sampleTransform(), cur_inv_M);
-      inverseTransform(cur_inv_M, tempState, cur_inv_M);
+
+      cspace stf = tf.sampleTransform();
+      // inverseTransform(cur_M, tf.sampleTransform(), cur_inv_M);
+      inverseTransform(cur_M, tempState, cur_inv_M);
+      inverseTransform(cur_inv_M, stf, cur_inv_M);
+
+      // cout << "sampledtf" << stf[0] << ", " << stf[1] << ", " << 
+      // 	stf[2] << ", " << stf[3] << ", " << stf[4] << ", " << stf[5] << "\n";
+      // cout << "curM" << cur_M[0][0] << ", " << cur_M[0][1] << ", " << cur_M[0][2] << "\n";
+
+      // cout << "curinvM" << cur_inv_M[0][0] << ", " << cur_inv_M[0][1] << ", " << cur_inv_M[0][2] << "\n";
+
+
+
       touch_dir << cur_inv_M[1][0], cur_inv_M[1][1], cur_inv_M[1][2];
       // reject particles ourside of distance transform
       if (!insideBounds(cur_inv_M[0], dist_transform->world_range)) {

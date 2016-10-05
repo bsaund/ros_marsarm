@@ -143,7 +143,20 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
   ROS_INFO("dir: %f, %f, %f", dir.x, dir.y, dir.z);
   double obs2[2][3] = {{obs.x, obs.y, obs.z}, {dir.x, dir.y, dir.z}};
 
-  pFilter_.addObservation(obs2, mesh, dist_transform, 0);
+
+  std::vector<double> tfParams;
+  if(n.getParam("relationship", tfParams)){
+    ROS_INFO("Adding observation with offset");
+    FixedTransform tf(tfParams[0], tfParams[1], 
+		      tfParams[2], tfParams[3], 
+		      tfParams[4], tfParams[5]); 
+    pFilter_.addObservation(obs2, mesh, dist_transform, 
+			    tf, 0);
+  } else {
+    pFilter_.addObservation(obs2, mesh, dist_transform, 0);
+  }
+  
+
 
   ROS_INFO("...Done adding observation");
   pub_particles.publish(getParticlePoseArray());

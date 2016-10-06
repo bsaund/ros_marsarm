@@ -363,12 +363,16 @@ bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &m
   Eigen::Vector3d touch_dir;
   int num_bins = 0;
   int count_bar = 0;
+  double trans_M[2][3];
+  Transform(cur_M, tf.sampleTransform(), trans_M);
+  
+
   if (!miss) {
-    double trans_M[2][3];
-    
-    inverseTransform(cur_M, tf.sampleTransform(), trans_M);
     buildDistTransformAroundPoint(trans_M, mesh, dist_transform);
     cout << "Finish building DT !!" << endl;
+    cout << " currM: " << trans_M[0][0];
+    cout << ", " << trans_M[0][1] << ", " << trans_M[0][2] << "\n";
+
 
     /*   Begin Rejection Sampling */
     while (i < numParticles && i < maxNumParticles) {
@@ -376,9 +380,11 @@ bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &m
       tempState = particlesPrev.sampleFrom();
 
       cspace stf = tf.sampleTransform();
+      Transform(cur_M, stf, trans_M);
+
       // inverseTransform(cur_M, tf.sampleTransform(), cur_inv_M);
       inverseTransform(cur_M, tempState, cur_inv_M);
-      inverseTransform(cur_inv_M, stf, cur_inv_M);
+      Transform(cur_inv_M, stf, cur_inv_M);
 
       // cout << "sampledtf" << stf[0] << ", " << stf[1] << ", " << 
       // 	stf[2] << ", " << stf[3] << ", " << stf[4] << ", " << stf[5] << "\n";
@@ -386,7 +392,24 @@ bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &m
 
       // cout << "curinvM" << cur_inv_M[0][0] << ", " << cur_inv_M[0][1] << ", " << cur_inv_M[0][2] << "\n";
 
+      count += 1;
+      if(isPowerOfTwo(count) && count > 1000){
+	cout << "Sampled " << count << " particles\t";
+	cout << "count2: " << count2 << "\t count3: " << count3 << "\n";
 
+	cout << " trans_M: " << trans_M[0][0];
+	cout << ", " << trans_M[0][1] << ", " << trans_M[0][2] << "\n";
+
+	cout << " cur_inv_M: " << cur_inv_M[0][0];
+	cout << ", " << cur_inv_M[0][1] << ", " << cur_inv_M[0][2] << "\n";
+	cout << "World Range: [";
+	cout << "(" << dist_transform->world_range[0][0];
+	cout << ", " << dist_transform->world_range[0][1] << ")";
+	cout << ", (" << dist_transform->world_range[1][0];
+	cout << ", " << dist_transform->world_range[1][1] << ")";
+	cout << ", (" << dist_transform->world_range[2][0];
+	cout << ", " << dist_transform->world_range[2][1] << ")]\n";
+      }
 
       touch_dir << cur_inv_M[1][0], cur_inv_M[1][1], cur_inv_M[1][2];
       // reject particles ourside of distance transform
@@ -403,13 +426,13 @@ bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &m
       D = (*dist_transform->dist_transform)[xind][yind][zind];
 
       double dist_adjacent[3] = { 0, 0, 0 };
-      count += 1;
+
 
       if(isPowerOfTwo(count) && count > 1000){
 	cout << "Sampled " << count << " particles\t";
 	cout << "count2: " << count2 << "\t count3: " << count3 << "\n";
-	cout << "D: " << D << " currM: " << cur_M[0][0];
-	cout << ", " << cur_M[0][1] << ", " << cur_M[0][2] << "\n";
+	cout << "D: " << D << " currM: " << trans_M[0][0];
+	cout << ", " << trans_M[0][1] << ", " << trans_M[0][2] << "\n";
       }
       if (D <= unsigned_dist_check) {
 	count2 ++;
@@ -442,12 +465,12 @@ bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &m
 	continue;
       if (D >= -Xstd_ob && D <= Xstd_ob) {
 #ifndef COMBINE_RAYCASTING	
-	safe_point[1][0] = cur_M[1][0];
-	safe_point[1][1] = cur_M[1][1];
-	safe_point[1][2] = cur_M[1][2];
-	safe_point[0][0] = cur_M[0][0] - cur_M[1][0] * ARM_LENGTH;
-	safe_point[0][1] = cur_M[0][1] - cur_M[1][1] * ARM_LENGTH;
-	safe_point[0][2] = cur_M[0][2] - cur_M[1][2] * ARM_LENGTH;
+	safe_point[1][0] = trans_M[1][0];
+	safe_point[1][1] = trans_M[1][1];
+	safe_point[1][2] = trans_M[1][2];
+	safe_point[0][0] = trans_M[0][0] - trans_M[1][0] * ARM_LENGTH;
+	safe_point[0][1] = trans_M[0][1] - trans_M[1][1] * ARM_LENGTH;
+	safe_point[0][2] = trans_M[0][2] - trans_M[1][2] * ARM_LENGTH;
 	count3 ++;
 	if (checkObstacles(mesh, tempState, safe_point , D + R) == 1) {
 	  count_bar ++;
@@ -487,9 +510,9 @@ bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &m
       }
       // inverseTransform(cur_M[0], tempState, cur_inv_M[0]);
       // inverseTransform(cur_M[1], tempState, cur_inv_M[1]);
-      touch_dir << cur_M[0][0] - cur_M[1][0],
-	cur_M[0][1] - cur_M[1][1],
-	cur_M[0][2] - cur_M[1][2];
+      touch_dir << trans_M[0][0] - trans_M[1][0],
+	trans_M[0][1] - trans_M[1][1],
+	trans_M[0][2] - trans_M[1][2];
       touch_mnt = touch_dir.norm();
       touch_dir = touch_dir / touch_mnt;
       // reject particles ourside of distance transform
@@ -497,15 +520,15 @@ bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &m
       safe_point[1][0] = touch_dir[0];
       safe_point[1][1] = touch_dir[1];
       safe_point[1][2] = touch_dir[2];
-      safe_point[0][0] = cur_M[1][0] - touch_dir[0] * ARM_LENGTH;
-      safe_point[0][1] = cur_M[1][1] - touch_dir[1] * ARM_LENGTH;
-      safe_point[0][2] = cur_M[1][2] - touch_dir[2] * ARM_LENGTH;
+      safe_point[0][0] = trans_M[1][0] - touch_dir[0] * ARM_LENGTH;
+      safe_point[0][1] = trans_M[1][1] - touch_dir[1] * ARM_LENGTH;
+      safe_point[0][2] = trans_M[1][2] - touch_dir[2] * ARM_LENGTH;
       if (checkObstacles(mesh, tempState, safe_point, touch_mnt + ARM_LENGTH, 0) == 1)
 	continue;
       for (int j = 0; j < cdim; j++) {
 	particles[i][j] = tempState[j];
       }
-      //double d = testResult(mesh, particles[i], cur_M, R);
+      //double d = testResult(mesh, particles[i], trans_M, R);
       //if (d > 0.01)
       //	cout << cur_inv_M[0][0] << "  " << cur_inv_M[0][1] << "  " << cur_inv_M[0][2] << "   " << d << "   " << D << //"   " << gradient << "   " << gradient.dot(touch_dir) << 
       //	     "   " << dist_adjacent[0] << "   " << dist_adjacent[1] << "   " << dist_adjacent[2] << "   " << particles[i][2] << endl;

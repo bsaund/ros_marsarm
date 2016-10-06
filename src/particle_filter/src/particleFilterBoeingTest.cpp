@@ -46,7 +46,7 @@ private:
   distanceTransform *dist_transform;
   // ParticleHandler pHandler;
 
-  bool getMesh(std::string filename);
+  bool getMesh(std::string filename,   vector<vec4x3> &loadedMesh);
 
 public:
   vector<vec4x3> mesh;
@@ -164,16 +164,16 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
 }
 
 
-bool PFilterTest::getMesh(std::string filename){
-  std::string stlFilePath;
-  if(!n.getParam("localization_object_filepath", stlFilePath)){
-    ROS_INFO("Failed to get param: localization_object_filepath");
-  }
+bool PFilterTest::getMesh(std::string stlFilePath, vector<vec4x3> &loadedMesh){
+  // std::string stlFilePath;
+  // if(!n.getParam("localization_object_filepath", stlFilePath)){
+  //   ROS_INFO("Failed to get param: localization_object_filepath");
+  // }
 
   // std::string filepath = "/home/bsaund/ros/ros_marsarm/src/gazebo_ray_trace/sdf/" + localizationObject + ".stl";
 
   // if(localizationObject == "boeing_part") {
-  mesh = importSTL(stlFilePath);
+  loadedMesh = importSTL(stlFilePath);
   // return true;
   // }
   // throw std::invalid_argument("localization object not recognized by particle filter: "
@@ -305,7 +305,11 @@ PFilterTest::PFilterTest(int n_particles, cspace b_init[2]) :
   srv_add_obs = n.advertiseService("particle_filter_add", &PFilterTest::addObs, this);
   pub_particles = n.advertise<geometry_msgs::PoseArray>("particles_from_filter", 5);
   ROS_INFO("Loading Boeing Particle Filter");
-  getMesh("boeing_part.stl");
+  std::string stlFilePath;
+  if(!n.getParam("localization_object_filepath", stlFilePath)){
+    ROS_INFO("Failed to get param: localization_object_filepath");
+  }
+  getMesh(stlFilePath, mesh);
   //int num_voxels[3] = { 200,200,200 };
   //dist_transform(num_voxels);
   ROS_INFO("start create dist_transform");

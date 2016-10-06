@@ -16,7 +16,7 @@
     </rosparam>
 
     <rosparam param="particle_frame">
-      [0, 0.08, 0, 0, 0, 0]
+      [0, 0.0, 0, 0, 0, 0]
     </rosparam>
 
     <rosparam param="color">
@@ -44,7 +44,7 @@
     </rosparam>
 
     <rosparam param="particle_frame">
-      [0, 0, 0, 1.57, 0, 0]
+      [0, 0, 1, 0, 0, 0]
     </rosparam>
 
     <rosparam param="color">
@@ -52,7 +52,8 @@
     </rosparam>
 
     <rosparam param="relationship">
-      [0, 0, 0, 1.57, 0, 0]
+      <!-- [0, 0, 0, 1.57, 0, 0] -->
+      [0, 0, 1, 0, 0, 0]
     </rosparam>
 
 

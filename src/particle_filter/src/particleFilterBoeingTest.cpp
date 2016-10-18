@@ -76,28 +76,19 @@ void computeInitialDistribution(cspace binit[2], ros::NodeHandle n)
   }
 
 
-  binit[0][0] = pFrame[0] + 0.02;
-  binit[0][1] = pFrame[1] - 0.01;
-  binit[0][2] = pFrame[2] + 0.02;
-  binit[0][3] = pFrame[3] - 0.04;
-  binit[0][4] = pFrame[4] + 0.05;
-  binit[0][5] = pFrame[5] - 0.01;
+  binit[0][0] = pFrame[0];
+  binit[0][1] = pFrame[1];
+  binit[0][2] = pFrame[2];
+  binit[0][3] = pFrame[3];
+  binit[0][4] = pFrame[4];
+  binit[0][5] = pFrame[5];
 
   binit[1][0] = uncertainties[0];
   binit[1][1] = uncertainties[1];
   binit[1][2] = uncertainties[2];
-
-  // binit[1][0] = 0.00;
-  // binit[1][1] = 0.00;
-  // binit[1][2] = 0.00;
-
   binit[1][3] = uncertainties[3];
   binit[1][4] = uncertainties[4];
   binit[1][5] = uncertainties[5];
-
-  // binit[1][3] = 0;
-  // binit[1][4] = 0;
-  // binit[1][5] = 0;
 
 }
 

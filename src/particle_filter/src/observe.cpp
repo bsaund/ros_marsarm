@@ -64,8 +64,8 @@ int main(int argc, char **argv){
   // tf::Point start(x,y,z);
   // tf::Point end(x+dx, y+dy, z+dz);
   // Ray ray(start, end);
-  tf::Point start(0, .08, .1);
-  tf::Point end(0,0.08,-.1);
+  tf::Point start(0, 0, .1);
+  tf::Point end(0,0,-.1);
   Ray ray(start, end);
 
   

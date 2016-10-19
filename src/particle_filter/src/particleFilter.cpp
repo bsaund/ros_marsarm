@@ -1,3 +1,4 @@
+#include <ros/ros.h>
 #include <string.h>
 #include <iostream>
 #include <random>
@@ -83,7 +84,7 @@ void ParticleDistribution::updateBandwidth(){
 
   double coeff = pow(size(), -0.2)/1.2155;
   Eigen::MatrixXd H_cov = coeff * cov_mat;
-  cout << "H_cov: " << H_cov << endl;
+  // cout << "H_cov: " << H_cov << endl;
   double tmp_min = 1000000.0;
   for (int t = 0; t < 3; t++) {
     if (H_cov(t, t) < tmp_min) {
@@ -338,7 +339,7 @@ bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &m
 }
 
 
-bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, RandomTransform &tf, bool miss){
+bool particleFilter::updateParticles(const double measurementWorldFr[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, RandomTransform &tf, bool miss){
   std::unordered_set<string> bins;
   std::random_device rd;
   std::normal_distribution<double> dist(0, 1);
@@ -352,7 +353,7 @@ bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &m
   int idx = 0;
   cspace tempState;
   double D;
-  double cur_inv_M[2][3];
+  double measurementPartFr[2][3];
 
   double unsigned_dist_check = R + Xstd_ob;
 
@@ -364,13 +365,13 @@ bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &m
   int num_bins = 0;
   int count_bar = 0;
   double trans_M[2][3];
-  Transform(cur_M, tf.sampleTransform(), trans_M);
+  Transform(measurementWorldFr, tf.sampleTransform(), trans_M);
   
 
   if (!miss) {
     buildDistTransformAroundPoint(trans_M, mesh, dist_transform);
     cout << "Finish building DT !!" << endl;
-    cout << " currM: " << trans_M[0][0];
+    cout << " trans_M: " << trans_M[0][0];
     cout << ", " << trans_M[0][1] << ", " << trans_M[0][2] << "\n";
 
 
@@ -380,17 +381,17 @@ bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &m
       tempState = particlesPrev.sampleFrom();
 
       cspace stf = tf.sampleTransform();
-      Transform(cur_M, stf, trans_M);
+      Transform(measurementWorldFr, stf, trans_M);
 
-      // inverseTransform(cur_M, tf.sampleTransform(), cur_inv_M);
-      inverseTransform(cur_M, tempState, cur_inv_M);
-      Transform(cur_inv_M, stf, cur_inv_M);
+      // inverseTransform(measurementWorldFr, tf.sampleTransform(), measurementPartFr);
+      inverseTransform(measurementWorldFr, tempState, measurementPartFr);
+      Transform(measurementPartFr, stf, measurementPartFr);
 
       // cout << "sampledtf" << stf[0] << ", " << stf[1] << ", " << 
       // 	stf[2] << ", " << stf[3] << ", " << stf[4] << ", " << stf[5] << "\n";
-      // cout << "curM" << cur_M[0][0] << ", " << cur_M[0][1] << ", " << cur_M[0][2] << "\n";
+      // cout << "curM" << measurementWorldFr[0][0] << ", " << measurementWorldFr[0][1] << ", " << measurementWorldFr[0][2] << "\n";
 
-      // cout << "curinvM" << cur_inv_M[0][0] << ", " << cur_inv_M[0][1] << ", " << cur_inv_M[0][2] << "\n";
+      // cout << "curinvM" << measurementPartFr[0][0] << ", " << measurementPartFr[0][1] << ", " << measurementPartFr[0][2] << "\n";
 
       count += 1;
       if(isPowerOfTwo(count) && count > 1000){
@@ -400,8 +401,12 @@ bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &m
 	cout << " trans_M: " << trans_M[0][0];
 	cout << ", " << trans_M[0][1] << ", " << trans_M[0][2] << "\n";
 
-	cout << " cur_inv_M: " << cur_inv_M[0][0];
-	cout << ", " << cur_inv_M[0][1] << ", " << cur_inv_M[0][2] << "\n";
+	cout << " measurementPartFr: " << measurementPartFr[0][0];
+	cout << ", " << measurementPartFr[0][1] << ", " << measurementPartFr[0][2] << "\n";
+	cout << " sampledState: " << tempState[0];
+	cout << ", " << tempState[1] << ", " << tempState[2];
+	cout << ", " << tempState[3] << ", " << tempState[4];
+	cout << ", " << tempState[5] << "\n";
 	cout << "World Range: [";
 	cout << "(" << dist_transform->world_range[0][0];
 	cout << ", " << dist_transform->world_range[0][1] << ")";
@@ -411,17 +416,17 @@ bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &m
 	cout << ", " << dist_transform->world_range[2][1] << ")]\n";
       }
 
-      touch_dir << cur_inv_M[1][0], cur_inv_M[1][1], cur_inv_M[1][2];
+      touch_dir << measurementPartFr[1][0], measurementPartFr[1][1], measurementPartFr[1][2];
       // reject particles ourside of distance transform
-      if (!insideBounds(cur_inv_M[0], dist_transform->world_range)) {
+      if (!insideBounds(measurementPartFr[0], dist_transform->world_range)) {
 	continue;
       }
 			
-      int xind = int(floor((cur_inv_M[0][0] - dist_transform->world_range[0][0]) / 
+      int xind = int(floor((measurementPartFr[0][0] - dist_transform->world_range[0][0]) / 
 			   dist_transform->voxel_size));
-      int yind = int(floor((cur_inv_M[0][1] - dist_transform->world_range[1][0]) / 
+      int yind = int(floor((measurementPartFr[0][1] - dist_transform->world_range[1][0]) / 
 			   dist_transform->voxel_size));
-      int zind = int(floor((cur_inv_M[0][2] - dist_transform->world_range[2][0]) / 
+      int zind = int(floor((measurementPartFr[0][2] - dist_transform->world_range[2][0]) / 
 			   dist_transform->voxel_size));
       D = (*dist_transform->dist_transform)[xind][yind][zind];
 
@@ -431,13 +436,13 @@ bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &m
       if(isPowerOfTwo(count) && count > 1000){
 	cout << "Sampled " << count << " particles\t";
 	cout << "count2: " << count2 << "\t count3: " << count3 << "\n";
-	cout << "D: " << D << " currM: " << trans_M[0][0];
+	cout << "D: " << D << " measurement World: " << trans_M[0][0];
 	cout << ", " << trans_M[0][1] << ", " << trans_M[0][2] << "\n";
       }
       if (D <= unsigned_dist_check) {
 	count2 ++;
 #ifdef COMBINE_RAYCASTING
-	if (checkIntersections(mesh, cur_inv_M[0], cur_inv_M[1], ARM_LENGTH, D)) {
+	if (checkIntersections(mesh, measurementPartFr[0], measurementPartFr[1], ARM_LENGTH, D)) {
 	  count_bar ++;
 	  if (count_bar > 1000)
 	    break;
@@ -446,7 +451,7 @@ bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &m
 	count_bar = 0;
 	D -= R;
 #else
-	if (checkInObject(mesh, cur_inv_M[0]) == 1 && D != 0) {
+	if (checkInObject(mesh, measurementPartFr[0]) == 1 && D != 0) {
 	  // if (gradient.dot(touch_dir) <= epsilon)
 	  // 	continue;
 	  D = -D - R;
@@ -501,6 +506,7 @@ bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &m
     cout << "Number of particles: " << numParticles << endl;
   }
   else {
+    // ------------------- MISSED TOUCH ------
     // cast multiple rays to check intersections
     double touch_mnt;
     while (i < numParticles) {
@@ -508,8 +514,8 @@ bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &m
       for (int j = 0; j < cdim; j++) {
 	tempState[j] = b_X[idx][j] + Xstd_tran * dist(rd);
       }
-      // inverseTransform(cur_M[0], tempState, cur_inv_M[0]);
-      // inverseTransform(cur_M[1], tempState, cur_inv_M[1]);
+      // inverseTransform(measurementWorldFr[0], tempState, measurementPartFr[0]);
+      // inverseTransform(measurementWorldFr[1], tempState, measurementPartFr[1]);
       touch_dir << trans_M[0][0] - trans_M[1][0],
 	trans_M[0][1] - trans_M[1][1],
 	trans_M[0][2] - trans_M[1][2];
@@ -530,7 +536,7 @@ bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &m
       }
       //double d = testResult(mesh, particles[i], trans_M, R);
       //if (d > 0.01)
-      //	cout << cur_inv_M[0][0] << "  " << cur_inv_M[0][1] << "  " << cur_inv_M[0][2] << "   " << d << "   " << D << //"   " << gradient << "   " << gradient.dot(touch_dir) << 
+      //	cout << measurementPartFr[0][0] << "  " << measurementPartFr[0][1] << "  " << measurementPartFr[0][2] << "   " << d << "   " << D << //"   " << gradient << "   " << gradient.dot(touch_dir) << 
       //	     "   " << dist_adjacent[0] << "   " << dist_adjacent[1] << "   " << dist_adjacent[2] << "   " << particles[i][2] << endl;
       i += 1;
       std::cout << "Miss!" << endl;

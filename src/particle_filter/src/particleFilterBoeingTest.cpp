@@ -141,8 +141,7 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
     FixedTransform tf(tfParams[0], tfParams[1], 
 		      tfParams[2], tfParams[3], 
 		      tfParams[4], tfParams[5]); 
-    pFilter_.addObservation(obs2, mesh, dist_transform, 
-			    tf, 0);
+    pFilter_.addObservation(obs2, mesh, dist_transform, tf, 0);
   } else {
     pFilter_.addObservation(obs2, mesh, dist_transform, 0);
   }
@@ -279,7 +278,7 @@ PFilterTest::PFilterTest(int n_particles, cspace b_init[2]) :
   pFilter_(n_particles, b_init, 0.001, 0.0035, 0.0001, 0.001),
   num_voxels{200, 200, 200}//,
 // pFilter_(n_particles, b_init, 0.001, 0.0025, 0.0001, 0.00),
-// num_voxels{300, 300, 300}//,
+// num_voxels{300, 300, 300}//,p
 //dist_transform(num_voxels)
 // particleFilter (int n_particles, cspace b_init[2], 
 // 				double Xstd_ob=0.0001 (measurement error), 
@@ -301,8 +300,8 @@ PFilterTest::PFilterTest(int n_particles, cspace b_init[2]) :
     ROS_INFO("Failed to get param: localization_object_filepath");
   }
   getMesh(stlFilePath, mesh);
-  //int num_voxels[3] = { 200,200,200 };
-  //dist_transform(num_voxels);
+
+
   ROS_INFO("start create dist_transform");
   dist_transform = new distanceTransform(num_voxels);
 

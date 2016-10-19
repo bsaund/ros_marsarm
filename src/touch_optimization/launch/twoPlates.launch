@@ -40,11 +40,11 @@
 
   <group ns="plate_2">
     <rosparam param="initial_uncertainties">
-      [.0001, .0001, .01, 0.001, 0.001, 0.001]
+      [.0001, .0001, .01, 0.0001, 0.0001, 0.0001]
     </rosparam>
 
     <rosparam param="particle_frame">
-      [0, 0, 1, 0, 0, 0]
+      [1, 1, 1, 0, 0, 0]
     </rosparam>
 
     <rosparam param="color">
@@ -53,7 +53,7 @@
 
     <rosparam param="relationship">
       <!-- [0, 0, 0, 1.57, 0, 0] -->
-      [0, 0, 1, 0, 0, 0]
+      [1, 1, 1, 0, 0, 0]
     </rosparam>
 
 

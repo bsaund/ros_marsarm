@@ -160,7 +160,13 @@ include_directories(
 
 add_executable(run_full_wood src/fullSystemWood.cpp)
 target_link_libraries(run_full_wood
-  ${catkin_LIBRARIES})
+  ${catkin_LIBRARIES}
+)
+
+add_executable(run_full_real src/fullSystemReal.cpp)
+target_link_libraries(run_full_real
+  ${catkin_LIBRARIES}
+)
 
 add_executable(image_maker src/imageMaker.cpp)
 target_link_libraries(image_maker

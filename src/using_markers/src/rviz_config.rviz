@@ -55,19 +55,28 @@ Visualization Manager:
       Reference Frame: <Fixed Frame>
       Value: true
     - Class: rviz/TF
-      Enabled: false
+      Enabled: true
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        base_plate:
+          Value: true
+        my_frame:
+          Value: true
+        particle_frame:
+          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        {}
+        base_plate:
+          my_frame:
+            particle_frame:
+              {}
       Update Interval: 0
-      Value: false
+      Value: true
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /baseParticles/ray_trace_markers
@@ -102,7 +111,7 @@ Visualization Manager:
       Value: true
   Enabled: true
   Global Options:
-    Background Color: 255; 255; 255
+    Background Color: 70; 70; 70
     Fixed Frame: my_frame
     Frame Rate: 30
   Name: root
@@ -124,22 +133,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 4.65854
+      Distance: 2.58721
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.34459
-        Y: 0.487968
-        Z: -0.371553
+        X: 1.26583
+        Y: 0.197559
+        Z: -0.164579
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.675398
+      Pitch: 0.550398
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.8854
+      Yaw: 3.22722
     Saved: ~
 Window Geometry:
   Displays:

@@ -1,0 +1,61 @@
+<launch>
+
+<!-- This is used to load the cad files for visualization and ray tracing.  -->
+<!-- There needs to be corresponding files  -->
+<!-- gazebo_ray_trace/sdf/[localization_object_cad].stl -->
+<!-- gazebo_ray_trace/worlds/[localization_object_cad].world -->
+  <arg name="localization_object" default="boeing_part"/>
+
+  <node pkg="rviz" type="rviz" name="ParticleViz" 
+	args="-d $(find using_markers)/src/rviz_config.rviz" required="true"/>
+
+  <group ns="baseParticles">
+    <rosparam param="initial_uncertainties">
+      [.003, .003, .003, 0.01, 0.01, 0.01]
+      <!-- [.05, .05, .02, 0.02, 0.01, 0.05] -->
+      <!-- [.002, .005, .002, 0.002, 0.001, 0.005] -->
+      <!-- [.1, .1, .1, 0.2, 0.2, 0.2] -->
+      <!-- [.05, .05, .05, 0,0,0] -->
+    </rosparam>
+
+    <rosparam param="particle_frame">
+      [1.1, 0.84, .787, 0, 3.1415, 1.5708]
+      <!-- [0, 0, 0, 0, 0, -1.57] -->
+    </rosparam>
+
+    <rosparam param="color">
+      [.7, .7, .7]
+    </rosparam>
+
+
+    <param name="localization_object_cad" type="str" 
+	   value="package://custom_ray_trace/sdf/$(arg localization_object).stl"/>
+    <param name="localization_object_filepath" type="str"
+	   value="$(find custom_ray_trace)/sdf/$(arg localization_object).stl"/>
+    <param name="localization_object" type="str"
+	   value="$(arg localization_object)"/>
+
+    <node pkg="using_markers" type="plotParticles" 
+	  name="markers" output="screen"/>
+
+    <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
+  </group>
+
+
+
+  <node pkg="ipc_ros_bridge" type="ipc_ros_bridge_test" name="ipc_ros_bridge" output="screen"/>
+
+<!-- Temporary file used to generate particles and send images to RViz -->
+  <!-- <include file="$(find using_markers)/launch/particles.launch"/> -->
+
+  <!-- <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/> -->
+
+<!-- Gazebo ray tracing service used to calculate values of a touch -->
+  <!-- <include file="$(find gazebo_ray_trace)/launch/headless_ray_tracing_service.launch"> -->
+  <!--   <arg name="world_name"  -->
+  <!-- 	 value="$(find gazebo_ray_trace)/worlds/$(arg localization_object).world"/> -->
+  <!-- </include> -->
+
+
+
+</launch>

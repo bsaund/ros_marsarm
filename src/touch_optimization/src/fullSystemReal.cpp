@@ -67,7 +67,7 @@ void generateRandomTouchWith(tf::Pose &probePose, double tbX, double tbY, double
 }
 
     // [0.6, 0.6, -0.1, 0, 0, 0]
-void generateRandomTouchTop(std::mt19937 &gen, tf::Pose &probePose)
+void generateRandomTouchBottom(std::mt19937 &gen, tf::Pose &probePose)
 {
   std::uniform_real_distribution<double> rand(0,1.0);
   double x_width = 0.4*rand(gen);
@@ -78,7 +78,7 @@ void generateRandomTouchTop(std::mt19937 &gen, tf::Pose &probePose)
   // 			  0,0,0);
   generateRandomTouchWith(probePose, 
   			  // 0.8, -0.21, 0.45, M_PI, 0, M_PI, 
-  			  0.48 + x_width, -0.51 + y_width, 0.45, M_PI, 0, M_PI, 
+  			  0.9 + x_width, -0.51 + y_width, 0.51, M_PI, 0, -0.507, 
   			  0,0,0,
   			  0,0,0);
 
@@ -134,19 +134,19 @@ void generateRandomRay(std::mt19937 &gen, tf::Pose &probePose, tf::Point &start,
 
   // generateRandomTouchSide(gen, probePose);
 
+
+  faceNum = 0.5; //HARDCODE FOR TESTING
   
   if(faceNum < 1.0)
-    generateRandomTouchTop(gen, probePose);
-  else if(faceNum < 1.5)
-    generateRandomTouchFront(gen, probePose);
+    generateRandomTouchBottom(gen, probePose);
   else if(faceNum < 2.0)
-    generateRandomTouchFrontRight(gen, probePose);
+    generateRandomTouchFront(gen, probePose);
   else
     generateRandomTouchSide(gen, probePose);
   
-  tf::Transform probeZ;
-  probeZ.setRotation(tf::createQuaternionFromRPY(0,0,0));
-  probeZ.setOrigin(tf::Vector3(0,0,0.1));
+  // tf::Transform probeZ;
+  // probeZ.setRotation(tf::createQuaternionFromRPY(0,0,0));
+  // probeZ.setOrigin(tf::Vector3(0,0,0.1));
 
 
   // end = (probePose*probeZ).getOrigin();
@@ -156,7 +156,7 @@ void generateRandomRay(std::mt19937 &gen, tf::Pose &probePose, tf::Point &start,
 
   start = probePose.getOrigin();
   end = probePose.getOrigin() + 
-    tf::Transform(probePose.getRotation()) * tf::Point(0,0,.25);
+    tf::Transform(probePose.getRotation()) * tf::Point(0,0,-.25);
 }
 
 
@@ -203,7 +203,7 @@ void randomSelection(RayTracePlotter &plt, tf::Pose &probePose)
     }
 
 
-    ROS_DEBUG_THROTTLE(10, "Calculating best point based on information gain...");
+    ROS_DEBUG_THROTTLE(10, "Calculating best point based on information gain: %d...", i);
   }
   plt.deleteAll();
   plt.plotRay(Ray(best_start, best_end));

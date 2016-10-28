@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
+add_definitions(-std=c++11)
 project(ipc_ros_bridge)
 
 ## Find catkin macros and libraries
@@ -8,14 +9,15 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   geometry_msgs
   particle_filter
+  touch_optimization
   tf)
 
 # This message does not appear to actually print to the command line
 # message(WARNING, "Not building IPC package")
 
-if(true)
- return()
-endif()
+# if(true)
+#  return()
+# endif()
 
 
 
@@ -109,7 +111,10 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(${catkin_INCLUDE_DIRS}, /home/bsaund/boeing/software/src)
+include_directories(
+  ${catkin_INCLUDE_DIRS} 
+  include/${PROJECT_NAME}
+  /home/bsaund/boeing/software/src)
 
 add_executable(ipc_ros_bridge_test src/TestBridge.cpp)
 

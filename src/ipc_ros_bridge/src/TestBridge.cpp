@@ -14,6 +14,7 @@
 #include "geometry_msgs/Pose.h"
 #include "std_msgs/String.h"
 #include <tf/transform_broadcaster.h>
+#include "touch_optimization/stateMachine.h"
 
 
 // struct Status
@@ -36,6 +37,7 @@ static ros::Publisher pub;
 static ros::Publisher processFinishedPub;
 static ros::ServiceClient srv_add;
 static ros::Subscriber sub_probe;
+ros::NodeHandle* n_ptr;
 
 static void forceSensorNoiseHnd (MSG_INSTANCE msg, void *callData,
 				 void* clientData)
@@ -124,14 +126,18 @@ static void processFinishedHnd (MSG_INSTANCE msg, void *callData,
   std_msgs::String processMsg;
   processMsg.data = processFinishedIPC->processName;
   
-  processFinishedPub.publish(processMsg);
+  // processFinishedPub.publish(processMsg);
+  MotionStateMachine::setMotionFinished(*n_ptr, true);
 
   IPC_freeData (IPC_msgInstanceFormatter(msg), callData);
+
 }
 
 void probePointHnd(const geometry_msgs::Pose msg)
 {
   ROS_INFO("Handling probe point");
+  MotionStateMachine::setMotionFinished(*n_ptr, false);
+
   tf::Pose p;
   tf::poseMsgToTF(msg, p);
 
@@ -165,6 +171,8 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "ipc_bridge");
   ros::NodeHandle n;
+  n_ptr = &n;
+
   // actionlib::SimpleActionServer<touch_optimization::ProbePointAction> 
   //   as_(n, "ProbePoint", boost::bind(&ProbePointAction::executeCB;
   // actionlib::SimpleActionServer<learning_actionlib::FibonacciAction> as_;

@@ -15,6 +15,7 @@
 #include "custom_ray_trace/rayTracer.h"
 #include "custom_ray_trace/rayTracePlotter.h"
 #include <ros/console.h>
+#include "stateMachine.h"
 # define M_PI       3.14159265358979323846  /* pi */
 
 bool movementFinished = false;
@@ -78,7 +79,7 @@ void generateRandomTouchBottom(std::mt19937 &gen, tf::Pose &probePose)
   // 			  0,0,0);
   generateRandomTouchWith(probePose, 
   			  // 0.8, -0.21, 0.45, M_PI, 0, M_PI, 
-  			  0.9 + x_width, -0.51 + y_width, 0.51, M_PI, 0, -0.507, 
+  			  0.7 + x_width, -0.51 + y_width, 0.51, M_PI, 0, -3 + 3*y_width, 
   			  0,0,0,
   			  0,0,0);
 
@@ -180,7 +181,7 @@ void randomSelection(RayTracePlotter &plt, tf::Pose &probePose)
   tf::Point best_start, best_end;
 
 
-  for(int i=0; i<500; i++){
+  for(int i=0; i<50; i++){
     // tf::Point start(rand(gen), rand(gen), rand(gen));
     // start = start.normalize();
     // tf::Point end(rand(gen), rand(gen), rand(gen));
@@ -294,13 +295,14 @@ int main(int argc, char **argv)
     tf::poseTFToMsg(probePose, probe_msg);
 
 
-    while(!movementFinished){
+    // while(!movementFinished){
+    while(!MotionStateMachine::isMotionFinished(n)){
       ROS_INFO_THROTTLE(30, "Waiting for previous movement to finish...");
       ros::spinOnce();
       ros::Duration(.1).sleep();
     }
 
-    movementFinished = false;
+    // movementFinished = false;
 
     probe_pub.publish(probe_msg);
     ros::spinOnce();

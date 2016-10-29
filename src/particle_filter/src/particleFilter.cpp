@@ -150,25 +150,25 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
   cout << "Maximum workspace distance: " << euclideanDist[0] << endl;
   cout << "Minimum workspace distanceL " << euclideanDist[1] << endl << endl;
 
-  ofstream myfile;
-  myfile.open("/home/shiyuan/Documents/ros_marsarm/diff.csv", ios::out|ios::app);
-  myfile << est_diff << ",";
-  myfile.close();
-  myfile.open("/home/shiyuan/Documents/ros_marsarm/time.csv", ios::out|ios::app);
-  myfile << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << ",";
-  myfile.close();
-  myfile.open("/home/shiyuan/Documents/ros_marsarm/diff_trans.csv", ios::out|ios::app);
-  myfile << est_diff_trans << ",";
-  myfile.close();
-  myfile.open("/home/shiyuan/Documents/ros_marsarm/diff_rot.csv", ios::out|ios::app);
-  myfile << est_diff_rot << ",";
-  myfile.close();
-  myfile.open("/home/shiyuan/Documents/ros_marsarm/workspace_max.csv", ios::out|ios::app);
-  myfile << euclideanDist[0] << ",";
-  myfile.close();
-  myfile.open("/home/shiyuan/Documents/ros_marsarm/workspace_min.csv", ios::out|ios::app);
-  myfile << euclideanDist[1] << ",";
-  myfile.close();
+  // ofstream myfile;
+  // myfile.open("/home/shiyuan/Documents/ros_marsarm/diff.csv", ios::out|ios::app);
+  // myfile << est_diff << ",";
+  // myfile.close();
+  // myfile.open("/home/shiyuan/Documents/ros_marsarm/time.csv", ios::out|ios::app);
+  // myfile << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << ",";
+  // myfile.close();
+  // myfile.open("/home/shiyuan/Documents/ros_marsarm/diff_trans.csv", ios::out|ios::app);
+  // myfile << est_diff_trans << ",";
+  // myfile.close();
+  // myfile.open("/home/shiyuan/Documents/ros_marsarm/diff_rot.csv", ios::out|ios::app);
+  // myfile << est_diff_rot << ",";
+  // myfile.close();
+  // myfile.open("/home/shiyuan/Documents/ros_marsarm/workspace_max.csv", ios::out|ios::app);
+  // myfile << euclideanDist[0] << ",";
+  // myfile.close();
+  // myfile.open("/home/shiyuan/Documents/ros_marsarm/workspace_min.csv", ios::out|ios::app);
+  // myfile << euclideanDist[1] << ",";
+  // myfile.close();
 }
 
 void particleFilter::estimateGaussian(cspace &x_mean, cspace &x_est_stat) {

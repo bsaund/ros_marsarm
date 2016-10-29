@@ -284,8 +284,8 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
   srv_add_obs = n.advertiseService("/particle_filter_add", &PFilterTest::addObs, this);
   pub_particles = n.advertise<geometry_msgs::PoseArray>("/particles_from_filter", 5);
   ROS_INFO("Loading Boeing Particle Filter");
-  // getMesh("boeing_part.stl");
-  getMesh("wood_boeing.stl");
+  getMesh("boeing_part.stl");
+  // getMesh("wood_boeing.stl");
   //int num_voxels[3] = { 200,200,200 };
   //dist_transform(num_voxels);
   ROS_INFO("start create dist_transform");

@@ -1,7 +1,7 @@
-#include "rayTracer.h"
 #include "stlParser.h"
+#include "rayTracer.h"
+#include "BVH.h"
 #include <std_msgs/Empty.h>
-
 
 /*
  *************************
@@ -155,11 +155,15 @@ bool ParticleHandler::theseAreNewParticles(){
  ***********     |Ray Tracer|    ************
  ********************************************
  */
-
+RayTracer::~RayTracer()
+{
+  delete bvh;
+}
 
 RayTracer::RayTracer()
 {
   loadMesh();
+  generateBVH();
 }
 
 
@@ -170,48 +174,103 @@ bool RayTracer::loadMesh(){
   }
 
   mesh = stl::importSTL(stlFilePath);
-  surroundingBox = stl::getSurroundingBox(mesh);
+  // surroundingBox = stl::getSurroundingBox(mesh);
 }
 
-stl::Mesh RayTracer::getBoxAroundAllParticles(stl::Mesh mesh)
+/*
+ *   Generates Bounding Volumn Hierarchy
+ */
+void RayTracer::generateBVH()
 {
-  stl::Mesh allMesh;
-  std::vector<tf::Transform> particles = particleHandler.getParticleSubset();
-
-  for(tf::Transform particle : particles){
-    stl::combineMesh(allMesh, stl::transformMesh(mesh, particle.inverse()));
-  }
-  return stl::getSurroundingBox(allMesh);
+  bvh = new BVH(&mesh);
 }
+
+/*
+ * Find the intersection point between a ray and meshes
+ * Input: ray: BVHRay
+ *        I: intersection point
+ * Output: 1 if intersect
+ *         0 if not
+ */
+bool RayTracer::bvhIntersection(BVHRay &ray, IntersectionInfo &I)
+{
+  return bvh->getIntersection(ray, &I, false);
+}
+
+int RayTracer::getIntersection(array<double,3> pstart, 
+        array<double,3> dir, double &distToPart)
+{
+  double t, u, v;
+  double tMin = 100000;
+  BVHRay ray(Vector3(pstart[0], pstart[1], pstart[2]), Vector3(dir[0], dir[1], dir[2]));
+  IntersectionInfo I;
+  for (Object* face : mesh) {
+    if (face->getIntersection(ray, &I)){
+      tMin = std::min(double(I.t), tMin);
+    }
+  }
+
+  if (tMin == 100000)
+    return 0;
+
+  distToPart = tMin;
+  return 1;
+}
+
+// stl::Mesh RayTracer::getBoxAroundAllParticles(stl::Mesh mesh)
+// {
+//   stl::Mesh allMesh;
+//   std::vector<tf::Transform> particles = particleHandler.getParticleSubset();
+
+//   for(tf::Transform particle : particles){
+//     stl::combineMesh(allMesh, stl::transformMesh(mesh, particle.inverse()));
+//   }
+//   return stl::getSurroundingBox(allMesh);
+// }
 
 
 /*
  *   Casts "ray" onto "mesh", set the distance, and returns true if intersection happened
  *    sets distance to 1000 if no intersection
  */
-bool RayTracer::traceRay(const stl::Mesh &mesh, const Ray &ray, double &distToPart)
-{
-  array<double,3> startArr = {ray.start.getX(), ray.start.getY(), ray.start.getZ()};
-  tf::Vector3 dir = ray.getDirection();
-  array<double,3> dirArr = {dir.getX(), dir.getY(), dir.getZ()};
-  distToPart = 1000;
-
-  return getIntersection(mesh, startArr, dirArr, distToPart);
-}
+// bool RayTracer::traceRay(const stl::Mesh &mesh, const Ray &ray, double &distToPart)
+// {
+//   array<double,3> startArr = {ray.start.getX(), ray.start.getY(), ray.start.getZ()};
+//   tf::Vector3 dir = ray.getDirection();
+//   array<double,3> dirArr = {dir.getX(), dir.getY(), dir.getZ()};
+//   distToPart = 1000;
+//   BVHRay bvhray(Vector3(startArr[0], startArr[1], startArr[2]), 
+//                 Vector3(dirArr[0], dirArr[1], dirArr[2]));
+//   IntersectionInfo I;
+//   bool intersect = getIntersection(bvhray, I);
+//   distToPart = I.t;
+//   return intersect;
+// }
 
 
 /*
  * Returns true if ray intersections with part and sets the distToPart
  */
-bool RayTracer::tracePartFrameRay(const Ray &ray, double &distToPart, bool quick)
+bool RayTracer::tracePartFrameRay(const Ray &ray, double &distToPart)
 {
-  distToPart = 1000;
+  // //Quick check to see if ray has a chance of hitting any particle
+  // double tmp;
+  // if(quick && !traceRay(surroundingBox, ray, tmp))
+  //    return false;
+  // return traceRay(mesh, ray, distToPart);
 
-  //Quick check to see if ray has a chance of hitting any particle
-  double tmp;
-  if(quick && !traceRay(surroundingBox, ray, tmp))
-     return false;
-  return traceRay(mesh, ray, distToPart);
+  array<double,3> startArr = {ray.start.getX(), ray.start.getY(), ray.start.getZ()};
+  tf::Vector3 dir = ray.getDirection();
+  array<double,3> dirArr = {dir.getX(), dir.getY(), dir.getZ()};
+  distToPart = 1000;
+  BVHRay bvhray(Vector3(startArr[0], startArr[1], startArr[2]), 
+                Vector3(dirArr[0], dirArr[1], dirArr[2]));
+  IntersectionInfo I;
+  bool intersect = bvhIntersection(bvhray, I);
+  if (intersect)
+    distToPart = I.t;
+  return intersect;
+  // return getIntersection(startArr, dirArr, distToPart);
 }
 
 
@@ -226,7 +285,7 @@ bool RayTracer::traceRay(Ray ray, double &distToPart){
  *  Returns true if at least 1 ray intersected the part
  *   If "quick" then it will not set distances if ray misses all particles
  */
-bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart, bool quick)
+bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart)
 {
   transformRayToPartFrame(ray);
   std::vector<tf::Transform> particles = particleHandler.getParticleSubset();
@@ -239,18 +298,18 @@ bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart, bool
   //Quick check to see if ray even has a chance of hitting any particle
   if(particleHandler.theseAreNewParticles()){
     particleHandler.newParticles = false;
-    surroundingBoxAllParticles = getBoxAroundAllParticles(mesh);
+    // surroundingBoxAllParticles = getBoxAroundAllParticles(mesh);
   }
   
-  double tmp;
-  if(quick && !traceRay(surroundingBoxAllParticles, ray, tmp))
-    return false;
+  // double tmp;
+  // if(quick && !traceRay(surroundingBoxAllParticles, ray, tmp))
+  //   return false;
 
   distToPart.resize(particles.size());
 
   bool hitPart = false;
   for(int i=0; i<particles.size(); i++){
-    hitPart = tracePartFrameRay(ray.getTransformed(particles[i]), distToPart[i], quick) || hitPart;
+    hitPart = tracePartFrameRay(ray.getTransformed(particles[i]), distToPart[i]) || hitPart;
   }
   return hitPart;
 }
@@ -275,7 +334,7 @@ double RayTracer::getIG(std::vector<Ray> rays, double radialErr, double distErr)
   int i=0;
   for(Ray ray: rays){
     vector<CalcEntropy::ConfigDist> dists;
-    traceCylinderAllParticles(ray, radialErr, dists, false);
+    traceCylinderAllParticles(ray, radialErr, dists);
     if(firstrun){
        histCombined = CalcEntropy::processMeasurements(dists, distErr, n);    
        firstrun = false;
@@ -297,8 +356,7 @@ double RayTracer::getIG(std::vector<Ray> rays, double radialErr, double distErr)
  *  Returns true if at least one ray hit the part
  */
 bool RayTracer::traceCylinderAllParticles(Ray ray, double radius, 
-					  vector<CalcEntropy::ConfigDist> &distsToPart,
-					  bool quick)
+					  vector<CalcEntropy::ConfigDist> &distsToPart)
 {
   std::vector<tf::Vector3> ray_orthog = getOrthogonalBasis(ray.getDirection());
   int n = 12;
@@ -312,7 +370,7 @@ bool RayTracer::traceCylinderAllParticles(Ray ray, double radius,
     Ray cylinderRay(ray.start + offset, ray.end+offset);
     vector<double> distsTmp;
     
-    hitPart = traceAllParticles(cylinderRay, distsTmp, quick) || hitPart;
+    hitPart = traceAllParticles(cylinderRay, distsTmp) || hitPart;
 
     for(int pNumber = 0; pNumber<distsTmp.size(); pNumber++){
       CalcEntropy::ConfigDist cDist;

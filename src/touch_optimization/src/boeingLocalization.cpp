@@ -131,6 +131,71 @@ void fixedSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, t
   plt.plotRay(Ray(best_start, best_end));
 }
 
+void fixedSelectionBoeing(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, tf::Point &best_end)
+{
+  int index;
+  double bestIG = 0;
+  tf::Point tf_start;
+  tf::Point tf_end;
+  bestIG = 0;
+  std::random_device rd;
+  std::uniform_real_distribution<double> rand(0, 1);
+  std::uniform_int_distribution<> int_rand(0, 3);
+  Eigen::Vector3d start;
+  Eigen::Vector3d end;
+  double state[6] = {0.3, 0.3, 0.3, 0.5, 0.7, 0.5};
+  Eigen::Matrix3d rotationC;
+  rotationC << cos(state[5]), -sin(state[5]), 0,
+               sin(state[5]), cos(state[5]), 0,
+               0, 0, 1;
+  Eigen::Matrix3d rotationB;
+  rotationB << cos(state[4]), 0 , sin(state[4]),
+               0, 1, 0,
+               -sin(state[4]), 0, cos(state[4]);
+  Eigen::Matrix3d rotationA;
+  rotationA << 1, 0, 0 ,
+               0, cos(state[3]), -sin(state[3]),
+               0, sin(state[3]), cos(state[3]);
+  Eigen::Matrix3d rotationM = rotationC * rotationB * rotationA;
+  Eigen::Vector3d displaceV(state[0], state[1], state[2]);
+  for(int i=0; i<50; i++){
+    
+    double x = rand(rd) * 1.4 + 0.1;
+    double y = rand(rd) * 0.05 + 0.02;
+    // double x = 1, y = 0.05;
+    start << x, y, 1;
+    end << x, y, -1;
+    
+    Eigen::Vector3d tran_start = rotationM * start + displaceV;
+    Eigen::Vector3d tran_end = rotationM * end + displaceV;
+
+    tf_start.setValue(tran_start(0, 0), tran_start(1, 0), tran_start(2, 0));
+    tf_end.setValue(tran_end(0, 0), tran_end(1, 0), tran_end(2, 0));
+    Ray measurement(tf_start, tf_end);
+    // double distToPart = 0;
+    // rayt.traceRay(measurement, distToPart);
+    // auto timer_begin = std::chrono::high_resolution_clock::now();
+    double IG = rayt.getIG(measurement, 0.01, 0.002);
+    // plt.plotRay(measurement);
+    // plt.labelRay(measurement, IG);
+    // auto timer_end = std::chrono::high_resolution_clock::now();
+    // auto timer_dur = timer_end - timer_begin;
+    // cout << "IG: " << IG << endl;
+    // cout << "Elapsed time for ray: " << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << endl;
+    // double IG = plt.getIG(start, end, 0.01, 0.002);
+    if (IG > bestIG){
+      bestIG = IG;
+      best_start = tf_start;
+      best_end = tf_end;
+    }
+  }
+  // plt.plotCylinder(best_start, best_end, 0.01, 0.002, true);
+  ROS_INFO("Ray is: %f, %f, %f.  %f, %f, %f", 
+     best_start.getX(), best_start.getY(), best_start.getZ(),
+     best_end.getX(), best_end.getY(), best_end.getZ());
+  plt.plotRay(Ray(best_start, best_end));
+}
+
 /**
  * Randomly chooses vectors, gets the Information Gain for each of 
  *  those vectors, and returns the ray (start and end) with the highest information gain
@@ -214,7 +279,11 @@ int main(int argc, char **argv)
     //tf::Point end(0.95,2,-0.15);
     tf::Point start, end;
     // randomSelection(plt, rayt, start, end);
-    fixedSelection(plt, rayt, start, end);
+    auto timer_begin = std::chrono::high_resolution_clock::now();
+    fixedSelectionBoeing(plt, rayt, start, end);
+    auto timer_end = std::chrono::high_resolution_clock::now();
+    auto timer_dur = timer_end - timer_begin;
+    cout << "Elapsed RayCasting time: " << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << endl;
 
     Ray measurement(start, end);
     
@@ -225,7 +294,7 @@ int main(int argc, char **argv)
     }
     tf::Point intersection(start.getX(), start.getY(), start.getZ());
     intersection = intersection + (end-start).normalize() * (distToPart - radius);
-	std::cout << "Intersection at: " << intersection.getX() << "  " << intersection.getY() << "   " << intersection.getZ() << std::endl;
+    std::cout << "Intersection at: " << intersection.getX() << "  " << intersection.getY() << "   " << intersection.getZ() << std::endl;
     tf::Point ray_dir(end.x()-start.x(),end.y()-start.y(),end.z()-start.z());
     ray_dir = ray_dir.normalize();
     obs.x=intersection.getX() + randn(rd); 
@@ -259,25 +328,25 @@ int main(int argc, char **argv)
     }
     i ++;
   }
-  std::ofstream myfile;
-  myfile.open("/home/shiyuan/Documents/ros_marsarm/diff.csv", std::ios::out|std::ios::app);
-  myfile << "\n";
-  myfile.close();
-  myfile.open("/home/shiyuan/Documents/ros_marsarm/time.csv", std::ios::out|std::ios::app);
-  myfile << "\n";
-  myfile.close();
-  myfile.open("/home/shiyuan/Documents/ros_marsarm/diff_trans.csv", std::ios::out|std::ios::app);
-  myfile << "\n";
-  myfile.close();
-  myfile.open("/home/shiyuan/Documents/ros_marsarm/diff_rot.csv", std::ios::out|std::ios::app);
-  myfile << "\n";
-  myfile.close();
-  myfile.open("/home/shiyuan/Documents/ros_marsarm/workspace_max.csv", std::ios::out|std::ios::app);
-  myfile << "\n";
-  myfile.close();
-  myfile.open("/home/shiyuan/Documents/ros_marsarm/workspace_min.csv", std::ios::out|std::ios::app);
-  myfile << "\n";
-  myfile.close();
+  // std::ofstream myfile;
+  // myfile.open("/home/shiyuan/Documents/ros_marsarm/diff.csv", std::ios::out|std::ios::app);
+  // myfile << "\n";
+  // myfile.close();
+  // myfile.open("/home/shiyuan/Documents/ros_marsarm/time.csv", std::ios::out|std::ios::app);
+  // myfile << "\n";
+  // myfile.close();
+  // myfile.open("/home/shiyuan/Documents/ros_marsarm/diff_trans.csv", std::ios::out|std::ios::app);
+  // myfile << "\n";
+  // myfile.close();
+  // myfile.open("/home/shiyuan/Documents/ros_marsarm/diff_rot.csv", std::ios::out|std::ios::app);
+  // myfile << "\n";
+  // myfile.close();
+  // myfile.open("/home/shiyuan/Documents/ros_marsarm/workspace_max.csv", std::ios::out|std::ios::app);
+  // myfile << "\n";
+  // myfile.close();
+  // myfile.open("/home/shiyuan/Documents/ros_marsarm/workspace_min.csv", std::ios::out|std::ios::app);
+  // myfile << "\n";
+  // myfile.close();
   ROS_INFO("Finished all action");
 
 }

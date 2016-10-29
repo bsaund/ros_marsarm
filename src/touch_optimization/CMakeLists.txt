@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 
 # set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
-add_definitions(-std=c++11)
+add_definitions(-std=c++11 -O3 -msse3)
 project(touch_optimization)
 
 ## Find catkin macros and libraries

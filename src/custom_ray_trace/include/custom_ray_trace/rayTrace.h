@@ -2,10 +2,7 @@
 #define RAYTRI_H
 using namespace std;
 #include <array>
-#include <vector>
 
-#include "stlParser.h"
-#include <iostream>
 #define DOT(v1,v2) (v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2])
 #define CROSS(dest,v1,v2)			\
   dest[0]=v1[1]*v2[2]-v1[2]*v2[1];		\
@@ -104,40 +101,40 @@ int intersect_triangle(const array<double,3> &orig, const array<double,3> &dir,
 
 
 
-/*
- * Find the intersection point between a ray and meshes
- * Input: mesh: mesh arrays
- * 	      pstart: start point
- * 	      dir: ray direction
- * 	      intersection: intersection point
- * Output: 1 if intersect
- *         0 if not
- */
-int getIntersection(stl::Mesh mesh, array<double,3> pstart, 
-		    array<double,3> dir, double &distToPart)
-{
-  double t, u, v;
-  double tMin = 100000;
+// /*
+//  * Find the intersection point between a ray and meshes
+//  * Input: mesh: mesh arrays
+//  * 	      pstart: start point
+//  * 	      dir: ray direction
+//  * 	      intersection: intersection point
+//  * Output: 1 if intersect
+//  *         0 if not
+//  */
+// int getIntersection(stl::Mesh mesh, array<double,3> pstart, 
+// 		    array<double,3> dir, double &distToPart)
+// {
+//   double t, u, v;
+//   double tMin = 100000;
 
-  for (stl::vec4x3 face : mesh) {
-    if (intersect_triangle(pstart, dir, 
-			   &face[1][0], &face[2][0], &face[3][0], 
-			   t, u, v)){
-      tMin = std::min(t, tMin);
-    }
-  }
+//   for (stl::vec4x3 face : mesh) {
+//     if (intersect_triangle(pstart, dir, 
+// 			   &face[1][0], &face[2][0], &face[3][0], 
+// 			   t, u, v)){
+//       tMin = std::min(t, tMin);
+//     }
+//   }
 
-  if (tMin == 100000)
-    return 0;
+//   if (tMin == 100000)
+//     return 0;
 
-  distToPart = tMin;
-  // for (int i = 0; i < 3; i++)
-  //   {
-  //     intersection[i] = pstart[i] + dir[i] * tMin;
-  //   }
+//   distToPart = tMin;
+//   // for (int i = 0; i < 3; i++)
+//   //   {
+//   //     intersection[i] = pstart[i] + dir[i] * tMin;
+//   //   }
 	
-  return 1;
-}
+//   return 1;
+// }
 
 
 #endif // RAYTRI_H

@@ -1,7 +1,9 @@
 #ifndef STL_PARSER_CUSTOM_RAY_H
 #define STL_PARSER_CUSTOM_RAY_H
 #include <array>
-#include <tf/tf.h>
+#include <vector>
+
+#include "Triangle.h"
 
 using namespace std;
 
@@ -9,7 +11,7 @@ using namespace std;
 
 namespace stl{
   typedef array<array<double, 3>, 4> vec4x3;
-  typedef vector<vec4x3> Mesh;
+  typedef vector<Object*> Mesh;
 
   /*
    * Import binary STL file to arrays.
@@ -18,13 +20,13 @@ namespace stl{
    */
   Mesh importSTL(string filename);
 
-  Mesh getSurroundingBox(Mesh fullMesh);
+  // Mesh getSurroundingBox(Mesh fullMesh);
   
-  void combineMesh(Mesh &mesh1, const Mesh &mesh2){
-    mesh1.insert(mesh1.end(), mesh2.begin(), mesh2.end());
-  }
+  // void combineMesh(Mesh &mesh1, const Mesh &mesh2){
+  //   mesh1.insert(mesh1.end(), mesh2.begin(), mesh2.end());
+  // }
 
-  Mesh transformMesh(Mesh mesh, tf::Transform t);
+  // Mesh transformMesh(Mesh mesh, tf::Transform t);
 
 }
 

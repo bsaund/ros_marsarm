@@ -264,7 +264,7 @@ void visualize()
 #endif
 
 PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
-  pFilter_(n_particles, b_init, 0.0005, 0.0035, 0.0001, 0.001),
+  pFilter_(n_particles, b_init, 0.0001, 0.0035, 0.0001, 0.00),
   num_voxels{200, 200, 200}//,
   // pFilter_(n_particles, b_init, 0.001, 0.0025, 0.0001, 0.00),
   // num_voxels{300, 300, 300}//,
@@ -284,8 +284,8 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
   srv_add_obs = n.advertiseService("/particle_filter_add", &PFilterTest::addObs, this);
   pub_particles = n.advertise<geometry_msgs::PoseArray>("/particles_from_filter", 5);
   ROS_INFO("Loading Boeing Particle Filter");
-  // getMesh("boeing_part.stl");
-  getMesh("wood_boeing.stl");
+  getMesh("boeing_part.stl");
+  // getMesh("wood_boeing.stl");
   //int num_voxels[3] = { 200,200,200 };
   //dist_transform(num_voxels);
   ROS_INFO("start create dist_transform");

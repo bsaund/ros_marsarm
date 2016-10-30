@@ -3,9 +3,14 @@
 
 #include "rayTrace.h"
 #include "ros/ros.h"
+#include "stlParser.h"
+#include "Triangle.h"
+#include "BVH.h"
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
 #include <geometry_msgs/PoseArray.h>
+#include <array>
+#include <vector>
 #include "calcEntropy.h"
 
 class Ray
@@ -56,26 +61,30 @@ class RayTracer
  private:
   ros::NodeHandle n_;
   stl::Mesh mesh;
-  stl::Mesh surroundingBox;
-  stl::Mesh surroundingBoxAllParticles;
+  BVH *bvh;
+  // stl::Mesh surroundingBox;
+  // stl::Mesh surroundingBoxAllParticles;
 
   
  public:
 
   RayTracer();
+  ~RayTracer();
   bool loadMesh();
-  bool tracePartFrameRay(const Ray &ray, double &distToPart, bool quick=false);
+  void generateBVH();
+  bool bvhIntersection(BVHRay &ray, IntersectionInfo &I);
+  int getIntersection(array<double,3> pstart, array<double,3> dir, double &distToPart);
+  bool tracePartFrameRay(const Ray &ray, double &distToPart);
   bool traceRay(Ray ray, double &distToPart);
   bool traceRay(const stl::Mesh &mesh, const Ray &ray, double &distToPart);
-  bool traceAllParticles(Ray ray, std::vector<double> &distToPart, bool quick=true);
+  bool traceAllParticles(Ray ray, std::vector<double> &distToPart);
 
   double getIG(Ray ray, double radialErr, double distErr);
   double getIG(std::vector<Ray> rays, double radialErr, double distErr);
-  bool traceCylinderAllParticles(Ray ray, double radius, vector<CalcEntropy::ConfigDist> &dists,
-				 bool quick = true);
+  bool traceCylinderAllParticles(Ray ray, double radius, vector<CalcEntropy::ConfigDist> &dists);
   std::vector<tf::Vector3> getOrthogonalBasis(tf::Vector3 dir);
 
-  stl::Mesh getBoxAroundAllParticles(stl::Mesh mesh);
+  // stl::Mesh getBoxAroundAllParticles(stl::Mesh mesh);
 
   void transformRayToPartFrame(Ray &ray);
   ParticleHandler particleHandler;

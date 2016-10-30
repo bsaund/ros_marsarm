@@ -5,6 +5,7 @@
  *    publishes visualization messages, and RViz.
  */
 #include <iostream>
+#include <fstream>
 #include <chrono>
 #include <ros/ros.h>
 #include "particle_filter/PFilterInit.h"
@@ -43,14 +44,16 @@
 //   return init_points;
 // }
 
-void fixedSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, tf::Point &best_end, int index)
+void fixedSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, tf::Point &best_end)
 {
+  int index;
   double bestIG = 0;
   tf::Point tf_start;
   tf::Point tf_end;
   bestIG = 0;
   std::random_device rd;
   std::uniform_real_distribution<double> rand(0, 1);
+  std::uniform_int_distribution<> int_rand(0, 3);
   Eigen::Vector3d start;
   Eigen::Vector3d end;
   double state[6] = {0.3, 0.3, 0.3, 0.5, 0.7, 0.5};
@@ -69,41 +72,28 @@ void fixedSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, t
   Eigen::Matrix3d rotationM = rotationC * rotationB * rotationA;
   Eigen::Vector3d displaceV(state[0], state[1], state[2]);
   for(int i=0; i<500; i++){
-    if (index % 6 == 0)
+    index = int_rand(rd);
+    if (index == 0)
     {
-      double y = rand(rd) * 0.2 - 0.35;
+      double y = rand(rd) * 0.31 - 0.35;
       double z = rand(rd) * 0.18 + 0.03;
-       start << 1, y, z;
-       end << -1, y, z;
+      start << 2, y, z;
+      end << -1, y, z;
 
     }
-    else if (index % 6 == 1)
+    else if (index == 1)
     {
       double x = rand(rd) * 1.1 + 0.1;
       double z = rand(rd) * 0.18 + 0.03;
       start << x, -1, z;
       end << x, 1, z;
     }
-    else if (index % 6 == 2)
+    else if (index == 2)
     {
       double x = rand(rd) * 1.1 + 0.1;
       double y = rand(rd) * 0.01 - 0.02;
       start << x, y, 1;
       end << x, y, -1;
-    }
-    else if (index % 6 == 3)
-    {
-      double y = rand(rd) * 0.2 - 0.35;
-      double z = rand(rd) * 0.18 + 0.03;
-       start << 1, y, z;
-       end << -1, y, z;
-    }
-    else if (index % 6 == 4)
-    {
-      double x = rand(rd) * 1.1 + 0.1;
-      double z = rand(rd) * 0.18 + 0.03;
-      start << x, -1, z;
-      end << x, 1, z;
     }
     else
     {
@@ -121,8 +111,73 @@ void fixedSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, t
     Ray measurement(tf_start, tf_end);
     // auto timer_begin = std::chrono::high_resolution_clock::now();
     double IG = rayt.getIG(measurement, 0.01, 0.002);
-    plt.plotRay(measurement);
-    plt.labelRay(measurement, IG);
+    // plt.plotRay(measurement);
+    // plt.labelRay(measurement, IG);
+    // auto timer_end = std::chrono::high_resolution_clock::now();
+    // auto timer_dur = timer_end - timer_begin;
+    // cout << "IG: " << IG << endl;
+    // cout << "Elapsed time for ray: " << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << endl;
+    // double IG = plt.getIG(start, end, 0.01, 0.002);
+    if (IG > bestIG){
+      bestIG = IG;
+      best_start = tf_start;
+      best_end = tf_end;
+    }
+  }
+  // plt.plotCylinder(best_start, best_end, 0.01, 0.002, true);
+  ROS_INFO("Ray is: %f, %f, %f.  %f, %f, %f", 
+     best_start.getX(), best_start.getY(), best_start.getZ(),
+     best_end.getX(), best_end.getY(), best_end.getZ());
+  plt.plotRay(Ray(best_start, best_end));
+}
+
+void fixedSelectionBoeing(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, tf::Point &best_end)
+{
+  int index;
+  double bestIG = 0;
+  tf::Point tf_start;
+  tf::Point tf_end;
+  bestIG = 0;
+  std::random_device rd;
+  std::uniform_real_distribution<double> rand(0, 1);
+  std::uniform_int_distribution<> int_rand(0, 3);
+  Eigen::Vector3d start;
+  Eigen::Vector3d end;
+  double state[6] = {0.3, 0.3, 0.3, 0.5, 0.7, 0.5};
+  Eigen::Matrix3d rotationC;
+  rotationC << cos(state[5]), -sin(state[5]), 0,
+               sin(state[5]), cos(state[5]), 0,
+               0, 0, 1;
+  Eigen::Matrix3d rotationB;
+  rotationB << cos(state[4]), 0 , sin(state[4]),
+               0, 1, 0,
+               -sin(state[4]), 0, cos(state[4]);
+  Eigen::Matrix3d rotationA;
+  rotationA << 1, 0, 0 ,
+               0, cos(state[3]), -sin(state[3]),
+               0, sin(state[3]), cos(state[3]);
+  Eigen::Matrix3d rotationM = rotationC * rotationB * rotationA;
+  Eigen::Vector3d displaceV(state[0], state[1], state[2]);
+  for(int i=0; i<50; i++){
+    
+    double x = rand(rd) * 1.4 + 0.1;
+    double y = rand(rd) * 0.05 + 0.02;
+    // double x = 1, y = 0.05;
+    start << x, y, 1;
+    end << x, y, -1;
+    
+    Eigen::Vector3d tran_start = rotationM * start + displaceV;
+    Eigen::Vector3d tran_end = rotationM * end + displaceV;
+
+    tf_start.setValue(tran_start(0, 0), tran_start(1, 0), tran_start(2, 0));
+    tf_end.setValue(tran_end(0, 0), tran_end(1, 0), tran_end(2, 0));
+    Ray measurement(tf_start, tf_end);
+    // double distToPart = 0;
+    // rayt.traceRay(measurement, distToPart);
+    // auto timer_begin = std::chrono::high_resolution_clock::now();
+    double IG = rayt.getIG(measurement, 0.01, 0.002);
+    // plt.plotRay(measurement);
+    // plt.labelRay(measurement, IG);
     // auto timer_end = std::chrono::high_resolution_clock::now();
     // auto timer_dur = timer_end - timer_begin;
     // cout << "IG: " << IG << endl;
@@ -198,7 +253,7 @@ int main(int argc, char **argv)
   RayTracer rayt;
 
   std::random_device rd;
-  std::normal_distribution<double> randn(0.0,0.0005);
+  std::normal_distribution<double> randn(0.0,0.0001);
 
   ROS_INFO("Running...");
 
@@ -214,17 +269,21 @@ int main(int argc, char **argv)
  
   geometry_msgs::Point obs;
   geometry_msgs::Point dir;
-  double radius = 0.001;
+  double radius = 0.00;
 
   int i = 0;
   //for(int i=0; i<20; i++){
   while (i < NUM_TOUCHES) {
-    ros::Duration(1).sleep();
+    // ros::Duration(1).sleep();
     //tf::Point start(0.95,0,-0.15);
     //tf::Point end(0.95,2,-0.15);
     tf::Point start, end;
     // randomSelection(plt, rayt, start, end);
-    fixedSelection(plt, rayt, start, end, i);
+    auto timer_begin = std::chrono::high_resolution_clock::now();
+    fixedSelectionBoeing(plt, rayt, start, end);
+    auto timer_end = std::chrono::high_resolution_clock::now();
+    auto timer_dur = timer_end - timer_begin;
+    cout << "Elapsed RayCasting time: " << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << endl;
 
     Ray measurement(start, end);
     
@@ -235,7 +294,7 @@ int main(int argc, char **argv)
     }
     tf::Point intersection(start.getX(), start.getY(), start.getZ());
     intersection = intersection + (end-start).normalize() * (distToPart - radius);
-	std::cout << "Intersection at: " << intersection.getX() << "  " << intersection.getY() << "   " << intersection.getZ() << std::endl;
+    std::cout << "Intersection at: " << intersection.getX() << "  " << intersection.getY() << "   " << intersection.getZ() << std::endl;
     tf::Point ray_dir(end.x()-start.x(),end.y()-start.y(),end.z()-start.z());
     ray_dir = ray_dir.normalize();
     obs.x=intersection.getX() + randn(rd); 
@@ -252,7 +311,7 @@ int main(int argc, char **argv)
     
     // plt.plotCylinder(start, end, 0.01, 0.002, true);
     plt.plotRay(Ray(start, end));
-    ros::Duration(1).sleep();
+    // ros::Duration(1).sleep();
 
     particle_filter::AddObservation pfilter_obs;
     pfilter_obs.request.p = obs;
@@ -260,9 +319,34 @@ int main(int argc, char **argv)
     if(!srv_add.call(pfilter_obs)){
       ROS_INFO("Failed to call add observation");
     }
+
+    ros::spinOnce();
+    while(!rayt.particleHandler.newParticles){
+      ROS_INFO_THROTTLE(10, "Waiting for new particles...");
+      ros::spinOnce();
+      ros::Duration(.1).sleep();
+    }
     i ++;
   }
-  
+  // std::ofstream myfile;
+  // myfile.open("/home/shiyuan/Documents/ros_marsarm/diff.csv", std::ios::out|std::ios::app);
+  // myfile << "\n";
+  // myfile.close();
+  // myfile.open("/home/shiyuan/Documents/ros_marsarm/time.csv", std::ios::out|std::ios::app);
+  // myfile << "\n";
+  // myfile.close();
+  // myfile.open("/home/shiyuan/Documents/ros_marsarm/diff_trans.csv", std::ios::out|std::ios::app);
+  // myfile << "\n";
+  // myfile.close();
+  // myfile.open("/home/shiyuan/Documents/ros_marsarm/diff_rot.csv", std::ios::out|std::ios::app);
+  // myfile << "\n";
+  // myfile.close();
+  // myfile.open("/home/shiyuan/Documents/ros_marsarm/workspace_max.csv", std::ios::out|std::ios::app);
+  // myfile << "\n";
+  // myfile.close();
+  // myfile.open("/home/shiyuan/Documents/ros_marsarm/workspace_min.csv", std::ios::out|std::ios::app);
+  // myfile << "\n";
+  // myfile.close();
   ROS_INFO("Finished all action");
 
 }

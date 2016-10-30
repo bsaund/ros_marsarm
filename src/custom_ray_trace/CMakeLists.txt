@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 
 # set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
-add_definitions(-std=c++11)
+add_definitions(-std=c++11 -O3 -msse3)
 
 project(custom_ray_trace)
 
@@ -30,7 +30,7 @@ generate_messages(
 catkin_package(
   DEPENDS roscpp
   INCLUDE_DIRS include
-  LIBRARIES calc_entropy plot_ray_utils ray_tracer
+  LIBRARIES calc_entropy plot_ray_utils ray_tracer bbox bvh
   )
 
 
@@ -58,8 +58,15 @@ add_library(calc_entropy src/calcEntropy.cpp)
 target_link_libraries(calc_entropy ${catkin_LIBRARIES})
 
 add_library(ray_tracer src/rayTracer.cpp)
-target_link_libraries(ray_tracer ${catkin_LIBRARIES} stlParserCustom calc_entropy)
+target_link_libraries(ray_tracer ${catkin_LIBRARIES} stlParserCustom calc_entropy  bbox bvh)
 
+add_library(bbox src/BBox.cpp)
+target_link_libraries(bbox
+  ${catkin_LIBRARIES})
+
+add_library(bvh src/BVH.cpp)
+target_link_libraries(bvh
+  ${catkin_LIBRARIES})
 
 add_library(plot_ray_utils src/plotRayUtils.cpp)
 target_link_libraries(plot_ray_utils
@@ -111,7 +118,7 @@ target_link_libraries(linePlot
 
 
 
-install(TARGETS calc_entropy plot_ray_utils ray_tracer
+install(TARGETS calc_entropy plot_ray_utils ray_tracer bbox bvh
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})

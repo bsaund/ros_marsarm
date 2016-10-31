@@ -179,7 +179,7 @@ void randomSelection(RayTracePlotter &plt, tf::Pose &probePose)
   tf::Point best_start, best_end;
 
 
-  for(int i=0; i<50; i++){
+  for(int i=0; i<500; i++){
     // tf::Point start(rand(gen), rand(gen), rand(gen));
     // start = start.normalize();
     // tf::Point end(rand(gen), rand(gen), rand(gen));
@@ -187,11 +187,16 @@ void randomSelection(RayTracePlotter &plt, tf::Pose &probePose)
     tf::Point start, end;
     tf::Pose probePoseTmp;
 
+    // ROS_DEBUG("Start of loop");
     generateRandomRay(gen, probePoseTmp, start, end);
     // plt.plotRay(start, end);
     Ray measurement(start, end);
     double IG = plt.getIG(measurement, 0.01, 0.002);
+    
+    // ROS_DEBUG("Got IG");
+
     plt.plotRay(measurement, i);
+    // ROS_DEBUG("PlottedRay");
 
     if (IG > bestIG){
       

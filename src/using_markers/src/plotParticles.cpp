@@ -257,7 +257,7 @@ void ShapePlotter::plotParticles(){
 
   tf::Transform trueTransform;
   std::vector<double> trueFrame;
-  if(!n.getParam("/true_frame", trueFrame)){
+  if(!n.getParam("true_frame", trueFrame)){
     ROS_INFO("Failed to get param true_frame");
     trueFrame.resize(6);
   }

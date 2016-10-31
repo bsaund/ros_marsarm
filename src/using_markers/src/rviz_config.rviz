@@ -11,7 +11,10 @@ Panels:
         - /Marker1
         - /Marker2
         - /Marker3
+        - /Marker3/Namespaces1
         - /Marker4
+        - /MarkerArray1
+        - /Marker5
       Splitter Ratio: 0.5
     Tree Height: 747
   - Class: rviz/Selection
@@ -65,6 +68,8 @@ Visualization Manager:
           Value: true
         particle_frame:
           Value: true
+        true_frame:
+          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
@@ -75,38 +80,58 @@ Visualization Manager:
           my_frame:
             particle_frame:
               {}
+            true_frame:
+              {}
       Update Interval: 0
       Value: true
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /baseParticles/ray_trace_markers
       Name: Marker
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /right_datum/visualization_marker
       Name: Marker
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /baseParticles/visualization_marker
       Name: Marker
       Namespaces:
         particles: true
+        true_part: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /goal_hole/visualization_marker
       Name: Marker
       Namespaces:
         {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /baseParticles/ray_trace_markers_array
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /baseParticles/ray_trace_markers
+      Name: Marker
+      Namespaces:
+        ray: true
+        ray_intersection: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -133,16 +158,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.58721
+      Distance: 3.2454
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.26583
-        Y: 0.197559
-        Z: -0.164579
+        X: 1.47619
+        Y: 0.0296489
+        Z: 0.153569
       Name: Current View
       Near Clip Distance: 0.01
       Pitch: 0.550398

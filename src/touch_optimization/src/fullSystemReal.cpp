@@ -18,8 +18,6 @@
 #include "stateMachine.h"
 # define M_PI       3.14159265358979323846  /* pi */
 
-bool movementFinished = false;
-
 /**
  * Gets initial points for the particle filter by shooting
  * rays at the object
@@ -242,10 +240,6 @@ geometry_msgs::Pose probeAt(tf::Transform rotate, tf::Transform base, double x, 
 }
 
 
-void setProcFinished(std_msgs::String msg){
-  movementFinished = true;
-}
-
 int main(int argc, char **argv)
 {
   if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
@@ -265,8 +259,6 @@ int main(int argc, char **argv)
   ros::Publisher probe_pub = 
     n.advertise<geometry_msgs::Pose>("/probe_point", 5);
 
-  ros::Subscriber movementSub = n.subscribe("/process_finished", 1000, 
-					    &setProcFinished);
 
  
   ros::Duration(2).sleep();
@@ -285,7 +277,6 @@ int main(int argc, char **argv)
   // plt.plotRay(Ray(rStart, rEnd));
 
 
-  movementFinished = true;
   for(int i=0; i<10; i++){
     ROS_INFO("\n------------------------------------------");
     ROS_INFO("Measurement %d", i);
@@ -295,14 +286,11 @@ int main(int argc, char **argv)
     tf::poseTFToMsg(probePose, probe_msg);
 
 
-    // while(!movementFinished){
     while(!MotionStateMachine::isMotionFinished(n)){
       ROS_INFO_THROTTLE(30, "Waiting for previous movement to finish...");
       ros::spinOnce();
       ros::Duration(.1).sleep();
     }
-
-    // movementFinished = false;
 
     probe_pub.publish(probe_msg);
     ros::spinOnce();

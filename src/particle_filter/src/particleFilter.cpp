@@ -1,6 +1,7 @@
 #include <string.h>
 #include <iostream>
 #include <random>
+#include <chrono>
 #include <fstream>
 #include <Eigen/Dense>
 #include <unordered_set>
@@ -110,6 +111,7 @@ void particleFilter::createParticles(Particles &particles_dest, cspace b_Xprior[
  */
 void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss)
 {
+  numObs++;
   cspace trueConfig = {0.3, 0.3, 0.3, 0.5, 0.7, 0.5};
   cout << "Xstd_Ob: " << Xstd_ob << endl;
   auto timer_begin = std::chrono::high_resolution_clock::now();
@@ -195,6 +197,10 @@ void particleFilter::estimateGaussian(cspace &x_mean, cspace &x_est_stat) {
 
 }
 
+int isPowerOfTwo (unsigned int x){
+  return ((x != 0) && ((x & (~x + 1)) == x));
+}
+
 
 /*
  * Update particles (Build distance transform and sampling)
@@ -225,7 +231,6 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
   double D;
   double cur_inv_M[2][3];
   int num_Mean = SAMPLE_RATE * numParticles;
-  num_Mean	= numParticles;
   std::vector<std::array<double,3>> measure_workspace;
   measure_workspace.resize(num_Mean);
   double var_measure[3] = { 0, 0, 0 };
@@ -242,11 +247,11 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
   int count_bar = 0;
   if (!miss) {
 	for (int t = 0; t < num_Mean; t++) {
-	  // int index = int(floor(distribution(rd)));
+	  int index = int(floor(distribution(rd)));
 	  for (int m = 0; m < cdim; m++) {
-		meanConfig[m] += b_X[t][m];
+		meanConfig[m] += b_X[index][m];
 	  }
-	  inverseTransform(cur_M[0], b_X[t], measure_workspace[t].data());
+	  inverseTransform(cur_M[0], b_X[index], measure_workspace[t].data());
 	}
 	for (int m = 0; m < cdim; m++) {
 	  meanConfig[m] /= num_Mean;
@@ -428,40 +433,40 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 		cout << "Number of particles: " << numParticles << endl;
   }
   else {
-		// cast multiple rays to check intersections
-		double touch_mnt;
-		while (i < numParticles) {
-		  idx = int(floor(distribution(rd)));
-		  for (int j = 0; j < cdim; j++) {
-			tempState[j] = b_X[idx][j] + Xstd_tran * dist(rd);
-		  }
-		  // inverseTransform(cur_M[0], tempState, cur_inv_M[0]);
-		  // inverseTransform(cur_M[1], tempState, cur_inv_M[1]);
-		  touch_dir << cur_M[0][0] - cur_M[1][0],
-			cur_M[0][1] - cur_M[1][1],
-			cur_M[0][2] - cur_M[1][2];
-		  touch_mnt = touch_dir.norm();
-		  touch_dir = touch_dir / touch_mnt;
-		  // reject particles ourside of distance transform
-				
-		  safe_point[1][0] = touch_dir[0];
-		  safe_point[1][1] = touch_dir[1];
-		  safe_point[1][2] = touch_dir[2];
-		  safe_point[0][0] = cur_M[1][0] - touch_dir[0] * ARM_LENGTH;
-		  safe_point[0][1] = cur_M[1][1] - touch_dir[1] * ARM_LENGTH;
-		  safe_point[0][2] = cur_M[1][2] - touch_dir[2] * ARM_LENGTH;
-		  if (checkObstacles(mesh, tempState, safe_point, touch_mnt + ARM_LENGTH, 0) == 1)
-			continue;
-		  for (int j = 0; j < cdim; j++) {
-			particles[i][j] = tempState[j];
-		  }
-		  //double d = testResult(mesh, particles[i], cur_M, R);
-		  //if (d > 0.01)
-		  //	cout << cur_inv_M[0][0] << "  " << cur_inv_M[0][1] << "  " << cur_inv_M[0][2] << "   " << d << "   " << D << //"   " << gradient << "   " << gradient.dot(touch_dir) << 
-		  //	     "   " << dist_adjacent[0] << "   " << dist_adjacent[1] << "   " << dist_adjacent[2] << "   " << particles[i][2] << endl;
-		  i += 1;
-		  std::cout << "Miss!" << endl;
-		}
+	// cast multiple rays to check intersections
+	double touch_mnt;
+	while (i < numParticles) {
+	  idx = int(floor(distribution(rd)));
+	  for (int j = 0; j < cdim; j++) {
+		tempState[j] = b_X[idx][j] + Xstd_tran * dist(rd);
+	  }
+	  // inverseTransform(cur_M[0], tempState, cur_inv_M[0]);
+	  // inverseTransform(cur_M[1], tempState, cur_inv_M[1]);
+	  touch_dir << cur_M[0][0] - cur_M[1][0],
+		cur_M[0][1] - cur_M[1][1],
+		cur_M[0][2] - cur_M[1][2];
+	  touch_mnt = touch_dir.norm();
+	  touch_dir = touch_dir / touch_mnt;
+	  // reject particles ourside of distance transform
+			
+	  safe_point[1][0] = touch_dir[0];
+	  safe_point[1][1] = touch_dir[1];
+	  safe_point[1][2] = touch_dir[2];
+	  safe_point[0][0] = cur_M[1][0] - touch_dir[0] * ARM_LENGTH;
+	  safe_point[0][1] = cur_M[1][1] - touch_dir[1] * ARM_LENGTH;
+	  safe_point[0][2] = cur_M[1][2] - touch_dir[2] * ARM_LENGTH;
+	  if (checkObstacles(mesh, tempState, safe_point, touch_mnt + ARM_LENGTH, 0) == 1)
+		continue;
+	  for (int j = 0; j < cdim; j++) {
+		particles[i][j] = tempState[j];
+	  }
+	  //double d = testResult(mesh, particles[i], cur_M, R);
+	  //if (d > 0.01)
+	  //	cout << cur_inv_M[0][0] << "  " << cur_inv_M[0][1] << "  " << cur_inv_M[0][2] << "   " << d << "   " << D << //"   " << gradient << "   " << gradient.dot(touch_dir) << 
+	  //	     "   " << dist_adjacent[0] << "   " << dist_adjacent[1] << "   " << dist_adjacent[2] << "   " << particles[i][2] << endl;
+	  i += 1;
+	  std::cout << "Miss!" << endl;
+	}
   }
 
   return iffar;
@@ -742,7 +747,7 @@ int getIntersection(vector<vec4x3> &mesh, double pstart[3], double dir[3], doubl
 	}
   delete t, u, v;
   if (tMin == 100000)
-		return 0;
+	return 0;
   for (int i = 0; i < 3; i++)
 	{
 	  intersection[i] = pstart[i] + dir[i] * tMin;
@@ -788,7 +793,7 @@ double testResult(vector<vec4x3> &mesh, particleFilter::cspace config, double to
 	}
   delete t, u, v;
   if (tMin == 100000)
-		return 0;
+	return 0;
 
   return tMin - R;
 }
@@ -804,12 +809,12 @@ int checkEmptyBin(std::unordered_set<string> *set, particleFilter::cspace config
 {
   string s = "";
   for (int i = 0; i < particleFilter::cdim; i++) {
-		s += floor(config[i] / DISPLACE_INTERVAL);
-		s += ":";
+	s += floor(config[i] / DISPLACE_INTERVAL);
+	s += ":";
   }
   if (set->find(s) == set->end()) {
-		set->insert(s);
-		return 1;
+	set->insert(s);
+	return 1;
   }
   return 0;
 }
@@ -874,13 +879,13 @@ int checkObstacles(vector<vec4x3> &mesh, particleFilter::cspace config, double s
 	  return 1;
 	}
   if (tMin >= check_length)
-		return 0;
+	return 0;
   else if (dist < 0)
 	{
 	  double inter_dist = normal_dir.dot(ray_length);
 	  //cout << "inter_dist: " << inter_dist << endl;
 	  if (inter_dist >= dist - epsilon && inter_dist <= dist + epsilon)
-			return 0;
+		return 0;
 	}
 		
   return 1;
@@ -903,34 +908,34 @@ int checkIntersections(vector<vec4x3> &mesh, double voxel_center[3], double dir[
   std::unordered_set<double> hashset;
   //std::unordered_map<double, int> hashmap;
   for (int i = 0; i < num_mesh; i++) {
-		vert0[0] = mesh[i][1][0];
-		vert0[1] = mesh[i][1][1];
-		vert0[2] = mesh[i][1][2];
-		vert1[0] = mesh[i][2][0];
-		vert1[1] = mesh[i][2][1];
-		vert1[2] = mesh[i][2][2];
-		vert2[0] = mesh[i][3][0];
-		vert2[1] = mesh[i][3][1];
-		vert2[2] = mesh[i][3][2];
-	 	if (intersect_triangle(voxel_center, ray_dir, vert0, vert1, vert2, t, u, v) == 1) {
-		  if (hashset.find(*t) == hashset.end()) {
-				if (*t < check_length && *t > tMax) {
-				  countIntRod++;
-				  tMax = *t;
-				  normal_dir << mesh[i][0][0], mesh[i][0][1], mesh[i][0][2];
-				}
-				else if (*t < check_length)
-				  countIntRod++;
-				hashset.insert(*t);
-				countIntersections++;
-		  }
+	vert0[0] = mesh[i][1][0];
+	vert0[1] = mesh[i][1][1];
+	vert0[2] = mesh[i][1][2];
+	vert1[0] = mesh[i][2][0];
+	vert1[1] = mesh[i][2][1];
+	vert1[2] = mesh[i][2][2];
+	vert2[0] = mesh[i][3][0];
+	vert2[1] = mesh[i][3][1];
+	vert2[2] = mesh[i][3][2];
+ 	if (intersect_triangle(voxel_center, ray_dir, vert0, vert1, vert2, t, u, v) == 1) {
+	  if (hashset.find(*t) == hashset.end()) {
+		if (*t < check_length && *t > tMax) {
+		  countIntRod++;
+		  tMax = *t;
+		  normal_dir << mesh[i][0][0], mesh[i][0][1], mesh[i][0][2];
 		}
+		else if (*t < check_length)
+		  countIntRod++;
+		hashset.insert(*t);
+		countIntersections++;
+	  }
+	}
   }
   delete t, u, v;
   if (countIntersections % 2 == 0) {
-		if (tMax > 0)
-		  return 1;
-		return 0;
+	if (tMax > 0)
+	  return 1;
+	return 0;
   }
   else {
 	dist = -dist;
@@ -938,7 +943,7 @@ int checkIntersections(vector<vec4x3> &mesh, double voxel_center[3], double dir[
 	  ray_length << tMax * dir[0], tMax * dir[1], tMax * dir[2];
 	  double inter_dist = normal_dir.dot(ray_length);
 	  if (inter_dist >= dist - epsilon && inter_dist <= dist + epsilon)
-			return 0;
+		return 0;
 	}
 	return 1;
   }

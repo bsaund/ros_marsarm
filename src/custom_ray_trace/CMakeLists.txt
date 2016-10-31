@@ -30,7 +30,7 @@ generate_messages(
 catkin_package(
   DEPENDS roscpp
   INCLUDE_DIRS include
-  LIBRARIES calc_entropy plot_ray_utils ray_tracer bbox bvh
+  LIBRARIES calc_entropy plot_ray_utils ray_tracer bbox bvh ray_trace_plotter
   )
 
 
@@ -60,6 +60,9 @@ target_link_libraries(calc_entropy ${catkin_LIBRARIES})
 add_library(ray_tracer src/rayTracer.cpp)
 target_link_libraries(ray_tracer ${catkin_LIBRARIES} stlParserCustom calc_entropy  bbox bvh)
 
+add_library(ray_trace_plotter src/rayTracePlotter.cpp)
+target_link_libraries(ray_trace_plotter ${catkin_LIBRARIES} stlParserCustom calc_entropy ray_tracer)
+
 add_library(bbox src/BBox.cpp)
 target_link_libraries(bbox
   ${catkin_LIBRARIES})
@@ -78,8 +81,7 @@ target_link_libraries(plot_ray_utils
 add_executable(rayPlot src/rayPlot.cpp)
 target_link_libraries(rayPlot
   ${catkin_LIBRARIES} 
-  ray_tracer
-  plot_ray_utils)
+  ray_trace_plotter)
 
 add_executable(linePlot src/linePlot.cpp)
 target_link_libraries(linePlot
@@ -118,7 +120,7 @@ target_link_libraries(linePlot
 
 
 
-install(TARGETS calc_entropy plot_ray_utils ray_tracer bbox bvh
+install(TARGETS calc_entropy ray_tracer bbox bvh ray_trace_plotter
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})

@@ -53,7 +53,7 @@ ShapePlotter::ShapePlotter()
   marker_pub = n.advertise<visualization_msgs::MarkerArray>("visualization_marker_array", 10);
   marker_true_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 10);
   particle_pub = n.advertise<geometry_msgs::PoseArray>("/transform_particles", 10);
-  sub = n.subscribe("/particles_from_filter", 1, &ShapePlotter::externalParticleUpdate, this);
+  sub = n.subscribe("particles_from_filter", 1, &ShapePlotter::externalParticleUpdate, this);
 }
 
 /*
@@ -126,6 +126,11 @@ void ShapePlotter::generateTransforms()
 void ShapePlotter::updateMarkers()
 {
   points.markers.resize(particles_.poses.size());
+  // std::string name;
+  // if(!n.getParam("pName", name)){
+  //   ROS_INFO("Failed to get param: pName");
+  // }
+
   for(int i=0; i<particles_.poses.size(); i++){
     points.markers[i].header.frame_id = "particle_frame";
     points.markers[i].header.stamp = ros::Time::now();
@@ -143,8 +148,8 @@ void ShapePlotter::updateMarkers()
     // points.markers[i].mesh_resource = "package://touch_optimization/sdf/flat_plate.stl";
     std::string s;
    
-    if(!n.getParam("/localization_object_cad", s)){
-      ROS_INFO("Failed to get param");
+    if(!n.getParam("localization_object_cad", s)){
+      ROS_INFO("Failed to get param: localization_object_cad");
     }
 
     points.markers[i].mesh_resource = s;
@@ -155,9 +160,24 @@ void ShapePlotter::updateMarkers()
     points.markers[i].scale.y = .0254;
     points.markers[i].scale.z = .0254;
 
-    points.markers[i].color.r = 0.74f;
-    points.markers[i].color.g = 0.78f;
-    points.markers[i].color.b = 0.8f;
+    // points.markers[i].color.r = 0.74f;
+    // points.markers[i].color.g = 0.78f;
+    // points.markers[i].color.b = 0.8f;
+
+    // points.markers[i].color.r = 180.0f/255;  //236
+    // points.markers[i].color.g = 145.0f/255;  //255
+    // points.markers[i].color.b = 120.0f/255;   //106
+
+    std::vector<double> color;
+    if(!n.getParam("color", color)){
+      ROS_INFO("Failed to get param: color");
+      color.resize(3);
+    }
+
+    points.markers[i].color.r = color[0];
+    points.markers[i].color.g = color[1];
+    points.markers[i].color.b = color[2];
+
 
     //alpha to make the particles transparent
     points.markers[i].color.a = 0.07;
@@ -189,8 +209,8 @@ void ShapePlotter::updateTrueMarker()
     // part.mesh_resource = "package://touch_optimization/sdf/flat_plate.stl";
     std::string s;
    
-    if(!n.getParam("/localization_object_cad", s)){
-      ROS_INFO("Failed to get param");
+    if(!n.getParam("localization_object_cad", s)){
+      ROS_INFO("Failed to get param: localization_object_cad");
     }
 
     part.mesh_resource = s;
@@ -225,8 +245,8 @@ void ShapePlotter::plotParticles(){
   // particleTransform.setOrigin(tf::Vector3(1,1,1));
 
   std::vector<double> pFrame;
-  if(!n.getParam("/particle_frame", pFrame)){
-    ROS_INFO("Failed to get param particle_frame");
+  if(!n.getParam("particle_frame", pFrame)){
+    ROS_INFO("Failed to get param: particle_frame");
     pFrame.resize(6);
   }
 

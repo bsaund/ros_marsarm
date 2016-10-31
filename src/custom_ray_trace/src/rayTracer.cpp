@@ -47,9 +47,9 @@ ParticleHandler::ParticleHandler()
   newParticles = true;
   tf_listener_.waitForTransform("/my_frame", "/particle_frame", ros::Time(0), ros::Duration(10.0));
   tf_listener_.lookupTransform("/particle_frame", "/my_frame", ros::Time(0), trans_);
-  particleSub = rosnode.subscribe("/particles_from_filter", 1000, 
+  particleSub = rosnode.subscribe("particles_from_filter", 1000, 
 				     &ParticleHandler::setParticles, this);
-  requestParticlesPub = rosnode.advertise<std_msgs::Empty>("/request_particles", 5);
+  requestParticlesPub = rosnode.advertise<std_msgs::Empty>("request_particles", 5);
 }
 
 tf::StampedTransform ParticleHandler::getTransformToPartFrame()
@@ -60,7 +60,7 @@ tf::StampedTransform ParticleHandler::getTransformToPartFrame()
 
 void ParticleHandler::setParticles(geometry_msgs::PoseArray p)
 {
-  ROS_INFO("setParticles called");
+  // ROS_INFO("setParticles called");
   particles.resize(p.poses.size());
 
   
@@ -81,11 +81,11 @@ void ParticleHandler::setParticles(geometry_msgs::PoseArray p)
   subsetParticles = vector<tf::Transform>(particles);
   subsetParticles.resize(num);
 
-  ROS_INFO("First Subset Particle: %f, %f, %f", subsetParticles[0].getOrigin().getX(),
+  ROS_INFO_THROTTLE(10, "First Subset Particle: %f, %f, %f", subsetParticles[0].getOrigin().getX(),
 	   subsetParticles[0].getOrigin().getY(),
 	   subsetParticles[0].getOrigin().getZ());
   
-  ROS_INFO("Subset Particles Size %d", subsetParticles.size());
+  // ROS_INFO("Subset Particles Size %d", subsetParticles.size());
   
   particlesInitialized = true;
   newParticles = true;
@@ -169,7 +169,7 @@ RayTracer::RayTracer()
 
 bool RayTracer::loadMesh(){
   std::string stlFilePath;
-  if(!n_.getParam("/localization_object_filepath", stlFilePath)){
+  if(!n_.getParam("localization_object_filepath", stlFilePath)){
     ROS_INFO("Failed to get param");
   }
 
@@ -288,7 +288,14 @@ bool RayTracer::traceRay(Ray ray, double &distToPart){
 bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart)
 {
   transformRayToPartFrame(ray);
-  std::vector<tf::Transform> particles = particleHandler.getParticleSubset();
+  std::vector<tf::Transform> particles;
+  // if(quick)
+  //   particles = particleHandler.getParticleSubset();
+  // else
+  particles = particleHandler.getParticles();
+  // ROS_INFO("First Particle %f, %f, %f", particles[0].getOrigin().getX(),
+  // 	   particles[0].getOrigin().getY(),
+  // 	   particles[0].getOrigin().getZ());
 
   // ROS_INFO("First particle for traceAll: %f, %f, %f", particles[0].getOrigin().getX(),
   // 	   particles[0].getOrigin().getY(),
@@ -358,16 +365,12 @@ double RayTracer::getIG(std::vector<Ray> rays, double radialErr, double distErr)
 bool RayTracer::traceCylinderAllParticles(Ray ray, double radius, 
 					  vector<CalcEntropy::ConfigDist> &distsToPart)
 {
-  std::vector<tf::Vector3> ray_orthog = getOrthogonalBasis(ray.getDirection());
-  int n = 12;
+  std::vector<Ray> rays;
+  getCylinderRays(ray, radius, rays);
   
   bool hitPart = false;
 
-  for(int i = 0; i < n; i ++){
-    double theta = 2*3.1415 * i / n;
-    tf::Vector3 offset = radius * (ray_orthog[0]*sin(theta) + ray_orthog[1]*cos(theta));
-
-    Ray cylinderRay(ray.start + offset, ray.end+offset);
+  for(Ray cylinderRay:rays){
     vector<double> distsTmp;
     
     hitPart = traceAllParticles(cylinderRay, distsTmp) || hitPart;
@@ -380,6 +383,17 @@ bool RayTracer::traceCylinderAllParticles(Ray ray, double radius,
     }
   }
   return hitPart;
+}
+
+void RayTracer::getCylinderRays(Ray ray, double radius, std::vector<Ray> &rays){
+  std::vector<tf::Vector3> ray_orthog = getOrthogonalBasis(ray.getDirection());
+  int n = 12;
+  for(int i = 0; i < n; i ++){
+    double theta = 2*3.1415 * i / n;
+    tf::Vector3 offset = radius * (ray_orthog[0]*sin(theta) + ray_orthog[1]*cos(theta));
+
+    rays.push_back(Ray(ray.start + offset, ray.end+offset));
+  }
 }
 
 /**

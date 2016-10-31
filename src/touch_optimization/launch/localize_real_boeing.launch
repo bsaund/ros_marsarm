@@ -4,14 +4,14 @@
 <!-- There needs to be corresponding files  -->
 <!-- gazebo_ray_trace/sdf/[localization_object_cad].stl -->
 <!-- gazebo_ray_trace/worlds/[localization_object_cad].world -->
-  <arg name="localization_object" default="wood_boeing"/>
+  <arg name="localization_object" default="boeing_part"/>
 
   <node pkg="rviz" type="rviz" name="ParticleViz" 
 	args="-d $(find using_markers)/src/rviz_config.rviz" required="true"/>
 
   <group ns="baseParticles">
     <rosparam param="initial_uncertainties">
-      [.03, .03, .03, 0.05, 0.05, 0.05]
+      [.05, .05, .05, 0.1, 0.1, 0.1]
       <!-- [.05, .05, .02, 0.02, 0.01, 0.05] -->
       <!-- [.002, .005, .002, 0.002, 0.001, 0.005] -->
       <!-- [.1, .1, .1, 0.2, 0.2, 0.2] -->
@@ -19,12 +19,12 @@
     </rosparam>
 
     <rosparam param="particle_frame">
-      [1.1, 0.41, .18, 0, 0, -1.95]
+      [0.9, 0.84, .787, 0, 3.1415, 1.5708]
       <!-- [0, 0, 0, 0, 0, -1.57] -->
     </rosparam>
 
     <rosparam param="color">
-      [.7, .6, .5]
+      [.7, .7, .7]
     </rosparam>
 
 

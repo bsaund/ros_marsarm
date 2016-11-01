@@ -34,7 +34,7 @@
 // };
 
 static ros::Publisher pub;
-static ros::Publisher processFinishedPub;
+// static ros::Publisher processFinishedPub;
 static ros::ServiceClient srv_add;
 static ros::Subscriber sub_probe;
 ros::NodeHandle* n_ptr;
@@ -182,7 +182,7 @@ int main(int argc, char **argv)
     n.serviceClient<particle_filter::AddObservation>("/baseParticles/particle_filter_add");
   sub_probe = n.subscribe("/probe_point", 10, probePointHnd);
 
-  processFinishedPub = n.advertise<std_msgs::String>("/process_finished",10);
+  // processFinishedPub = n.advertise<std_msgs::String>("/process_finished",10);
 
 
 

@@ -69,15 +69,15 @@ void generateRandomTouchWith(tf::Pose &probePose, double tbX, double tbY, double
 void generateRandomTouchBottom(std::mt19937 &gen, tf::Pose &probePose)
 {
   std::uniform_real_distribution<double> rand(0,1.0);
-  double x_width = 0.4*rand(gen);
-  double y_width = 0.9*rand(gen);
+  double x_width = 0.7*rand(gen);
+  double y_width = 1.0*rand(gen);
   // generateRandomTouchWith(probePose, 
   // 			  .53 + x_width, .4 + y_width, .687, M_PI, 0, 0, 
   // 			  0,0,0,
   // 			  0,0,0);
   generateRandomTouchWith(probePose, 
   			  // 0.8, -0.21, 0.45, M_PI, 0, M_PI, 
-  			  0.7 + x_width, -0.51 + y_width, 0.51, M_PI, 0, -3 + 3*y_width, 
+  			  0.4 + x_width, -0.51 + y_width, 0.51, M_PI, 0, -3 + 3*y_width, 
   			  0,0,0,
   			  0,0,0);
 
@@ -86,11 +86,17 @@ void generateRandomTouchBottom(std::mt19937 &gen, tf::Pose &probePose)
 void generateRandomTouchFront(std::mt19937 &gen, tf::Pose &probePose)
 {
   std::uniform_real_distribution<double> rand(-1.0,1.0);
-  double y_width = 0.10*rand(gen);
+  double y_width = 0.60*rand(gen);
   double z_width = 0.15*rand(gen);
 
+  double yaw = 0;
+
+  if(y_width < 0){
+    yaw = 2*y_width;
+  }
+
   generateRandomTouchWith(probePose, 
-			  0.75, -0.050+y_width, 0.51+z_width, M_PI/2, 0, -M_PI/2,
+			  0.75, -0.450+y_width, 0.61+z_width, M_PI/2, yaw, -M_PI/2,
   			  // 0.812, -0.050, 0.391, -1.396, -2.104, -1.468, 
   			  0,0,0,
   			  0,0,0);
@@ -117,7 +123,7 @@ void generateRandomTouchSide(std::mt19937 &gen, tf::Pose &probePose)
   double x_width = 0.15*rand(gen);
   double z_width = 0.15*rand(gen);
   generateRandomTouchWith(probePose, 
-			  .71+x_width, .17, .51+z_width, M_PI/2, 0, 0,
+			  .51+x_width, .17, .61+z_width, M_PI/2, 0, 0,
 			  // .71, .13, .4,  2.724, -1.23, 1.58,
 			  0,0,0,
 			  0,0,0);
@@ -179,7 +185,7 @@ void randomSelection(RayTracePlotter &plt, tf::Pose &probePose)
   tf::Point best_start, best_end;
 
 
-  for(int i=0; i<500; i++){
+  for(int i=0; i<1000; i++){
     // tf::Point start(rand(gen), rand(gen), rand(gen));
     // start = start.normalize();
     // tf::Point end(rand(gen), rand(gen), rand(gen));

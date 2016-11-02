@@ -1,5 +1,5 @@
 #include "ros/ros.h"
-#include "rayTracer.h"
+#include "rayTracePlotter.h"
 #include "plotRayUtils.h"
 
 int main(int argc, char **argv){
@@ -13,8 +13,8 @@ int main(int argc, char **argv){
 
   ROS_INFO("Showing IG for ray with radial error %f and bin size %f", radErr, binSize);
 
-  RayTracer rayTracer;
-  PlotRayUtils plt;
+  RayTracePlotter plt;
+  // PlotRayUtils plt;
 
 
   tf::Point start = tf::Point(atof(argv[1]),
@@ -29,9 +29,11 @@ int main(int argc, char **argv){
   Ray ray(start, end);
 
 
-  plt.plotRay(ray);
-  double IG = rayTracer.getIG(ray, radErr, binSize);
-  plt.labelRay(ray, IG);
+  // plt.plotRay(ray);
+  plt.plotCylinder(ray, .01);
+  plt.plotIntersections(ray);
+  double IG = plt.getIG(ray, radErr, binSize);
+  // plt.labelRay(ray, IG);
   ROS_INFO("IG: %f", IG);
 
 

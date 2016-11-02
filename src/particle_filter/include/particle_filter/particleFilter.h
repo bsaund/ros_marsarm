@@ -17,6 +17,7 @@ class particleFilter
   typedef std::vector<cspace> Particles;
   int numParticles; // number of particles
   int maxNumParticles;
+  int numObs = 0;
 
   particleFilter (int n_particles, cspace b_init[2], 
 				double Xstd_ob=0.0001, double Xstd_tran=0.0025,
@@ -26,6 +27,8 @@ class particleFilter
   //void addObservation (double obs[3], double cube[3], int idx_obs);
   void estimateGaussian(cspace &x_mean, cspace &x_est_stat);
   void getAllParticles(Particles &particles_dest);
+
+
 
  protected:
   // Parameters of filter

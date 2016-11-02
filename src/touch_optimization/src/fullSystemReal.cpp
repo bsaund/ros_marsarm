@@ -15,9 +15,8 @@
 #include "custom_ray_trace/rayTracer.h"
 #include "custom_ray_trace/rayTracePlotter.h"
 #include <ros/console.h>
+#include "stateMachine.h"
 # define M_PI       3.14159265358979323846  /* pi */
-
-bool movementFinished = false;
 
 /**
  * Gets initial points for the particle filter by shooting
@@ -67,7 +66,7 @@ void generateRandomTouchWith(tf::Pose &probePose, double tbX, double tbY, double
 }
 
     // [0.6, 0.6, -0.1, 0, 0, 0]
-void generateRandomTouchTop(std::mt19937 &gen, tf::Pose &probePose)
+void generateRandomTouchBottom(std::mt19937 &gen, tf::Pose &probePose)
 {
   std::uniform_real_distribution<double> rand(0,1.0);
   double x_width = 0.4*rand(gen);
@@ -78,7 +77,7 @@ void generateRandomTouchTop(std::mt19937 &gen, tf::Pose &probePose)
   // 			  0,0,0);
   generateRandomTouchWith(probePose, 
   			  // 0.8, -0.21, 0.45, M_PI, 0, M_PI, 
-  			  0.48 + x_width, -0.51 + y_width, 0.45, M_PI, 0, M_PI, 
+  			  0.7 + x_width, -0.51 + y_width, 0.51, M_PI, 0, -3 + 3*y_width, 
   			  0,0,0,
   			  0,0,0);
 
@@ -91,7 +90,7 @@ void generateRandomTouchFront(std::mt19937 &gen, tf::Pose &probePose)
   double z_width = 0.15*rand(gen);
 
   generateRandomTouchWith(probePose, 
-			  0.63, -0.050+y_width, 0.3+z_width, -1.5708, 0, -2.39,
+			  0.75, -0.050+y_width, 0.51+z_width, M_PI/2, 0, -M_PI/2,
   			  // 0.812, -0.050, 0.391, -1.396, -2.104, -1.468, 
   			  0,0,0,
   			  0,0,0);
@@ -118,7 +117,7 @@ void generateRandomTouchSide(std::mt19937 &gen, tf::Pose &probePose)
   double x_width = 0.15*rand(gen);
   double z_width = 0.15*rand(gen);
   generateRandomTouchWith(probePose, 
-			  .71+x_width, .17, .26+z_width, 1.58, -1.23, 2.724,
+			  .71+x_width, .17, .51+z_width, M_PI/2, 0, 0,
 			  // .71, .13, .4,  2.724, -1.23, 1.58,
 			  0,0,0,
 			  0,0,0);
@@ -134,19 +133,19 @@ void generateRandomRay(std::mt19937 &gen, tf::Pose &probePose, tf::Point &start,
 
   // generateRandomTouchSide(gen, probePose);
 
+
+  // faceNum = 0.5; //HARDCODE FOR TESTING
   
   if(faceNum < 1.0)
-    generateRandomTouchTop(gen, probePose);
-  else if(faceNum < 1.5)
-    generateRandomTouchFront(gen, probePose);
+    generateRandomTouchBottom(gen, probePose);
   else if(faceNum < 2.0)
-    generateRandomTouchFrontRight(gen, probePose);
+    generateRandomTouchFront(gen, probePose);
   else
     generateRandomTouchSide(gen, probePose);
   
-  tf::Transform probeZ;
-  probeZ.setRotation(tf::createQuaternionFromRPY(0,0,0));
-  probeZ.setOrigin(tf::Vector3(0,0,0.1));
+  // tf::Transform probeZ;
+  // probeZ.setRotation(tf::createQuaternionFromRPY(0,0,0));
+  // probeZ.setOrigin(tf::Vector3(0,0,0.1));
 
 
   // end = (probePose*probeZ).getOrigin();
@@ -156,7 +155,7 @@ void generateRandomRay(std::mt19937 &gen, tf::Pose &probePose, tf::Point &start,
 
   start = probePose.getOrigin();
   end = probePose.getOrigin() + 
-    tf::Transform(probePose.getRotation()) * tf::Point(0,0,.25);
+    tf::Transform(probePose.getRotation()) * tf::Point(0,0,-.25);
 }
 
 
@@ -188,11 +187,16 @@ void randomSelection(RayTracePlotter &plt, tf::Pose &probePose)
     tf::Point start, end;
     tf::Pose probePoseTmp;
 
+    // ROS_DEBUG("Start of loop");
     generateRandomRay(gen, probePoseTmp, start, end);
     // plt.plotRay(start, end);
     Ray measurement(start, end);
     double IG = plt.getIG(measurement, 0.01, 0.002);
+    
+    // ROS_DEBUG("Got IG");
+
     plt.plotRay(measurement, i);
+    // ROS_DEBUG("PlottedRay");
 
     if (IG > bestIG){
       
@@ -203,7 +207,7 @@ void randomSelection(RayTracePlotter &plt, tf::Pose &probePose)
     }
 
 
-    ROS_DEBUG_THROTTLE(10, "Calculating best point based on information gain...");
+    ROS_DEBUG_THROTTLE(10, "Calculating best point based on information gain: %d...", i);
   }
   plt.deleteAll();
   plt.plotRay(Ray(best_start, best_end));
@@ -241,10 +245,6 @@ geometry_msgs::Pose probeAt(tf::Transform rotate, tf::Transform base, double x, 
 }
 
 
-void setProcFinished(std_msgs::String msg){
-  movementFinished = true;
-}
-
 int main(int argc, char **argv)
 {
   if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
@@ -264,8 +264,6 @@ int main(int argc, char **argv)
   ros::Publisher probe_pub = 
     n.advertise<geometry_msgs::Pose>("/probe_point", 5);
 
-  ros::Subscriber movementSub = n.subscribe("/process_finished", 1000, 
-					    &setProcFinished);
 
  
   ros::Duration(2).sleep();
@@ -284,7 +282,6 @@ int main(int argc, char **argv)
   // plt.plotRay(Ray(rStart, rEnd));
 
 
-  movementFinished = true;
   for(int i=0; i<10; i++){
     ROS_INFO("\n------------------------------------------");
     ROS_INFO("Measurement %d", i);
@@ -294,13 +291,11 @@ int main(int argc, char **argv)
     tf::poseTFToMsg(probePose, probe_msg);
 
 
-    while(!movementFinished){
+    while(!MotionStateMachine::isMotionFinished(n)){
       ROS_INFO_THROTTLE(30, "Waiting for previous movement to finish...");
       ros::spinOnce();
       ros::Duration(.1).sleep();
     }
-
-    movementFinished = false;
 
     probe_pub.publish(probe_msg);
     ros::spinOnce();

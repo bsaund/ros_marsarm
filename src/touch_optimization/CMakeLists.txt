@@ -104,10 +104,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES touch_optimization
-#  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS system_lib
+  DEPENDS roscpp
+  INCLUDE_DIRS include
+  LIBRARIES motion_state_machine
 )
 
 ###########
@@ -118,6 +117,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  include/${PROJECT_NAME}
 )
 
 
@@ -158,9 +158,21 @@ target_link_libraries(boeing_localization
 # target_link_libraries(run_full_box
 #   ${catkin_LIBRARIES})
 
+add_library(motion_state_machine src/stateMachine.cpp)
+target_link_libraries(motion_state_machine
+  ${catkin_LIBRARIES}
+)
+
 add_executable(run_full_wood src/fullSystemWood.cpp)
 target_link_libraries(run_full_wood
-  ${catkin_LIBRARIES})
+  ${catkin_LIBRARIES}
+)
+
+add_executable(run_full_real src/fullSystemReal.cpp)
+target_link_libraries(run_full_real
+  ${catkin_LIBRARIES}
+  motion_state_machine
+)
 
 add_executable(image_maker src/imageMaker.cpp)
 target_link_libraries(image_maker
@@ -178,3 +190,13 @@ target_link_libraries(image_maker
 #   ${catkin_LIBRARIES}
 # )
 
+install(TARGETS motion_state_machine
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
+
+
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h")

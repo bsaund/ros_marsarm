@@ -95,15 +95,15 @@ int main(int argc, char **argv){
   ros::ServiceClient srv_add = 
     n.serviceClient<particle_filter::AddObservation>("/particle_filter_add");
 
-  double resolution = 0.01;
+  double resolution = 0.005;
   double roll = 0;
-  double pitch = 1.1;
+  double pitch = 0;
   double yaw = 0;
 
   makeImage(resolution, roll, pitch, yaw, 1);
 
 
-  return 0;
+  // return 0;
   //Touch 1
   addObs(0.729351, 0.215845, 0.358450, 
 	 0.397690, 0.865360, -0.304951, srv_add);
@@ -111,24 +111,28 @@ int main(int argc, char **argv){
   makeImage(resolution, roll, pitch, yaw, 2);
 
   //Touch 2
+  ROS_INFO("Touch 2");
   addObs(0.714676, 0.210711, 0.427065,
 	 -0.000231, -0.000523, -1.000000, srv_add);
 
   makeImage(resolution, roll, pitch, yaw, 3);
 
   //Touch 3
+  ROS_INFO("Touch 3");
   addObs(0.751231, 0.195257, 0.429780,
 	 0.000647, 0.000393, -1.000000, srv_add);
 
   makeImage(resolution, roll, pitch, yaw, 4);
 
   //Touch 4
+  ROS_INFO("Touch 4");
   addObs(0.861499, -0.071836, 0.361358,
 	 0.908520, -0.408613, -0.087337, srv_add);
 
   makeImage(resolution, roll, pitch, yaw, 5);
 
   //Touch 5
+  ROS_INFO("Touch 5");
   addObs(0.780144, -0.295979, 0.422726,
 	 -0.000919, 0.000499, -0.999999, srv_add);
 

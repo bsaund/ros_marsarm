@@ -102,7 +102,6 @@ void fixedSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, t
       start << x, y, 1;
       end << x, y, -1;
     }
-    
     Eigen::Vector3d tran_start = rotationM * start + displaceV;
     Eigen::Vector3d tran_end = rotationM * end + displaceV;
 
@@ -258,9 +257,9 @@ int main(int argc, char **argv)
   ROS_INFO("Running...");
 
   ros::Publisher pub_init = 
-    n.advertise<particle_filter::PFilterInit>("/particle_filter_init", 5);
+    n.advertise<particle_filter::PFilterInit>("particle_filter_init", 5);
   ros::ServiceClient srv_add = 
-    n.serviceClient<particle_filter::AddObservation>("/particle_filter_add");
+    n.serviceClient<particle_filter::AddObservation>("particle_filter_add");
 
 
  
@@ -280,7 +279,7 @@ int main(int argc, char **argv)
     tf::Point start, end;
     // randomSelection(plt, rayt, start, end);
     auto timer_begin = std::chrono::high_resolution_clock::now();
-    fixedSelectionBoeing(plt, rayt, start, end);
+    fixedSelection(plt, rayt, start, end);
     auto timer_end = std::chrono::high_resolution_clock::now();
     auto timer_dur = timer_end - timer_begin;
     cout << "Elapsed RayCasting time: " << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << endl;
@@ -311,7 +310,7 @@ int main(int argc, char **argv)
     
     // plt.plotCylinder(start, end, 0.01, 0.002, true);
     plt.plotRay(Ray(start, end));
-    // ros::Duration(1).sleep();
+    ros::Duration(1).sleep();
 
     particle_filter::AddObservation pfilter_obs;
     pfilter_obs.request.p = obs;

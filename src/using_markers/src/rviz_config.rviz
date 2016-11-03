@@ -58,32 +58,19 @@ Visualization Manager:
       Reference Frame: <Fixed Frame>
       Value: true
     - Class: rviz/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        base_plate:
-          Value: true
-        my_frame:
-          Value: true
-        particle_frame:
-          Value: true
-        true_frame:
-          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        base_plate:
-          my_frame:
-            particle_frame:
-              {}
-            true_frame:
-              {}
+        {}
       Update Interval: 0
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: false
       Marker Topic: /baseParticles/ray_trace_markers
@@ -130,8 +117,7 @@ Visualization Manager:
       Marker Topic: /baseParticles/ray_trace_markers
       Name: Marker
       Namespaces:
-        ray: true
-        ray_intersection: true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true

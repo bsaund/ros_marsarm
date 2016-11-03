@@ -1,0 +1,540 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"vec",
+				"Vector3"
+			],
+			[
+				"num",
+				"numUpdates"
+			],
+			[
+				"root",
+				"rootParticles"
+			],
+			[
+				"cur_",
+				"cur_inv_M"
+			],
+			[
+				"relati",
+				"relativeConfig"
+			],
+			[
+				"particle",
+				"particleFilter"
+			],
+			[
+				"relat",
+				"relativeTrans"
+			],
+			[
+				"pa1",
+				"pa1_prime"
+			],
+			[
+				"edge",
+				"edgeOffSet"
+			],
+			[
+				"true",
+				"trueConfig"
+			],
+			[
+				"vecot",
+				"Vector3d"
+			],
+			[
+				"tf_",
+				"tf_start"
+			],
+			[
+				"tran_",
+				"tran_part_true"
+			],
+			[
+				"minor",
+				"minor_angle"
+			],
+			[
+				"depth",
+				"depth_offset"
+			],
+			[
+				"cos_",
+				"cos_view_angle"
+			],
+			[
+				"x",
+				"xstep_size"
+			],
+			[
+				"colli",
+				"collided"
+			],
+			[
+				"center",
+				"center_vec"
+			],
+			[
+				"pro",
+				"proj_vec"
+			],
+			[
+				"cente",
+				"center_vec"
+			],
+			[
+				"seg",
+				"seg_length"
+			],
+			[
+				"ray_",
+				"ray_start"
+			],
+			[
+				"rotation",
+				"rotationA"
+			],
+			[
+				"best",
+				"best_end"
+			],
+			[
+				"tmp",
+				"tmp_min"
+			],
+			[
+				"particl",
+				"particles_mean"
+			],
+			[
+				"max",
+				"max2"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 392.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"About"
+			],
+			[
+				"git diff ",
+				"Git: Diff All Files"
+			],
+			[
+				"git diff",
+				"Git: Diff All Files"
+			],
+			[
+				"package",
+				"Package Control: List Packages"
+			],
+			[
+				"package install",
+				"Package Control: Install Package"
+			],
+			[
+				"gitgutter",
+				"GitGutter: Compare Against Branch"
+			],
+			[
+				"gitgu",
+				"GitGutter: Compare Against Branch"
+			],
+			[
+				"git log",
+				"Git: Log All"
+			],
+			[
+				"git status",
+				"Git: Status"
+			],
+			[
+				"pack",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 485.0
+	},
+	"console":
+	{
+		"height": 146.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = '2915d1851351e5ee549c20394736b442' + '8bc59f460fa1548d1514676163dafc88'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/home/shiyuan/Documents/BVH/IntersectionInfo.h",
+		"/home/shiyuan/Documents/BVH/Vector3.h",
+		"/home/shiyuan/Documents/BVH/BBox.cpp",
+		"/home/shiyuan/Documents/BVH/BVH.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/custom_ray_trace/src/stlParser.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/particle_filter/include/particle_filter/particleFilter.h",
+		"/home/shiyuan/Documents/ros_marsarm/src/custom_ray_trace/include/custom_ray_trace/rayTracer.h",
+		"/home/shiyuan/Documents/ros_marsarm/src/particle_filter/src/raytri.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/touch_optimization/src/datumLocalization.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/particle_filter/include/particle_filter/Node.h",
+		"/home/shiyuan/Documents/ros_marsarm/src/particle_filter/src/Node.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/particle_filter/src/particleFilter.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/using_markers/src/plotParticles.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/custom_ray_trace/worlds/part.world",
+		"/home/shiyuan/Documents/ros_marsarm/src/custom_ray_trace/worlds/plane.world",
+		"/home/shiyuan/Documents/ros_marsarm/src/touch_optimization/CMakeLists.txt",
+		"/home/shiyuan/Documents/ros_marsarm/src/particle_filter/src/matrix.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/particle_filter/include/particle_filter/matrix.h",
+		"/home/shiyuan/Documents/ros_marsarm/src/particle_filter/src/distanceTransformNew.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/touch_optimization/launch/particle_filter_Boeing.launch",
+		"/home/shiyuan/Documents/ros_marsarm/src/particle_filter/CMakeLists.txt",
+		"/home/shiyuan/Documents/ros_marsarm/src/particle_filter/src/particleFilterBoeingTest.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/particle_filter/package.xml",
+		"/home/shiyuan/Documents/ros_marsarm/src/particle_filter/src/stlParser.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/particle_filter/include/particle_filter/stlParser.h",
+		"/home/shiyuan/Documents/ros_marsarm/src/touch_optimization/src/fullSystemWood.cpp",
+		"/home/shiyuan/.config/sublime-text-3/Packages/User/Preferences.sublime-settings",
+		"/home/shiyuan/Documents/ros_marsarm/src/particle_filter/include/particle_filter/circleEllipse.h",
+		"/home/shiyuan/Documents/ros_marsarm/src/custom_ray_trace/src/plotRayUtils.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/particle_filter/src/circleEllipse.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/custom_ray_trace/worlds/boeing_part.world",
+		"/home/shiyuan/Documents/ros_marsarm/src/particle_filter/launch/pfilterBoeing.launch",
+		"/home/shiyuan/.config/sublime-text-3/Packages/Default/Preferences.sublime-settings",
+		"/home/shiyuan/Documents/ros_marsarm/src/using_markers/src/rviz_config.rviz",
+		"/home/shiyuan/Documents/ros_marsarm/src/touch_optimization/src/boeingLocalization.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/particle_filter/include/particle_filter/triBox.h",
+		"/home/shiyuan/Documents/ros_marsarm/src/particle_filter/src/triBox.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/gazebo_ray_trace/worlds/wood_boeing.world",
+		"/home/shiyuan/Documents/ros_marsarm/src/custom_ray_trace/worlds/wood_boeing.world",
+		"/home/shiyuan/Documents/ros_marsarm/src/touch_optimization/launch/localize_real_wood.launch",
+		"/home/shiyuan/Documents/ros_marsarm/src/gazebo_ray_trace/src/plotRayUtils.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/custom_ray_trace/src/rayTrace.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/custom_ray_trace/sdf/boeing_part.stl",
+		"/home/shiyuan/Documents/ros_marsarm/src/ipc_ros_bridge/CMakeLists.txt",
+		"/home/shiyuan/Documents/ros_marsarm/src/particle_filter/src/rayTri.cpp",
+		"/home/shiyuan/Documents/src/particle_filter/src/particleFilter.cpp",
+		"/home/shiyuan/Documents/src/particle_filter/src/particleFilterBoeingTest.cpp",
+		"/home/shiyuan/Documents/src/particle_filter/src/distanceTransformNew.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/gazebo_ray_trace/src/rayTracePluginUtils.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/gazebo_ray_trace/src/calcEntropy.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/gazebo_ray_trace/include/gazebo_ray_trace/rayTracePluginUtils.h",
+		"/home/shiyuan/Documents/ros_marsarm/src/gazebo_ray_trace/srv/RayTraceCylinder.srv",
+		"/home/shiyuan/Documents/ros_marsarm/src/gazebo_ray_trace/src/rayTracePlotter.cpp",
+		"/home/shiyuan/Documents/ros_marsarm/src/gazebo_ray_trace/src/touchLocalizationPlugin.cpp",
+		"/home/shiyuan/Documents/block_dist.py",
+		"/home/shiyuan/.config/sublime-text-3/Packages/Default/Default (Linux).sublime-keymap"
+	],
+	"find":
+	{
+		"height": 23.0
+	},
+	"find_in_files":
+	{
+		"height": 93.0,
+		"where_history":
+		[
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": true,
+		"find_history":
+		[
+			"Ray",
+			"IntersectionInfo",
+			"Object",
+			"intersect_triangle",
+			"getIntersection",
+			" (",
+			"triBoxOverlap",
+			"sampleParticles",
+			"addObservation",
+			"transPointConfig",
+			"numParticles",
+			"fixedSelectionPlane",
+			"weight",
+			"H_cov",
+			"cout",
+			"particle_frame",
+			"visualization_marker",
+			"visualization_marker_array",
+			"getParticlePoseArray",
+			"pub_particles",
+			"particles_from_filter",
+			"wood_boeing",
+			"sampleConfig",
+			"tempConfig",
+			"estimateGaussian",
+			"Parent",
+			"rot",
+			"dist",
+			"scl",
+			"Xstd_tran",
+			"Xstd_scatter",
+			"Xstd_tran",
+			"rot_sample",
+			"Xstd_scatter",
+			"ADAPTIVE_BANDWIDTH",
+			"Xstd_tran",
+			"Node::cdim",
+			"Node",
+			"particleFilter::cspace",
+			"particleFilter",
+			"cdim",
+			"Node",
+			"node",
+			"cdim",
+			"Node",
+			"cdim",
+			"dist2",
+			"Xstd_scatter",
+			"Xstd_tran",
+			"ADAPTIVE_BANDWIDTH",
+			"mat_centered",
+			"Xstd_ob",
+			"addObs",
+			"srv_add",
+			"getMesh",
+			"import",
+			"estimateGaussian",
+			"estimate",
+			"cspace",
+			"dist_transform",
+			"cspace",
+			"parent",
+			"inverseTransform",
+			"b_Xprior",
+			"getMesh",
+			"importSTL",
+			"getMesh",
+			"Load",
+			"load",
+			"randn",
+			"fixedSelection",
+			"voxel_size",
+			"max",
+			"max2",
+			"max",
+			"adjoint",
+			"RowMajor",
+			"checkObstacles",
+			"NUM_PARTICLES",
+			"PFilterTest",
+			"n_particles",
+			"maxNumParticles",
+			"cov_mat",
+			"checkIntersections",
+			"calcDistance",
+			"testResult",
+			"addObse",
+			"mesh",
+			");",
+			"Transform",
+			"inverseTransform",
+			"Point",
+			"Transform",
+			"rotationMatrix",
+			"setParticles called",
+			"state",
+			"MIN_STD",
+			".0254",
+			"getMesh",
+			"cout",
+			"H_cov",
+			"signed_",
+			"signed",
+			"2",
+			"part",
+			"state",
+			"wood",
+			"generateTransforms",
+			"marker_pub",
+			"color",
+			"true_part",
+			"particle_frame",
+			"visualization_marker",
+			"marker_true_pub",
+			"plotTruePart",
+			"if (i >= N_MIN) {",
+			"getMesh",
+			"unsigned_dist_check",
+			"unsigned",
+			"getMesh",
+			"boeing_part",
+			"beoing_part",
+			"boeing_part",
+			"boeing_part_binary",
+			"getMesh",
+			"boeing_part",
+			"numParticles",
+			"checkEmptyBin"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"Node::cspace",
+			"1.0"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": true,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 23.0
+	},
+	"input":
+	{
+		"height": 33.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "circleEllipse.sublime-project",
+	"replace":
+	{
+		"height": 42.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"beoingloc",
+				"touch_optimization/src/boeingLocalization.cpp"
+			],
+			[
+				"particlefilterbo",
+				"particle_filter/src/particleFilterBoeingTest.cpp"
+			],
+			[
+				"boeingloca",
+				"touch_optimization/src/boeingLocalization.cpp"
+			],
+			[
+				"boeing",
+				"src/particleFilterBoeingTest.cpp"
+			],
+			[
+				"stlfile",
+				"~/Documents/ros_marsarm/src/particle_filter/src/particleFilter.cpp"
+			],
+			[
+				"src/particle",
+				"~/Documents/ros_marsarm/src/particle_filter/src/particleFilter.cpp"
+			],
+			[
+				"partt",
+				"~/Documents/ros_marsarm/src/particle_filter/include/particle_filter/particleFilter.h"
+			],
+			[
+				"~/documnets",
+				"~/Documents/ros_marsarm/src/particle_filter/src/particleFilter.cpp"
+			],
+			[
+				"main",
+				"~/Documents/ros_marsarm/src/particle_filter/include/particle_filter/particleFilter.h"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 263.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

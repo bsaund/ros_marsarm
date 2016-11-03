@@ -22,7 +22,7 @@
  * Gets initial points for the particle filter by shooting
  * rays at the object
  */
-// particle_filter::PFilterInit getInitialPoints(RayTracePlotter &plt)
+// particle_filter::PFilterInit getInitialPoints(RayTracePlotter &pmolt)
 // {
 //   particle_filter::PFilterInit init_points;
 
@@ -93,10 +93,10 @@ void generateRandomTouchBottom(std::mt19937 &gen, tf::Pose &probePose)
   }else{
     //Gereate right touch
     double x_width = 0.6*rand(gen);
-    double y_width = 0.2*rand(gen);
+    double y_width = 0.15*rand(gen);
 
     // double y_val = -0.51 + y_width;
-    double y_val = -.6 + y_width;
+    double y_val = -.55 + y_width;
 
     double yaw = -1.5 + 3*y_val;
     yaw = min(-0.8, yaw);

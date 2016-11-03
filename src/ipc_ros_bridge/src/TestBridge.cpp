@@ -91,14 +91,15 @@ static void observationHnd (MSG_INSTANCE msg, void *callData,
   TouchObservation* obs = (TouchObservation *)callData;
   std::cout << "observationHnd Called" << std::endl;
   std::cout << "point: " << obs->x << ", " << obs->y << ", "<< obs->z << std::endl;
+  std::cout << "rpy: " << obs->roll << ", " << obs->pitch << ", "<< obs->yaw << std::endl;
   
   particle_filter::AddObservation pfilter_obs;
   pfilter_obs.request.p.x = obs->x;
   pfilter_obs.request.p.y = obs->y;
   pfilter_obs.request.p.z = obs->z;
 
-  tf::Point dir(0, 0, 1);
-  tf::Quaternion q = tf::createQuaternionFromRPY(obs->roll, obs->pitch, obs->yaw) * dir;
+  tf::Point dir(0, 0, -1);
+  tf::Quaternion q = tf::createQuaternionFromRPY(obs->yaw, obs->pitch, obs->roll);
   dir = tf::Transform(q)* dir;
   
 

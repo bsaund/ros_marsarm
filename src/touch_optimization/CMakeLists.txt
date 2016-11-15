@@ -146,9 +146,28 @@ include_directories(
 # target_link_libraries(cube_localization
 #   ${catkin_LIBRARIES})
 
+add_library(random_ray_mars_arm src/getRandomRayMarsArm.cpp)
+target_link_libraries(random_ray_mars_arm
+  ${catkin_LIBRARIES}
+)
+
+add_library(best_random_ray src/getBestRandomRay.cpp)
+target_link_libraries(best_random_ray
+  ${catkin_LIBRARIES}
+  random_ray_mars_arm
+)
+
+add_library(simulate_measurement src/simulateMeasurement.cpp)
+target_link_libraries(simulate_measurement
+  ${catkin_LIBRARIES}
+)
+
 add_executable(boeing_localization src/boeingLocalization.cpp)
 target_link_libraries(boeing_localization
-  ${catkin_LIBRARIES})
+  ${catkin_LIBRARIES}
+  best_random_ray
+  simulate_measurement
+)
 
 # add_executable(run_full_plate src/fullSystemPlate.cpp)
 # target_link_libraries(run_full_plate
@@ -172,6 +191,7 @@ add_executable(run_full_real src/fullSystemReal.cpp)
 target_link_libraries(run_full_real
   ${catkin_LIBRARIES}
   motion_state_machine
+  best_random_ray
 )
 
 add_executable(image_maker src/imageMaker.cpp)

@@ -102,7 +102,6 @@ void fixedSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, t
       start << x, y, 1;
       end << x, y, -1;
     }
-    
     Eigen::Vector3d tran_start = rotationM * start + displaceV;
     Eigen::Vector3d tran_end = rotationM * end + displaceV;
 
@@ -158,24 +157,47 @@ void fixedSelectionBoeing(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_st
                0, sin(state[3]), cos(state[3]);
   Eigen::Matrix3d rotationM = rotationC * rotationB * rotationA;
   Eigen::Vector3d displaceV(state[0], state[1], state[2]);
-  for(int i=0; i<50; i++){
-    
-    double x = rand(rd) * 1.4 + 0.1;
-    double y = rand(rd) * 0.05 + 0.02;
-    // double x = 1, y = 0.05;
-    start << x, y, 1;
-    end << x, y, -1;
-    
+  for(int i=0; i<500; i++){
+    index = int_rand(rd);
+    if (index == 0)
+    {
+      double y = rand(rd) * 0.07 + 0.01;
+      double z = rand(rd) * 0.18 + 0.03;
+      start << 2, y, z;
+      end << -1, y, z;
+
+    }
+    else if (index == 1)
+    {
+      double x = rand(rd) * 1.1 + 0.1;
+      double z = rand(rd) * 0.18 + 0.03;
+      start << x, -1, z;
+      end << x, 1, z;
+    }
+    else if (index == 2)
+    {
+      double x = rand(rd) * 1.4 + 0.1;
+      double y = rand(rd) * 0.07 + 0.01;
+      start << x, y, -1;
+      end << x, y, 1;
+    }
+    else
+    {
+      double x = rand(rd) * 0.04 + 0.5;
+      double y = rand(rd) * 0.35 + 0.05;
+      start << x, y, -1;
+      end << x, y, 1;
+    }
     Eigen::Vector3d tran_start = rotationM * start + displaceV;
     Eigen::Vector3d tran_end = rotationM * end + displaceV;
 
     tf_start.setValue(tran_start(0, 0), tran_start(1, 0), tran_start(2, 0));
     tf_end.setValue(tran_end(0, 0), tran_end(1, 0), tran_end(2, 0));
     Ray measurement(tf_start, tf_end);
-    // double distToPart = 0;
-    // rayt.traceRay(measurement, distToPart);
     // auto timer_begin = std::chrono::high_resolution_clock::now();
     double IG = rayt.getIG(measurement, 0.01, 0.002);
+    // std::cout << "Current sample from: " << index << std::endl;
+    // std::cout << "Current IG: " << IG << std::endl;
     // plt.plotRay(measurement);
     // plt.labelRay(measurement, IG);
     // auto timer_end = std::chrono::high_resolution_clock::now();
@@ -258,9 +280,9 @@ int main(int argc, char **argv)
   ROS_INFO("Running...");
 
   ros::Publisher pub_init = 
-    n.advertise<particle_filter::PFilterInit>("/particle_filter_init", 5);
+    n.advertise<particle_filter::PFilterInit>("particle_filter_init", 5);
   ros::ServiceClient srv_add = 
-    n.serviceClient<particle_filter::AddObservation>("/particle_filter_add");
+    n.serviceClient<particle_filter::AddObservation>("particle_filter_add");
 
 
  
@@ -311,7 +333,7 @@ int main(int argc, char **argv)
     
     // plt.plotCylinder(start, end, 0.01, 0.002, true);
     plt.plotRay(Ray(start, end));
-    // ros::Duration(1).sleep();
+    ros::Duration(1).sleep();
 
     particle_filter::AddObservation pfilter_obs;
     pfilter_obs.request.p = obs;

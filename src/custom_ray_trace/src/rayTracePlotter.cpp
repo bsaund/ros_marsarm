@@ -79,7 +79,7 @@ void RayTracePlotter::deleteAll(){
   // marker_pub.publish(marker);
 
   visualization_msgs::MarkerArray m;
-  for(int i = 0; i < 500; i++){
+  for(int i = 0; i < 1000; i++){
     m.markers.push_back(getDeleteMarker("ray",i));
   }
   marker_pub_array.publish(m);

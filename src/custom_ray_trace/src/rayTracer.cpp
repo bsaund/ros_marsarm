@@ -60,7 +60,7 @@ tf::StampedTransform ParticleHandler::getTransformToPartFrame()
 
 void ParticleHandler::setParticles(geometry_msgs::PoseArray p)
 {
-  // ROS_INFO("setParticles called");
+  ROS_INFO("setting %d particles", p.poses.size());
   particles.resize(p.poses.size());
 
   

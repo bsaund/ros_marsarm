@@ -1,0 +1,7 @@
+<launch>
+  <group ns="baseParticles">
+    <node pkg="touch_optimization" type="boeing_localization" 
+    name="run_full_real" output="screen"/>
+
+  </group>
+</launch>

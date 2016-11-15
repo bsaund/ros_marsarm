@@ -76,8 +76,8 @@ class RayTracer
   int getIntersection(array<double,3> pstart, array<double,3> dir, double &distToPart);
   bool tracePartFrameRay(const Ray &ray, double &distToPart);
   bool traceRay(Ray ray, double &distToPart);
-  bool traceRay(const stl::Mesh &mesh, const Ray &ray, double &distToPart);
-  bool traceAllParticles(Ray ray, std::vector<double> &distToPart);
+  /* bool const traceRay(const stl::Mesh &mesh, const Ray &ray, double &distToPart); */
+  bool  traceAllParticles(Ray ray, std::vector<double> &distToPart);
 
   double getIG(Ray ray, double radialErr, double distErr);
   double getIG(std::vector<Ray> rays, double radialErr, double distErr);

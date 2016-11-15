@@ -8,14 +8,17 @@
 #include <fstream>
 #include <chrono>
 #include <ros/ros.h>
+#include <ros/console.h>
 #include "particle_filter/PFilterInit.h"
 #include "particle_filter/AddObservation.h"
 #include "geometry_msgs/Point.h"
  #include "std_msgs/String.h"
 #include <tf/transform_broadcaster.h>
-#include "custom_ray_trace/plotRayUtils.h"
+#include "custom_ray_trace/rayTracePlotter.h"
 #include "custom_ray_trace/rayTracer.h"
-#include <ros/console.h>
+#include "getBestRandomRay.h"
+#include "simulateMeasurement.h"
+
 #include <Eigen/Dense>
 
 #define NUM_TOUCHES 20
@@ -23,7 +26,7 @@
 //  * Gets initial points for the particle filter by shooting
 //  * rays at the object
 //  */
-// particle_filter::PFilterInit getInitialPoints(PlotRayUtils &plt)
+// particle_filter::PFilterInit getInitialPoints(RayTracePlotter &plt)
 // {
 //   particle_filter::PFilterInit init_points;
 
@@ -44,7 +47,7 @@
 //   return init_points;
 // }
 
-void fixedSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, tf::Point &best_end)
+void fixedSelection(RayTracePlotter &plt, RayTracer &rayt, tf::Point &best_start, tf::Point &best_end)
 {
   int index;
   double bestIG = 0;
@@ -117,6 +120,7 @@ void fixedSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, t
     // cout << "IG: " << IG << endl;
     // cout << "Elapsed time for ray: " << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << endl;
     // double IG = plt.getIG(start, end, 0.01, 0.002);
+    plt.plotRay(measurement, i);
     if (IG > bestIG){
       bestIG = IG;
       best_start = tf_start;
@@ -130,7 +134,7 @@ void fixedSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, t
   plt.plotRay(Ray(best_start, best_end));
 }
 
-void fixedSelectionBoeing(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, tf::Point &best_end)
+void fixedSelectionBoeing(RayTracePlotter &plt, RayTracer &rayt, tf::Point &best_start, tf::Point &best_end)
 {
   int index;
   double bestIG = 0;
@@ -205,6 +209,7 @@ void fixedSelectionBoeing(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_st
     // cout << "IG: " << IG << endl;
     // cout << "Elapsed time for ray: " << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << endl;
     // double IG = plt.getIG(start, end, 0.01, 0.002);
+    plt.plotRay(measurement, i);
     if (IG > bestIG){
       bestIG = IG;
       best_start = tf_start;
@@ -222,7 +227,7 @@ void fixedSelectionBoeing(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_st
  * Randomly chooses vectors, gets the Information Gain for each of 
  *  those vectors, and returns the ray (start and end) with the highest information gain
  */
-void randomSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, tf::Point &best_end)
+void randomSelection(RayTracePlotter &plt, RayTracer &rayt, tf::Point &best_start, tf::Point &best_end)
 {
   // tf::Point best_start, best_end;
 
@@ -259,7 +264,7 @@ void randomSelection(PlotRayUtils &plt, RayTracer &rayt, tf::Point &best_start, 
   
 }
 
-// bool getIntersection(PlotRayUtils &plt, tf::Point start, tf::Point end, tf::Point &intersection){
+// bool getIntersection(RayTracePlotter &plt, tf::Point start, tf::Point end, tf::Point &intersection){
 //   bool intersectionExists = plt.getIntersectionWithPart(start, end, intersection);
 //   double radius = 0.001;
 //   intersection = intersection - (end-start).normalize() * radius;
@@ -271,11 +276,11 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "updating_particles");
   ros::NodeHandle n;
-  PlotRayUtils plt;
-  RayTracer rayt;
+  RayTracePlotter plt;
+  // RayTracer rayt;
 
   std::random_device rd;
-  std::normal_distribution<double> randn(0.0,0.0001);
+
 
   ROS_INFO("Running...");
 
@@ -289,8 +294,6 @@ int main(int argc, char **argv)
   ros::Duration(1).sleep();
   // pub_init.publish(getInitialPoints(plt));
  
-  geometry_msgs::Point obs;
-  geometry_msgs::Point dir;
   double radius = 0.00;
 
   int i = 0;
@@ -302,54 +305,30 @@ int main(int argc, char **argv)
     tf::Point start, end;
     // randomSelection(plt, rayt, start, end);
     auto timer_begin = std::chrono::high_resolution_clock::now();
-    fixedSelectionBoeing(plt, rayt, start, end);
+    fixedSelectionBoeing(plt, plt, start, end);
     auto timer_end = std::chrono::high_resolution_clock::now();
     auto timer_dur = timer_end - timer_begin;
     cout << "Elapsed RayCasting time: " << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << endl;
 
+
     Ray measurement(start, end);
-    
-    double distToPart;
-    if(!rayt.traceRay(measurement, distToPart)){
-      ROS_INFO("NO INTERSECTION, Skipping");
+    int hitPart = simulateMeasurement(measurement, plt, srv_add, 0.001);
+    if(hitPart < 0)
       continue;
-    }
-    tf::Point intersection(start.getX(), start.getY(), start.getZ());
-    intersection = intersection + (end-start).normalize() * (distToPart - radius);
-    std::cout << "Intersection at: " << intersection.getX() << "  " << intersection.getY() << "   " << intersection.getZ() << std::endl;
-    tf::Point ray_dir(end.x()-start.x(),end.y()-start.y(),end.z()-start.z());
-    ray_dir = ray_dir.normalize();
-    obs.x=intersection.getX() + randn(rd); 
-    obs.y=intersection.getY() + randn(rd); 
-    obs.z=intersection.getZ() + randn(rd);
-    dir.x=ray_dir.x();
-    dir.y=ray_dir.y();
-    dir.z=ray_dir.z();
-    // obs.x=intersection.getX(); 
-    // obs.y=intersection.getY(); 
-    // obs.z=intersection.getZ();
 
-    // pub_add.publish(obs);
-    
-    // plt.plotCylinder(start, end, 0.01, 0.002, true);
     plt.plotRay(Ray(start, end));
-    ros::Duration(1).sleep();
 
-    particle_filter::AddObservation pfilter_obs;
-    pfilter_obs.request.p = obs;
-    pfilter_obs.request.dir = dir;
-    if(!srv_add.call(pfilter_obs)){
-      ROS_INFO("Failed to call add observation");
-    }
 
     ros::spinOnce();
-    while(!rayt.particleHandler.newParticles){
+    while(!plt.particleHandler.newParticles){
       ROS_INFO_THROTTLE(10, "Waiting for new particles...");
       ros::spinOnce();
       ros::Duration(.1).sleep();
     }
     i ++;
   }
+
+
   // std::ofstream myfile;
   // myfile.open("/home/shiyuan/Documents/ros_marsarm/diff.csv", std::ios::out|std::ios::app);
   // myfile << "\n";

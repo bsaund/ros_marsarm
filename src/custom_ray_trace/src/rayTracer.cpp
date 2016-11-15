@@ -302,10 +302,9 @@ bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart)
   // 	   particles[0].getOrigin().getZ());
 
 
-  //Quick check to see if ray even has a chance of hitting any particle
+  //TODO - WOW This is handled poorly. traceAllParticles should not be keeping track of whether the state machine has processed the particles. This is confusing
   if(particleHandler.theseAreNewParticles()){
     particleHandler.newParticles = false;
-    // surroundingBoxAllParticles = getBoxAroundAllParticles(mesh);
   }
   
   // double tmp;

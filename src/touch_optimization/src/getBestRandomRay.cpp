@@ -16,6 +16,7 @@
  *  those vectors, and returns the ray (start and end) with the highest information gain
  */
 void getBestRandomRay(RayTracePlotter &plt, tf::Pose &probePose, 
+		      Ray &bestRay,
 		      Scenario raySet, int numTrials, bool plotAll)
 {
   // tf::Point best_start, best_end;
@@ -72,5 +73,5 @@ void getBestRandomRay(RayTracePlotter &plt, tf::Pose &probePose,
   	   best_start.getX(), best_start.getY(), best_start.getZ(),
   	   best_end.getX(), best_end.getY(), best_end.getZ());
   ROS_INFO("IG is: %f", bestIG);
-  
+  bestRay = Ray(best_start, best_end);
 }

@@ -59,6 +59,7 @@ int main(int argc, char **argv)
   ros::Duration(2).sleep();
   
   tf::Pose probePose;
+  Ray measurementRay;
   geometry_msgs::Pose probe_msg; 
 
   // tf::Point rStart(0.8, -0.21, 0.45);
@@ -73,7 +74,7 @@ int main(int argc, char **argv)
     ROS_INFO("Measurement %d", i);
     ROS_INFO("--------------------------------------------");
 
-    getBestRandomRay(plt,  probePose, Scenario::MarsArm, 1000, true);
+    getBestRandomRay(plt,  probePose, measurementRay, Scenario::MarsArm, 1000, true);
     tf::poseTFToMsg(probePose, probe_msg);
 
 

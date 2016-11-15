@@ -16,6 +16,7 @@
 class Ray
 {
  public:
+  Ray();
   Ray(tf::Point start_, tf::Point end_);
 
   tf::Point start;

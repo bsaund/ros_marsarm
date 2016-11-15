@@ -134,7 +134,7 @@ void fixedSelection(RayTracePlotter &plt, RayTracer &rayt, tf::Point &best_start
   plt.plotRay(Ray(best_start, best_end));
 }
 
-void fixedSelectionBoeing(RayTracePlotter &plt, RayTracer &rayt, tf::Point &best_start, tf::Point &best_end)
+void fixedSelectionBoeing(RayTracePlotter &plt, tf::Point &best_start, tf::Point &best_end)
 {
   int index;
   double bestIG = 0;
@@ -199,7 +199,7 @@ void fixedSelectionBoeing(RayTracePlotter &plt, RayTracer &rayt, tf::Point &best
     tf_end.setValue(tran_end(0, 0), tran_end(1, 0), tran_end(2, 0));
     Ray measurement(tf_start, tf_end);
     // auto timer_begin = std::chrono::high_resolution_clock::now();
-    double IG = rayt.getIG(measurement, 0.01, 0.002);
+    double IG = plt.getIG(measurement, 0.01, 0.002);
     // std::cout << "Current sample from: " << index << std::endl;
     // std::cout << "Current IG: " << IG << std::endl;
     // plt.plotRay(measurement);
@@ -227,7 +227,7 @@ void fixedSelectionBoeing(RayTracePlotter &plt, RayTracer &rayt, tf::Point &best
  * Randomly chooses vectors, gets the Information Gain for each of 
  *  those vectors, and returns the ray (start and end) with the highest information gain
  */
-void randomSelection(RayTracePlotter &plt, RayTracer &rayt, tf::Point &best_start, tf::Point &best_end)
+void randomSelection(RayTracePlotter &plt, tf::Point &best_start, tf::Point &best_end)
 {
   // tf::Point best_start, best_end;
 
@@ -244,7 +244,7 @@ void randomSelection(RayTracePlotter &plt, RayTracer &rayt, tf::Point &best_star
     end.normalized();
     Ray measurement(start, end);
     // auto timer_begin = std::chrono::high_resolution_clock::now();
-    double IG = rayt.getIG(measurement, 0.01, 0.002);
+    double IG = plt.getIG(measurement, 0.01, 0.002);
     // auto timer_end = std::chrono::high_resolution_clock::now();
     // auto timer_dur = timer_end - timer_begin;
     // cout << "IG: " << IG << endl;
@@ -277,6 +277,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "updating_particles");
   ros::NodeHandle n;
   RayTracePlotter plt;
+  tf::Pose probePose;
   // RayTracer rayt;
 
   std::random_device rd;
@@ -295,6 +296,7 @@ int main(int argc, char **argv)
   // pub_init.publish(getInitialPoints(plt));
  
   double radius = 0.00;
+  Ray measurementRay;
 
   int i = 0;
   //for(int i=0; i<20; i++){
@@ -302,21 +304,28 @@ int main(int argc, char **argv)
     // ros::Duration(1).sleep();
     //tf::Point start(0.95,0,-0.15);
     //tf::Point end(0.95,2,-0.15);
-    tf::Point start, end;
+    // tf::Point start, end;
     // randomSelection(plt, rayt, start, end);
+
     auto timer_begin = std::chrono::high_resolution_clock::now();
-    fixedSelectionBoeing(plt, plt, start, end);
+
+    //Chose one of these selection methods
+    // fixedSelectionBoeing(plt, start, end);
+    getBestRandomRay(plt, probePose, measurementRay, Scenario::MarsArm, 500);
+
     auto timer_end = std::chrono::high_resolution_clock::now();
     auto timer_dur = timer_end - timer_begin;
     cout << "Elapsed RayCasting time: " << std::chrono::duration_cast<std::chrono::milliseconds>(timer_dur).count() << endl;
 
 
-    Ray measurement(start, end);
-    int hitPart = simulateMeasurement(measurement, plt, srv_add, 0.001);
-    if(hitPart < 0)
-      continue;
 
-    plt.plotRay(Ray(start, end));
+    int hitPart = simulateMeasurement(measurementRay, plt, srv_add, 0.001);
+    if(hitPart < 0) {
+      ROS_INFO("NO INTERSECTION, Skipping");
+      continue;
+    }
+
+    plt.plotRay(measurementRay);
 
 
     ros::spinOnce();

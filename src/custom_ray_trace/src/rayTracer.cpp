@@ -8,6 +8,9 @@
  ***     Ray           ***
  *************************
  */
+
+Ray::Ray(){
+}
  
 Ray::Ray(tf::Point start_, tf::Point end_)
 {

@@ -7,6 +7,7 @@
 enum Scenario {MarsArm};
 
 void getBestRandomRay(RayTracePlotter &plt, tf::Pose &probePose, 
+			Ray &bestRay,
 			Scenario raySet, int numTrials, bool plotAll = true);
 
 

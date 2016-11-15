@@ -1,0 +1,76 @@
+<launch>
+
+<!-- This is used to load the cad files for visualization and ray tracing.  -->
+<!-- There needs to be corresponding files  -->
+<!-- gazebo_ray_trace/sdf/[localization_object_cad].stl -->
+<!-- gazebo_ray_trace/worlds/[localization_object_cad].world -->
+  <arg name="localization_object" default="real_plate"/>
+
+
+  <node pkg="rviz" type="rviz" name="ParticleViz" 
+	args="-d $(find using_markers)/src/two_plates.rviz" required="true"/>
+
+  <group ns="plate_1">
+    <rosparam param="initial_uncertainties">
+      [.03, .03, .02, 0.015, 0.01, 0.04]
+    </rosparam>
+
+    <rosparam param="particle_frame">
+      [0, 0.0, 0, 0, 0, 0]
+    </rosparam>
+
+    <rosparam param="color">
+      [.6, .6, .65, .2]
+    </rosparam>
+
+
+    <param name="localization_object_cad" type="str"
+  	   value="package://custom_ray_trace/sdf/$(arg localization_object).stl"/>
+    <param name="localization_object_filepath" type="str"
+  	   value="$(find custom_ray_trace)/sdf/$(arg localization_object).stl"/>
+    <param name="localization_object" type="str"
+  	   value="$(arg localization_object)"/>
+
+    <node pkg="using_markers" type="plotParticles"
+  	  name="markers" output="screen"/>
+
+    <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
+  </group>
+
+
+  <group ns="plate_2">
+    <rosparam param="initial_uncertainties">
+      [.0001, .0001, .01, 0.0001, 0.0001, 0.0001]
+    </rosparam>
+
+    <rosparam param="particle_frame">
+      [1, 1, 1, 0, 0, 0]
+    </rosparam>
+
+    <rosparam param="color">
+      [0, 0, 1, .2]
+    </rosparam>
+
+    <rosparam param="relationship">
+      <!-- [0, 0, 0, 1.57, 0, 0] -->
+      [1, 1, 1, 0, 0, 0]
+    </rosparam>
+
+
+    <param name="localization_object_cad" type="str"
+  	   value="package://custom_ray_trace/sdf/real_plate.stl"/>
+    <param name="localization_object_filepath" type="str"
+  	   value="$(find custom_ray_trace)/sdf/real_plate.stl"/>
+    <param name="localization_object" type="str"
+  	   value="upper_plate"/>
+
+    <node pkg="using_markers" type="plotParticles"
+  	  name="markers" output="screen"/>
+
+    <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
+  </group>
+
+
+
+
+</launch>

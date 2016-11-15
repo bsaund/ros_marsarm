@@ -1,4 +1,6 @@
 geometry_msgs/Point p
 geometry_msgs/Point dir
+std_msgs/String object
+std_msgs/String mesh_resource
 ---
 bool success

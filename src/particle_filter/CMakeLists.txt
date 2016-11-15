@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 # set(CMAKE_CXX_FLAGS "-std=c++0x -O3 ${CMAKE_CXX_FLAGS}")
-add_definitions(-std=c++11 -O3)
+add_definitions(-std=c++11 -O3 -msse3)
 project(particle_filter)
 
 ## Find catkin macros and libraries
@@ -186,6 +186,10 @@ target_link_libraries(triBox
 #  pfilter6D
 # )
   
+add_executable(observe src/observe.cpp)
+target_link_libraries(observe
+  ${catkin_LIBRARIES}
+)
 
 add_executable(pfilterBoeingTest src/particleFilterBoeingTest.cpp)
 target_link_libraries(pfilterBoeingTest

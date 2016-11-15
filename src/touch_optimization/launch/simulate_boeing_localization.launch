@@ -1,0 +1,7 @@
+<launch>
+  <group ns="baseParticles">
+    <node pkg="touch_optimization" type="boeing_localization" 
+	  name="boeing_localization_simulation" output="screen"/>
+
+  </group>
+</launch>

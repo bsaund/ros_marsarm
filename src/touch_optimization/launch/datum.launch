@@ -13,18 +13,20 @@
   <group ns="baseParticles">
     <rosparam param="initial_uncertainties">
       <!-- [.05, .05, .02, 0.02, 0.01, 0.05] -->
-      [.002, .005, .002, 0.002, 0.001, 0.005]
+      [0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001]
+      <!-- [.0003, .03, .0002, 0.00015, 0.0001, 0.0004] -->
+      <!-- [.002, .005, .002, 0.002, 0.001, 0.005] -->
       <!-- [.1, .1, .1, 0.2, 0.2, 0.2] -->
       <!-- [.05, .05, .05, 0,0,0] -->
     </rosparam>
 
     <rosparam param="particle_frame">
       <!-- [1.1, 0.41, .18, 0, 0, -1.95] -->
-      [0, 0, 0, 0, 0, -1.57]
+      [0, .00, 0, 0, 0, -1.5708]
     </rosparam>
 
     <rosparam param="color">
-      [.6, .6, .65]
+      [.6, .6, .65, .2]
     </rosparam>
 
 
@@ -45,18 +47,19 @@
   <group ns="right_datum">
     <rosparam param="initial_uncertainties">
       <!-- [.05, .05, .02, 0.02, 0.01, 0.05] -->
-      [.02, .005, .02, 0.02, 0.01, 0.05]
+      <!-- [.0002, .02, .0002, 0.0002, 0.0001, 0.0005] -->
+      [0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001]
       <!-- [.1, .1, .1, 0.2, 0.2, 0.2] -->
       <!-- [.05, .05, .05, 0,0,0] -->
     </rosparam>
 
     <rosparam param="particle_frame">
       <!-- [1.1, 0.41, .18, 0, 0, -1.95] -->
-      [0, 0, 0, 0, 0, -1.57]
+      [0, 0, 0, 0, 0, -1.5708]
     </rosparam>
 
     <rosparam param="color">
-      [0, 0, 1]
+      [0, 0, 1, .2]
     </rosparam>
 
 
@@ -74,21 +77,63 @@
     <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
   </group>
 
-  <group ns="goal_hole">
+
+
+
+  <group ns="top_datum">
     <rosparam param="initial_uncertainties">
       <!-- [.05, .05, .02, 0.02, 0.01, 0.05] -->
-      [.02, .005, .02, 0.02, 0.01, 0.05]
+      <!-- [.0002, .02, .0002, 0.0002, 0.0001, 0.0005] -->
+      [0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001]
+      <!-- [.02, .05, .0002, 0.0002, 0.0001, 0.0005] -->
+      <!-- [.02, .0005, .02, 0.0002, 0.0001, 0.0005] -->
+      <!-- [.02, .005, .02, 0.02, 0.01, 0.05] -->
       <!-- [.1, .1, .1, 0.2, 0.2, 0.2] -->
       <!-- [.05, .05, .05, 0,0,0] -->
     </rosparam>
 
     <rosparam param="particle_frame">
       <!-- [1.1, 0.41, .18, 0, 0, -1.95] -->
-      [0, 0, 0, 0, 0, -1.57]
+      [0, 0, 0, 0, 0, -1.5708]
     </rosparam>
 
     <rosparam param="color">
-      [0, 1, 0]
+      [0, 1, 1, .2]
+    </rosparam>
+
+
+
+    <param name="localization_object_cad" type="str" 
+	   value="package://custom_ray_trace/sdf/top_datum.stl"/>
+    <param name="localization_object_filepath" type="str"
+	   value="$(find custom_ray_trace)/sdf/top_datum.stl"/>
+    <param name="localization_object" type="str"
+	   value="top_datum"/>
+
+    <node pkg="using_markers" type="plotParticles" 
+	  name="markers" output="screen"/>
+
+    <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
+  </group>
+
+
+  <group ns="goal_hole">
+    <rosparam param="initial_uncertainties">
+      <!-- [.05, .05, .02, 0.02, 0.01, 0.05] -->
+      <!-- [.0002, .02, .00, 0.0002, 0.0001, 0.0005] -->
+      [0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001]
+      <!-- [.02, .05, .0002, 0.0002, 0.0001, 0.0005] -->
+      <!-- [.1, .1, .1, 0.2, 0.2, 0.2] -->
+      <!-- [.05, .05, .05, 0,0,0] -->
+    </rosparam>
+
+    <rosparam param="particle_frame">
+      <!-- [1.1, 0.41, .18, 0, 0, -1.95] -->
+      [0, 0, 0, 0, 0, -1.5708]
+    </rosparam>
+
+    <rosparam param="color">
+      [0, 1, 0, .7]
     </rosparam>
 
 

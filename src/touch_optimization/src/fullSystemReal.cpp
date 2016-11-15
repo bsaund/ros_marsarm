@@ -87,16 +87,16 @@ void generateRandomTouchBottom(std::mt19937 &gen, tf::Pose &probePose)
     // 			  0,0,0);
     generateRandomTouchWith(probePose, 
 			    // 0.8, -0.21, 0.45, M_PI, 0, M_PI, 
-			    0.5 + x_width, y_val, 0.45, M_PI, 0, yaw,
+			    0.7 + x_width, y_val, 0.45, M_PI, 0, yaw,
 			    0,0,0,
 			    0,0,0);
   }else{
     //Gereate right touch
     double x_width = 0.6*rand(gen);
-    double y_width = 0.15*rand(gen);
+    double y_width = 0.35*rand(gen);
 
     // double y_val = -0.51 + y_width;
-    double y_val = -.55 + y_width;
+    double y_val = -.45 + y_width;
 
     double yaw = -1.5 + 3*y_val;
     yaw = min(-0.8, yaw);
@@ -104,7 +104,7 @@ void generateRandomTouchBottom(std::mt19937 &gen, tf::Pose &probePose)
 
     generateRandomTouchWith(probePose, 
 			    // 0.8, -0.21, 0.45, M_PI, 0, M_PI, 
-			    0.5 + x_width, y_val, 0.45, M_PI, 0, yaw,
+			    0.7 + x_width, y_val, 0.45, M_PI, 0, yaw,
 			    0,0,0,
 			    0,0,0);
   }
@@ -113,7 +113,7 @@ void generateRandomTouchBottom(std::mt19937 &gen, tf::Pose &probePose)
 void generateRandomTouchFront(std::mt19937 &gen, tf::Pose &probePose)
 {
   std::uniform_real_distribution<double> rand(-1.0,1.0);
-  double y_width = 0.350*rand(gen);
+  double y_width = 0.30*rand(gen);
   double z_width = 0.15*rand(gen);
 
   double yaw = 0;
@@ -123,7 +123,7 @@ void generateRandomTouchFront(std::mt19937 &gen, tf::Pose &probePose)
   }
 
   generateRandomTouchWith(probePose, 
-			  0.75, -0.30+y_width, 0.61+z_width, M_PI/2, yaw, -M_PI/2,
+			  0.75, -0.2+y_width, 0.61+z_width, M_PI/2, yaw, -M_PI/2,
   			  // 0.812, -0.050, 0.391, -1.396, -2.104, -1.468, 
   			  0,0,0,
   			  0,0,0);

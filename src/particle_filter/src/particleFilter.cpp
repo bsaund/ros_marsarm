@@ -370,7 +370,7 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 	  //   std::cout<< "!!!!!!!! BREAKING DUE TO INTERSECTIONS !!!!!" << "\n";
 	  //   break;
 	  // }
-	  // continue;
+	  continue;
 	}
 	count_bar = 0;
 	D -= R;
@@ -410,6 +410,7 @@ bool particleFilter::updateParticles(double cur_M[2][3], vector<vec4x3> &mesh, d
 	}
 	count_bar = 0;
 #endif
+	std::cout << "Distance from the part: " << D << std::endl;
 	for (int j = 0; j < cdim; j++) {
 	  particles[i][j] = tempState[j];
 	}

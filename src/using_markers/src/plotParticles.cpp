@@ -175,7 +175,12 @@ void ShapePlotter::updateMarkers()
     std::vector<double> color;
     if(!n.getParam("color", color)){
       ROS_INFO("Failed to get param: color");
+	color.resize(4);
+    }
+    if(color.size() != 4){
+      ROS_INFO_THROTTLE(60,"Color Vector wrong size: [r g b alpha]");
       color.resize(4);
+      color[3] = 1;
     }
 
     points.markers[i].color.r = color[0];
@@ -233,6 +238,7 @@ void ShapePlotter::updateTrueMarker()
  * Publishes both the marker points and particle transforms
  */
 void ShapePlotter::plotParticles(){
+  
   geometry_msgs::TransformStamped trans;
   tf::Transform unityTransform;
   unityTransform.setOrigin(tf::Vector3(0,0,0));
@@ -260,8 +266,23 @@ void ShapePlotter::plotParticles(){
     br.sendTransform(trans);
 
   tfstmp = tf::StampedTransform(unityTransform, ros::Time::now(),"base_plate", "my_frame");
-    tf::transformStampedTFToMsg(tfstmp, trans);
+  tf::transformStampedTFToMsg(tfstmp, trans);
   br.sendTransform(trans);
+
+  std::vector<double> trueFrame;
+  if(n.getParam("true_frame", trueFrame)){
+    tf::Transform trueTransform;
+    trueFrame.resize(6);
+    trueTransform.setOrigin(tf::Vector3(trueFrame[0],trueFrame[1],trueFrame[2]));
+    q.setRPY(trueFrame[3],trueFrame[4], trueFrame[5]);
+    trueTransform.setRotation(q);
+    tfstmp = tf::StampedTransform(trueTransform, ros::Time::now(),"my_frame", "true_frame");
+    tf::transformStampedTFToMsg(tfstmp, trans);
+    br.sendTransform(trans);
+    plotTruePart();
+  }
+
+
 
   for(int i=0; i<particles_.poses.size(); i++){
     points.markers[i].header.stamp = ros::Time::now();
@@ -288,7 +309,7 @@ int main(int argc, char **argv)
 
   // plt.generateTransforms();
   plt.updateMarkers();
-  // plt.updateTrueMarker();
+  plt.updateTrueMarker();
 
 
   while (ros::ok()) {

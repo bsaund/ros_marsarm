@@ -33,7 +33,7 @@ using namespace std;
 #define min2(a,b) (a<b?a:b)
 typedef array<array<float, 3>, 4> vec4x3;
 #define epsilon 0.0001
-#define ARM_LENGTH 0.2
+#define ARM_LENGTH 0.8
 #define N_MIN 50
 #define DISPLACE_INTERVAL 0.015
 #define SAMPLE_RATE 0.50
@@ -51,6 +51,7 @@ cspace ParticleDistribution::sampleFrom(){
 
   std::normal_distribution<double> dist(0, 1);
   std::uniform_real_distribution<double> distribution(0, this->size());
+  // std::uniform_real_distribution<double> distribution(0, numParticles);
 
   Eigen::VectorXd samples(cdim, 1);
   Eigen::VectorXd rot_sample(cdim, 1);
@@ -79,10 +80,12 @@ cspace ParticleDistribution::sampleFrom(){
 void ParticleDistribution::updateBandwidth(){
 
   Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)this->data(), cdim, this->size());
+  // Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)this->data(), cdim, numParticles);
   Eigen::MatrixXd mat_centered = mat.colwise() - mat.rowwise().mean();
   Eigen::MatrixXd cov_mat = (mat_centered * mat_centered.adjoint()) / double(max2(mat.cols()-1,1));
 
   double coeff = pow(this->size(), -0.2) * 0.87055/1.2155/1.2155;
+  // double coeff = pow(numParticles, -0.2) * 0.87055/1.2155/1.2155;
   Eigen::MatrixXd H_cov = coeff * cov_mat;
   // cout << "H_cov: " << H_cov << endl;
 
@@ -171,7 +174,7 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
   auto timer_begin = std::chrono::high_resolution_clock::now();
 
   bool iffar = updateParticles(obs, mesh, dist_transform, tf, miss);
-
+  
   particlesPrev = particles;
   particlesPrev.updateBandwidth();
 
@@ -347,6 +350,7 @@ bool particleFilter::updateParticles(const double measurementWorldFr[2][3], vect
   double measurementPartFr[2][3];
 
   double unsigned_dist_check = R + Xstd_ob;
+  double signed_dist_check = 2 * Xstd_ob;
 
 
 
@@ -385,27 +389,27 @@ bool particleFilter::updateParticles(const double measurementWorldFr[2][3], vect
       // cout << "curinvM" << measurementPartFr[0][0] << ", " << measurementPartFr[0][1] << ", " << measurementPartFr[0][2] << "\n";
 
       count += 1;
-      if(isPowerOfTwo(count) && count > 1000){
-	cout << "Sampled " << count << " particles\t";
-	cout << "count2: " << count2 << "\t count3: " << count3 << "\n";
+      // if(isPowerOfTwo(count) && count > 1000){
+      // 	cout << "Sampled " << count << " particles\t";
+      // 	cout << "count2: " << count2 << "\t count3: " << count3 << "\n";
 
-	cout << " trans_M: " << trans_M[0][0];
-	cout << ", " << trans_M[0][1] << ", " << trans_M[0][2] << "\n";
+      // 	cout << " trans_M: " << trans_M[0][0];
+      // 	cout << ", " << trans_M[0][1] << ", " << trans_M[0][2] << "\n";
 
-	cout << " measurementPartFr: " << measurementPartFr[0][0];
-	cout << ", " << measurementPartFr[0][1] << ", " << measurementPartFr[0][2] << "\n";
-	cout << " sampledState: " << tempState[0];
-	cout << ", " << tempState[1] << ", " << tempState[2];
-	cout << ", " << tempState[3] << ", " << tempState[4];
-	cout << ", " << tempState[5] << "\n";
-	cout << "World Range: [";
-	cout << "(" << dist_transform->world_range[0][0];
-	cout << ", " << dist_transform->world_range[0][1] << ")";
-	cout << ", (" << dist_transform->world_range[1][0];
-	cout << ", " << dist_transform->world_range[1][1] << ")";
-	cout << ", (" << dist_transform->world_range[2][0];
-	cout << ", " << dist_transform->world_range[2][1] << ")]\n";
-      }
+      // 	cout << " measurementPartFr: " << measurementPartFr[0][0];
+      // 	cout << ", " << measurementPartFr[0][1] << ", " << measurementPartFr[0][2] << "\n";
+      // 	cout << " sampledState: " << tempState[0];
+      // 	cout << ", " << tempState[1] << ", " << tempState[2];
+      // 	cout << ", " << tempState[3] << ", " << tempState[4];
+      // 	cout << ", " << tempState[5] << "\n";
+      // 	cout << "World Range: [";
+      // 	cout << "(" << dist_transform->world_range[0][0];
+      // 	cout << ", " << dist_transform->world_range[0][1] << ")";
+      // 	cout << ", (" << dist_transform->world_range[1][0];
+      // 	cout << ", " << dist_transform->world_range[1][1] << ")";
+      // 	cout << ", (" << dist_transform->world_range[2][0];
+      // 	cout << ", " << dist_transform->world_range[2][1] << ")]\n";
+      // }
 
       touch_dir << measurementPartFr[1][0], measurementPartFr[1][1], measurementPartFr[1][2];
       // reject particles ourside of distance transform
@@ -424,19 +428,21 @@ bool particleFilter::updateParticles(const double measurementWorldFr[2][3], vect
       double dist_adjacent[3] = { 0, 0, 0 };
 
 
-      if(isPowerOfTwo(count) && count > 1000){
-	cout << "Sampled " << count << " particles\t";
-	cout << "count2: " << count2 << "\t count3: " << count3 << "\n";
-	cout << "D: " << D << " measurement World: " << trans_M[0][0];
-	cout << ", " << trans_M[0][1] << ", " << trans_M[0][2] << "\n";
-      }
+      // if(isPowerOfTwo(count) && count > 1000){
+      // 	cout << "Sampled " << count << " particles\t";
+      // 	cout << "count2: " << count2 << "\t count3: " << count3 << "\n";
+      // 	cout << "D: " << D << " measurement World: " << trans_M[0][0];
+      // 	cout << ", " << trans_M[0][1] << ", " << trans_M[0][2] << "\n";
+      // }
       if (D <= unsigned_dist_check) {
 	count2 ++;
 #ifdef COMBINE_RAYCASTING
 	if (checkIntersections(mesh, measurementPartFr[0], measurementPartFr[1], ARM_LENGTH, D)) {
 	  count_bar ++;
-	  if (count_bar > 1000)
+	  if (count_bar > 1000){
+	    std::cout<< "!!!!!!!! BREAKING DUE TO INTERSECTIONS !!!!!" << "\n";
 	    break;
+	  }
 	  continue;
 	}
 	count_bar = 0;
@@ -459,7 +465,7 @@ bool particleFilter::updateParticles(const double measurementWorldFr[2][3], vect
       }
       else
 	continue;
-      if (D >= -Xstd_ob && D <= Xstd_ob) {
+      if (D >= -signed_dist_check && D <= signed_dist_check) {
 #ifndef COMBINE_RAYCASTING	
 	safe_point[1][0] = trans_M[1][0];
 	safe_point[1][1] = trans_M[1][1];
@@ -495,6 +501,7 @@ bool particleFilter::updateParticles(const double measurementWorldFr[2][3], vect
     cout << "Number of iterations before safepoint check: " << count3 << endl;
     cout << "Number of occupied bins: " << num_bins << endl;
     cout << "Number of particles: " << numParticles << endl;
+    particles.resize(i);
   }
   else {
     // ------------------- MISSED TOUCH ------

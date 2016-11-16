@@ -1,0 +1,33 @@
+baseParticles:
+  color: [0.6, 0.6, 0.65, 0.01]
+  initial_uncertainties: [0.01, 0.01, 0.01, 0.0001, 0.0001, 0.0001]
+  localization_object: wood_boeing
+  localization_object_cad: package://custom_ray_trace/sdf/wood_boeing.stl
+  localization_object_filepath: /home/bsaund/Documents/Work/ROS/marsarm/src/custom_ray_trace/sdf/wood_boeing.stl
+  particle_frame: [0, 0.0, 0, 0, 0, 0]
+
+goal_hole:
+  color: [0, 1, 0, 0.7]
+  initial_uncertainties: [0.01, 0.01, 0.01, 0.0001, 0.0001, 0.0001]
+  localization_object: goal_hole
+  localization_object_cad: package://custom_ray_trace/sdf/goal_hole.stl
+  localization_object_filepath: /home/bsaund/Documents/Work/ROS/marsarm/src/custom_ray_trace/sdf/goal_hole.stl
+  particle_frame: [0, 0, 0, 0, 0, 0]
+
+right_datum:
+  color: [0, 0, 1, 0.2]
+  initial_uncertainties: [0.01, 0.01, 0.01, 0.0001, 0.0001, 0.0001]
+  localization_object: right_datum
+  localization_object_cad: package://custom_ray_trace/sdf/right_datum.stl
+  localization_object_filepath: /home/bsaund/Documents/Work/ROS/marsarm/src/custom_ray_trace/sdf/right_datum.stl
+  particle_frame: [0, 0, 0, 0, 0, 0]
+
+top_datum:
+  color: [0.5, 0.5, 0, 0.2]
+  initial_uncertainties: [0.01, 0.01, 0.01, 0.0001, 0.0001, 0.0001]
+  localization_object: top_datum
+  localization_object_cad: package://custom_ray_trace/sdf/top_datum.stl
+  localization_object_filepath: /home/bsaund/Documents/Work/ROS/marsarm/src/custom_ray_trace/sdf/top_datum.stl
+  particle_frame: [0, 0, 0, 0, 0, 0]
+  true_frame: [0, 0, 0, 0, 0, 0]
+

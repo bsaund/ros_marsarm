@@ -19,7 +19,6 @@ int simulateMeasurement(Ray measurementAction, RayTracer &rayt,
   double distToPart;
 
   if(!rayt.traceRay(measurementAction, distToPart)){
-    ROS_INFO("NO INTERSECTION, Skipping");
     return -1;
   }
 

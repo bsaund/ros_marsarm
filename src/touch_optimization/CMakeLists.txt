@@ -197,7 +197,13 @@ target_link_libraries(run_full_real
 add_executable(image_maker src/imageMaker.cpp)
 target_link_libraries(image_maker
   ${catkin_LIBRARIES}
-  )
+)
+
+add_executable(simulate_measurement_exec src/simulateMeasurementExec.cpp)
+target_link_libraries(simulate_measurement_exec
+  ${catkin_LIBRARIES}
+  simulate_measurement
+)
 
 
 

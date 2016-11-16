@@ -1,0 +1,51 @@
+<launch>
+
+<!-- This is used to load the cad files for visualization and ray tracing.  -->
+<!-- There needs to be corresponding files  -->
+<!-- gazebo_ray_trace/sdf/[localization_object_cad].stl -->
+<!-- gazebo_ray_trace/worlds/[localization_object_cad].world -->
+  <arg name="localization_object" default="wood_boeing"/>
+
+
+  <node pkg="rviz" type="rviz" name="ParticleViz" 
+	args="-d $(find using_markers)/src/twoEdges.rviz" required="true"/>
+
+  <rosparam command="load" file="$(find touch_optimization)/configs/twoEdges.yaml"/>
+
+  <group ns="baseParticles">
+    <node pkg="using_markers" type="plotParticles" 
+	  name="markers" output="screen"/>
+    <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
+  </group>
+
+
+  <group ns="right_datum">
+    <node pkg="using_markers" type="plotParticles" 
+	  name="markers" output="screen"/>
+
+    <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
+  </group>
+
+
+  <group ns="top_datum">
+    <node pkg="using_markers" type="plotParticles" 
+	  name="markers" output="screen"/>
+
+    <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
+    <rosparam param="relationship">
+      <!-- [0, 0, 0, 1.57, 0, 0] -->
+      [0, 0, 0, 0, 0, 0]
+    </rosparam>
+  </group>
+
+
+  <!-- <group ns="goal_hole"> -->
+  <!--   <node pkg="using_markers" type="plotParticles"  -->
+  <!-- 	  name="markers" output="screen"/> -->
+
+  <!--   <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/> -->
+  <!-- </group> -->
+
+  
+
+</launch>

@@ -151,10 +151,9 @@ void particleFilter::createParticles(Particles &particles_dest, cspace b_Xprior[
 
 void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss)
 {
-  FixedTransform tf(0,0,0,0,0,0);
+  FixedTransform tf(cspace{});
   addObservation(obs, mesh, dist_transform, tf, miss);
 }
-
 
 /*
  * Add new observation and call updateParticles() to update the particles
@@ -313,6 +312,7 @@ bool insideBounds(double point[3], double bounds[3][2]){
 }
 
 
+
 /*
  * Update particles (Build distance transform and sampling)
  * Input: particlesPrev: previous estimated particles
@@ -325,13 +325,6 @@ bool insideBounds(double point[3], double bounds[3][2]){
  *        Xstd_tran: gaussian kernel standard deviation when sampling
  * output: return whether previous estimate is bad (not used here)
  */
-bool particleFilter::updateParticles(const double cur_M[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss)
-{
-  FixedTransform tf(0,0,0,0,0,0);
-  return updateParticles(cur_M, mesh, dist_transform, tf, miss);
-}
-
-
 bool particleFilter::updateParticles(const double measurementWorldFr[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, RandomTransform &tf, bool miss){
   std::unordered_set<string> bins;
   std::random_device rd;

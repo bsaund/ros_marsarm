@@ -3,12 +3,14 @@
 
 #include <random>
 #include "PfDefinitions.h"
-
+#include "tf/tf.h"
 
 class RandomTransform
 {
  public:
   virtual cspace sampleTransform() = 0;
+  virtual cspace getMean() = 0;
+  virtual cspace getVariance() = 0;
 };
 
 
@@ -17,21 +19,46 @@ class RandomTransform
 class FixedTransform : public RandomTransform
 {
  public:
-  FixedTransform(double x_, double y_, double z_, 
-		 double r_, double p_, double ya_){
-    x = x_; y = y_; z = z_;
-    r = r_; p = p_; ya = ya_;
-  }
-  
-  cspace sampleTransform(){
-    cspace tr;
-    tr[0] = x; tr[1] = y; tr[2] = z;
-    tr[3] = r; tr[4] = p; tr[5] = ya;
-    return tr;
-  }
+  FixedTransform(cspace transform){    tr = transform;  }
+  cspace sampleTransform(){    return tr;  }
+  cspace getMean(){    return tr;  }
+  cspace getVariance(){    return cspace{};  }
   
  private:
-  double x, y, z, r, p, ya;
+  cspace tr;
 };
+
+class UniformRandomTransform : public RandomTransform
+{
+ public:
+  UniformRandomTransform(cspace meanTF, cspace rangeTF){    
+    *dist = std::uniform_real_distribution<double>(-1, 1);
+    mean = meanTF;
+    range = rangeTF;
+  }
+
+  cspace sampleTransform(){    
+    cspace sampled;
+    for(int i=0; i<cdim; i++){
+      sampled[i] = mean[i] + (*dist)(rd)*range[i];
+    }
+    return getMean();  
+  }
+
+
+  cspace getMean(){    return mean;  }
+  cspace getVariance(){    return range;  }
+  
+ private:
+  cspace mean, range;
+  random_device rd;
+  std::uniform_real_distribution<double> *dist; 
+};
+
+
+
+/* class GaussianTransform : public RandomTransform */
+/* { */
+/* } */
 
 #endif

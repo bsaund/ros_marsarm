@@ -139,9 +139,10 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
   std::vector<double> tfParams;
   if(n.getParam("relationship", tfParams)){
     ROS_INFO("Adding observation with offset");
-    FixedTransform tf(tfParams[0], tfParams[1], 
-		      tfParams[2], tfParams[3], 
-		      tfParams[4], tfParams[5]); 
+    cspace cspaceTF{tfParams[0], tfParams[1], 
+	tfParams[2], tfParams[3], 
+	tfParams[4], tfParams[5]};
+    FixedTransform tf(cspaceTF); 
     pFilter_.addObservation(obs2, mesh, dist_transform, tf, 0);
   } else {
     pFilter_.addObservation(obs2, mesh, dist_transform, 0);
@@ -156,24 +157,8 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
 
 
 bool PFilterTest::getMesh(std::string stlFilePath, vector<vec4x3> &loadedMesh){
-  // std::string stlFilePath;
-  // if(!n.getParam("localization_object_filepath", stlFilePath)){
-  //   ROS_INFO("Failed to get param: localization_object_filepath");
-  // }
-
-  // std::string filepath = "/home/bsaund/ros/ros_marsarm/src/gazebo_ray_trace/sdf/" + localizationObject + ".stl";
-
-  // if(localizationObject == "boeing_part") {
   loadedMesh = importSTL(stlFilePath);
-  // return true;
-  // }
-  // throw std::invalid_argument("localization object not recognized by particle filter: "
-  // 			      + localizationObject);
-  // return false;
 }
-
-
-
 
 
 geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
@@ -354,7 +339,6 @@ int main(int argc, char **argv)
 #endif
   ros::init(argc, argv, "pfilterTest");
   ros::NodeHandle n;
-  // ros::Publisher pub = n.advertise<geometry_msgs::PoseArray>("/particles_from_filter", 5);
 
   ROS_INFO("Testing particle filter");
   

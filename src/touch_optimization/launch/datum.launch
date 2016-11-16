@@ -8,7 +8,7 @@
 
 
   <node pkg="rviz" type="rviz" name="ParticleViz" 
-	args="-d $(find using_markers)/src/rviz_config.rviz" required="true"/>
+	args="-d $(find using_markers)/src/datums.rviz" required="true"/>
 
   <group ns="baseParticles">
     <rosparam param="initial_uncertainties">
@@ -98,7 +98,7 @@
     </rosparam>
 
     <rosparam param="color">
-      [0, 1, 1, .2]
+      [.5, .5, 0, .2]
     </rosparam>
 
 

@@ -319,7 +319,6 @@ int main(int argc, char **argv)
     if((ros::Time::now() - prevT).toSec() > 1){
       prevT = ros::Time::now();
       plt.plotParticles();
-      plt.plotTruePart();
     }
     // ROS_INFO("spinning");
     ros::spinOnce();

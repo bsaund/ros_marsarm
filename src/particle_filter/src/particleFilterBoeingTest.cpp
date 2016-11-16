@@ -14,6 +14,7 @@
 
 #include "particle_filter/PFilterInit.h"
 #include "particle_filter/AddObservation.h"
+#include "randomTransform.h"
 #include "stlParser.h"
 // #include <custom_ray_trace/stlParser.h>
 // #include <custom_ray_trace/rayTracer.h>
@@ -46,21 +47,21 @@ private:
   distanceTransform *dist_transform;
   // ParticleHandler pHandler;
 
-  bool getMesh(std::string filename);
+  bool getMesh(std::string filename,   vector<vec4x3> &loadedMesh);
 
 public:
   vector<vec4x3> mesh;
   int num_voxels[3];
   geometry_msgs::PoseArray getParticlePoseArray();
   particleFilter pFilter_;
-  PFilterTest(int n_particles, particleFilter::cspace b_init[2]);
+  PFilterTest(int n_particles, cspace b_init[2]);
   // void addObs(geometry_msgs::Point obs);
   bool addObs(particle_filter::AddObservation::Request &req,
 	      particle_filter::AddObservation::Response &resp);
   void sendParticles(std_msgs::Empty);
 };
 
-void computeInitialDistribution(particleFilter::cspace binit[2], ros::NodeHandle n)
+void computeInitialDistribution(cspace binit[2], ros::NodeHandle n)
 {
 
   std::vector<double> uncertainties;
@@ -86,18 +87,9 @@ void computeInitialDistribution(particleFilter::cspace binit[2], ros::NodeHandle
   binit[1][0] = uncertainties[0];
   binit[1][1] = uncertainties[1];
   binit[1][2] = uncertainties[2];
-
-  // binit[1][0] = 0.00;
-  // binit[1][1] = 0.00;
-  // binit[1][2] = 0.00;
-
   binit[1][3] = uncertainties[3];
   binit[1][4] = uncertainties[4];
   binit[1][5] = uncertainties[5];
-
-  // binit[1][3] = 0;
-  // binit[1][4] = 0;
-  // binit[1][5] = 0;
 
 }
 
@@ -110,7 +102,7 @@ double SQ(double d)
 /*
  *  Converts a cspace pose to a tf::Pose
  */
-tf::Pose poseAt(particleFilter::cspace particle_pose)
+tf::Pose poseAt(cspace particle_pose)
 {
   tf::Pose tf_pose;
   tf_pose.setOrigin(tf::Vector3(particle_pose[0], 
@@ -143,7 +135,19 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
   ROS_INFO("dir: %f, %f, %f", dir.x, dir.y, dir.z);
   double obs2[2][3] = {{obs.x, obs.y, obs.z}, {dir.x, dir.y, dir.z}};
 
-  pFilter_.addObservation(obs2, mesh, dist_transform, 0);
+
+  std::vector<double> tfParams;
+  if(n.getParam("relationship", tfParams)){
+    ROS_INFO("Adding observation with offset");
+    FixedTransform tf(tfParams[0], tfParams[1], 
+		      tfParams[2], tfParams[3], 
+		      tfParams[4], tfParams[5]); 
+    pFilter_.addObservation(obs2, mesh, dist_transform, tf, 0);
+  } else {
+    pFilter_.addObservation(obs2, mesh, dist_transform, 0);
+  }
+  
+
 
   ROS_INFO("...Done adding observation");
   pub_particles.publish(getParticlePoseArray());
@@ -151,17 +155,17 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
 }
 
 
-bool PFilterTest::getMesh(std::string filename){
-  std::string stlFilePath;
-  if(!n.getParam("localization_object_filepath", stlFilePath)){
-    ROS_INFO("Failed to get param: localization_object_filepath");
-  }
+bool PFilterTest::getMesh(std::string stlFilePath, vector<vec4x3> &loadedMesh){
+  // std::string stlFilePath;
+  // if(!n.getParam("localization_object_filepath", stlFilePath)){
+  //   ROS_INFO("Failed to get param: localization_object_filepath");
+  // }
 
   // std::string filepath = "/home/bsaund/ros/ros_marsarm/src/gazebo_ray_trace/sdf/" + localizationObject + ".stl";
 
   // if(localizationObject == "boeing_part") {
-  mesh = importSTL(stlFilePath);
-    // return true;
+  loadedMesh = importSTL(stlFilePath);
+  // return true;
   // }
   // throw std::invalid_argument("localization object not recognized by particle filter: "
   // 			      + localizationObject);
@@ -174,25 +178,25 @@ bool PFilterTest::getMesh(std::string filename){
 
 geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
 {
-  std::vector<particleFilter::cspace> particles;
+  std::vector<cspace> particles;
   pFilter_.getAllParticles(particles);
   // tf::Transform trans = pHandler.getTransformToPartFrame();
   tf::Transform trans = trans_;
 
-  #ifdef POINT_CLOUD
+#ifdef POINT_CLOUD
   boost::mutex::scoped_lock updateLock(updateModelMutex);	
   basic_cloud_ptr1->points.clear();
   basic_cloud_ptr2->points.clear();
   for (int j = 0; j < pFilter_.numParticles; j++ ) {
-  	pcl::PointXYZ basic_point;
-  	basic_point.x = particles[j][0] * 2;
-  	basic_point.y = particles[j][1] * 2;
-  	basic_point.z = particles[j][2] * 2;
-  	basic_cloud_ptr1->points.push_back(basic_point);
-	basic_point.x = particles[j][3] * 2;
-  	basic_point.y = particles[j][4] * 2;
-  	basic_point.z = particles[j][5] * 2;
-  	basic_cloud_ptr2->points.push_back(basic_point);
+    pcl::PointXYZ basic_point;
+    basic_point.x = particles[j][0] * 2;
+    basic_point.y = particles[j][1] * 2;
+    basic_point.z = particles[j][2] * 2;
+    basic_cloud_ptr1->points.push_back(basic_point);
+    basic_point.x = particles[j][3] * 2;
+    basic_point.y = particles[j][4] * 2;
+    basic_point.z = particles[j][5] * 2;
+    basic_cloud_ptr2->points.push_back(basic_point);
   }
   basic_cloud_ptr1->width = (int) basic_cloud_ptr1->points.size ();
   basic_cloud_ptr1->height = 1;
@@ -200,10 +204,10 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
   basic_cloud_ptr2->height = 1;
   update = true;
   updateLock.unlock();
-  #endif
+#endif
 
-  particleFilter::cspace particles_est_stat;
-  particleFilter::cspace particles_est;
+  cspace particles_est_stat;
+  cspace particles_est;
   pFilter_.estimateGaussian(particles_est, particles_est_stat);
   geometry_msgs::PoseArray poseArray;
   for(int i=0; i<50; i++){
@@ -263,7 +267,15 @@ void visualize()
 }
 #endif
 
-PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
+
+
+
+
+
+
+
+
+PFilterTest::PFilterTest(int n_particles, cspace b_init[2]) :
   pFilter_(n_particles, b_init, 0.0001, 0.0035, 0.0001, 0.00),
   num_voxels{200, 200, 200}//,
   // pFilter_(n_particles, b_init, 0.001, 0.0025, 0.0001, 0.00),
@@ -284,20 +296,28 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
   srv_add_obs = n.advertiseService("particle_filter_add", &PFilterTest::addObs, this);
   pub_particles = n.advertise<geometry_msgs::PoseArray>("particles_from_filter", 5);
   ROS_INFO("Loading Boeing Particle Filter");
-  getMesh("boeing_part.stl");
-  // getMesh("wood_boeing.stl");
-  //int num_voxels[3] = { 200,200,200 };
-  //dist_transform(num_voxels);
+  std::string stlFilePath;
+  if(!n.getParam("localization_object_filepath", stlFilePath)){
+    ROS_INFO("Failed to get param: localization_object_filepath");
+  }
+  getMesh(stlFilePath, mesh);
+
+
   ROS_INFO("start create dist_transform");
   dist_transform = new distanceTransform(num_voxels);
 
   tf::TransformListener tf_listener_;
-  tf_listener_.waitForTransform("/my_frame", "/particle_frame", ros::Time(0), ros::Duration(10.0));
-  tf_listener_.lookupTransform("/particle_frame", "/my_frame", ros::Time(0), trans_);
+  std::string name;
+  if(!n.getParam("localization_object", name)){
+    ROS_INFO("Failed to get param: localization_object");
+  }
+
+  tf_listener_.waitForTransform("/my_frame", name, ros::Time(0), ros::Duration(10.0));
+  tf_listener_.lookupTransform(name, "/my_frame", ros::Time(0), trans_);
 
 
-  #ifdef POINT_CLOUD
-  std::vector<particleFilter::cspace> particles;
+#ifdef POINT_CLOUD
+  std::vector<cspace> particles;
   pFilter_.getAllParticles(particles);
   boost::mutex::scoped_lock updateLock(updateModelMutex);	
   basic_cloud_ptr1->points.clear();
@@ -328,23 +348,23 @@ PFilterTest::PFilterTest(int n_particles, particleFilter::cspace b_init[2]) :
 
 int main(int argc, char **argv)
 {
-  #ifdef POINT_CLOUD
+#ifdef POINT_CLOUD
   update = false;
   boost::thread workerThread(visualize);
-  #endif
+#endif
   ros::init(argc, argv, "pfilterTest");
   ros::NodeHandle n;
   // ros::Publisher pub = n.advertise<geometry_msgs::PoseArray>("/particles_from_filter", 5);
 
   ROS_INFO("Testing particle filter");
   
-  particleFilter::cspace b_Xprior[2];	
+  cspace b_Xprior[2];	
   computeInitialDistribution(b_Xprior, n);
   PFilterTest pFilterTest(NUM_PARTICLES, b_Xprior);
   
   ros::spin();
-  #ifdef POINT_CLOUD
+#ifdef POINT_CLOUD
   workerThread.interrupt();
   workerThread.join();
-  #endif
+#endif
 }

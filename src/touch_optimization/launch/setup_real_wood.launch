@@ -24,7 +24,7 @@
     </rosparam>
 
     <rosparam param="color">
-      [.7, .6, .5]
+      [.7, .6, .5, .2]
     </rosparam>
 
 

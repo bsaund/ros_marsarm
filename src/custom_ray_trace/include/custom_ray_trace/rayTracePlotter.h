@@ -23,7 +23,9 @@ class RayTracePlotter: public RayTracer
   int plotRays(std::vector<Ray> rays, int id = 0);
   int plotIntersections(Ray ray, int id = 0);
   int plotIntersections(const std::vector<double> &dist, Ray ray, int id = 0);
-  int plotIntersections(const std::vector<tf::Point> intersections, int id = 0);
+  int plotIntersections(const std::vector<tf::Point> &intersections, int id = 0);
+  int plotIntersection(tf::Point intersection, int id = 0);
+
   int plotCylinder(Ray ray, double radius, int id = 0);
   void plotIG(Ray ray);
   void plotRayWithIntersections(Ray ray);

@@ -1,6 +1,5 @@
 #include "ros/ros.h"
 #include "rayTracePlotter.h"
-#include "plotRayUtils.h"
 
 int main(int argc, char **argv){
   ros::init(argc, argv, "ray_trace_test");
@@ -14,7 +13,6 @@ int main(int argc, char **argv){
   ROS_INFO("Showing IG for ray with radial error %f and bin size %f", radErr, binSize);
 
   RayTracePlotter plt;
-  // PlotRayUtils plt;
 
 
   tf::Point start = tf::Point(atof(argv[1]),

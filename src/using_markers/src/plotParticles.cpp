@@ -32,6 +32,8 @@ class ShapePlotter
   visualization_msgs::Marker part;
   geometry_msgs::PoseArray particles_;
   
+  std::string cadPath;  
+  std::string name;  
 
   int numParticles = 1;
 
@@ -54,6 +56,15 @@ ShapePlotter::ShapePlotter()
   marker_true_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 10);
   particle_pub = n.advertise<geometry_msgs::PoseArray>("/transform_particles", 10);
   sub = n.subscribe("particles_from_filter", 1, &ShapePlotter::externalParticleUpdate, this);
+
+  if(!n.getParam("localization_object_cad", cadPath)){
+    ROS_INFO("Failed to get param: localization_object_cad");
+  }
+
+  if(!n.getParam("localization_object", name)){
+    ROS_INFO("Failed to get param: localization_object");
+  }
+
 }
 
 /*
@@ -80,7 +91,7 @@ void ShapePlotter::generateTransforms()
   particles_.poses.resize(numParticles);
   std::vector<double> uncertainties;
   if(!n.getParam("/initial_uncertainties", uncertainties)){
-    ROS_INFO("Failed to get param");
+    ROS_INFO("Failed to get param initial uncertainties");
     uncertainties.resize(6);
   }
 
@@ -126,13 +137,9 @@ void ShapePlotter::generateTransforms()
 void ShapePlotter::updateMarkers()
 {
   points.markers.resize(particles_.poses.size());
-  // std::string name;
-  // if(!n.getParam("pName", name)){
-  //   ROS_INFO("Failed to get param: pName");
-  // }
 
   for(int i=0; i<particles_.poses.size(); i++){
-    points.markers[i].header.frame_id = "particle_frame";
+    points.markers[i].header.frame_id = name;
     points.markers[i].header.stamp = ros::Time::now();
     points.markers[i].ns = "particles";
     points.markers[i].action = visualization_msgs::Marker::ADD;
@@ -146,13 +153,10 @@ void ShapePlotter::updateMarkers()
     //Change this in two locations: Here and gazebo
     // points.markers[i].mesh_resource = "package://touch_optimization/sdf/boeing_part_binary.stl";
     // points.markers[i].mesh_resource = "package://touch_optimization/sdf/flat_plate.stl";
-    std::string s;
-   
-    if(!n.getParam("localization_object_cad", s)){
-      ROS_INFO("Failed to get param: localization_object_cad");
-    }
 
-    points.markers[i].mesh_resource = s;
+   
+
+    points.markers[i].mesh_resource = cadPath;
     
     // POINTS markers use x and y scale for width/height respectively
     // Boeing part is in inches, we are in meters
@@ -171,7 +175,12 @@ void ShapePlotter::updateMarkers()
     std::vector<double> color;
     if(!n.getParam("color", color)){
       ROS_INFO("Failed to get param: color");
-      color.resize(3);
+	color.resize(4);
+    }
+    if(color.size() != 4){
+      ROS_INFO_THROTTLE(60,"Color Vector wrong size: [r g b alpha]");
+      color.resize(4);
+      color[3] = 1;
     }
 
     points.markers[i].color.r = color[0];
@@ -180,8 +189,8 @@ void ShapePlotter::updateMarkers()
 
 
     //alpha to make the particles transparent
-    points.markers[i].color.a = 0.07;
-    // points.markers[i].color.a = 0.2;
+    // points.markers[i].color.a = 0.07;
+    points.markers[i].color.a = color[3];
 
   }
 }
@@ -207,13 +216,8 @@ void ShapePlotter::updateTrueMarker()
     //Change this in two locations: Here and gazebo
     // part.mesh_resource = "package://touch_optimization/sdf/boeing_part_binary.stl";
     // part.mesh_resource = "package://touch_optimization/sdf/flat_plate.stl";
-    std::string s;
    
-    if(!n.getParam("localization_object_cad", s)){
-      ROS_INFO("Failed to get param: localization_object_cad");
-    }
-
-    part.mesh_resource = s;
+    part.mesh_resource = cadPath;
     
     // POINTS markers use x and y scale for width/height respectively
     // Boeing part is in inches, we are in meters
@@ -234,6 +238,7 @@ void ShapePlotter::updateTrueMarker()
  * Publishes both the marker points and particle transforms
  */
 void ShapePlotter::plotParticles(){
+  
   geometry_msgs::TransformStamped trans;
   tf::Transform unityTransform;
   unityTransform.setOrigin(tf::Vector3(0,0,0));
@@ -250,34 +255,34 @@ void ShapePlotter::plotParticles(){
     pFrame.resize(6);
   }
 
+
   particleTransform.setOrigin(tf::Vector3(pFrame[0],pFrame[1],pFrame[2]));
   // q.setRPY(-.7, 1.5, 0);
   q.setRPY(pFrame[3],pFrame[4], pFrame[5]);
   particleTransform.setRotation(q);
-
-  tf::Transform trueTransform;
-  std::vector<double> trueFrame;
-  if(!n.getParam("true_frame", trueFrame)){
-    ROS_INFO("Failed to get param true_frame");
-    trueFrame.resize(6);
-  }
-
-  trueTransform.setOrigin(tf::Vector3(trueFrame[0],trueFrame[1],trueFrame[2]));
-  q.setRPY(trueFrame[3],trueFrame[4], trueFrame[5]);
-  trueTransform.setRotation(q);
-
-  tf::StampedTransform tfstmp(particleTransform, ros::Time::now(),"my_frame", "particle_frame");
+  
+  tf::StampedTransform tfstmp(particleTransform, ros::Time::now(),"my_frame", name);
   tf::transformStampedTFToMsg(tfstmp, trans);
     br.sendTransform(trans);
-
-  tfstmp = tf::StampedTransform(trueTransform, ros::Time::now(),"my_frame", "true_frame");
-  tf::transformStampedTFToMsg(tfstmp, trans);
-    br.sendTransform(trans);
-
 
   tfstmp = tf::StampedTransform(unityTransform, ros::Time::now(),"base_plate", "my_frame");
-    tf::transformStampedTFToMsg(tfstmp, trans);
+  tf::transformStampedTFToMsg(tfstmp, trans);
   br.sendTransform(trans);
+
+  std::vector<double> trueFrame;
+  if(n.getParam("true_frame", trueFrame)){
+    tf::Transform trueTransform;
+    trueFrame.resize(6);
+    trueTransform.setOrigin(tf::Vector3(trueFrame[0],trueFrame[1],trueFrame[2]));
+    q.setRPY(trueFrame[3],trueFrame[4], trueFrame[5]);
+    trueTransform.setRotation(q);
+    tfstmp = tf::StampedTransform(trueTransform, ros::Time::now(),"my_frame", "true_frame");
+    tf::transformStampedTFToMsg(tfstmp, trans);
+    br.sendTransform(trans);
+    plotTruePart();
+  }
+
+
 
   for(int i=0; i<particles_.poses.size(); i++){
     points.markers[i].header.stamp = ros::Time::now();
@@ -300,17 +305,21 @@ int main(int argc, char **argv)
 
   ShapePlotter plt;
 
-  ros::Duration waitForRViz(1.0);
+  ros::Duration waitForRViz(.01);
 
   // plt.generateTransforms();
   plt.updateMarkers();
   plt.updateTrueMarker();
 
+  ros::Time prevT = ros::Time::now();
 
   while (ros::ok()) {
+    
     waitForRViz.sleep();
-    plt.plotParticles();
-    plt.plotTruePart();
+    if((ros::Time::now() - prevT).toSec() > 1){
+      prevT = ros::Time::now();
+      plt.plotParticles();
+    }
     // ROS_INFO("spinning");
     ros::spinOnce();
   }

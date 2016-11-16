@@ -62,7 +62,7 @@ int RayTracePlotter::plotIntersections(const std::vector<double> &dist,
   return plotIntersections(p, id);
 }
 
-int RayTracePlotter::plotIntersections(const std::vector<tf::Point> intersections,
+int RayTracePlotter::plotIntersections(const std::vector<tf::Point> &intersections,
 					int id){
   visualization_msgs::MarkerArray m;
   for(int i = 0; i < intersections.size(); i++){
@@ -72,6 +72,17 @@ int RayTracePlotter::plotIntersections(const std::vector<tf::Point> intersection
   marker_pub_array.publish(m);
   return id;
 }
+
+int RayTracePlotter::plotIntersection(tf::Point intersection,
+					int id){
+  std::vector<tf::Point> v;
+  v.resize(1);
+  v[0] = intersection;
+  plotIntersections(v, id);
+  return id;
+}
+
+
 
 
 void RayTracePlotter::deleteAll(){

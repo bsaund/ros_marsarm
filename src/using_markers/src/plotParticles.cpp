@@ -305,17 +305,22 @@ int main(int argc, char **argv)
 
   ShapePlotter plt;
 
-  ros::Duration waitForRViz(1.0);
+  ros::Duration waitForRViz(.01);
 
   // plt.generateTransforms();
   plt.updateMarkers();
   plt.updateTrueMarker();
 
+  ros::Time prevT = ros::Time::now();
 
   while (ros::ok()) {
+    
     waitForRViz.sleep();
-    plt.plotParticles();
-    // plt.plotTruePart();
+    if((ros::Time::now() - prevT).toSec() > 1){
+      prevT = ros::Time::now();
+      plt.plotParticles();
+      plt.plotTruePart();
+    }
     // ROS_INFO("spinning");
     ros::spinOnce();
   }

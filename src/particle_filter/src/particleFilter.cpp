@@ -80,21 +80,12 @@ void ParticleDistribution::updateBandwidth(){
 
   Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)this->data(), cdim, this->size());
   Eigen::MatrixXd mat_centered = mat.colwise() - mat.rowwise().mean();
-  Eigen::MatrixXd cov_mat = (mat_centered * mat_centered.adjoint()) / double(mat.cols());
+  Eigen::MatrixXd cov_mat = (mat_centered * mat_centered.adjoint()) / double(max2(mat.cols()-1,1));
 
-  double coeff = pow(size(), -0.2)/1.2155;
+  double coeff = pow(this->size(), -0.2) * 0.87055/1.2155/1.2155;
   Eigen::MatrixXd H_cov = coeff * cov_mat;
   // cout << "H_cov: " << H_cov << endl;
-  double tmp_min = 1000000.0;
-  for (int t = 0; t < 3; t++) {
-    if (H_cov(t, t) < tmp_min) {
-      tmp_min = H_cov(t, t);
-    }
-  }
-  if (tmp_min < MIN_STD) {
-    H_cov = MIN_STD / tmp_min * H_cov;
-  }
-  //cout << " H  : " << H_cov << endl;
+
   Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigenSolver(H_cov);
   rot = eigenSolver.eigenvectors(); 
   scl = eigenSolver.eigenvalues();
@@ -291,7 +282,7 @@ void particleFilter::buildDistTransformAroundPoint(const double cur_M[2][3], vec
   var_measure[0] /= num_Mean;
   var_measure[1] /= num_Mean;
   var_measure[2] /= num_Mean;
-  distTransSize = 4 * max3(sqrt(var_measure[0]), sqrt(var_measure[1]), sqrt(var_measure[2]));
+  distTransSize = max2(2 * max3(sqrt(var_measure[0]), sqrt(var_measure[1]), sqrt(var_measure[2])), 20 * Xstd_ob);
   // distTransSize = 100 * 0.0005;
   cout << "Touch Std: " << sqrt(var_measure[0]) << "  " << sqrt(var_measure[1]) << "  " << sqrt(var_measure[2]) << endl;
   double world_range[3][2];
@@ -585,7 +576,7 @@ int main()
   //double voxel_size = 0.0005; // voxel size for distance transform.
   int num_voxels[3] = { 200,200,200 };
   //double range = 0.1; //size of the distance transform
-  double R = 0.001; // radius of the touch probe
+  double R = 0.00; // radius of the touch probe
 
   double cube_para[3] = { 6, 4, 2 }; // cube size: 6m x 4m x 2m with center at the origin.
   //double range[3][2] = { {-3.5, 3.5}, {-2.5, 2.5}, {-1.5, 1.5} };

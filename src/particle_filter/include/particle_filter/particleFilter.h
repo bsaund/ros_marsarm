@@ -42,7 +42,7 @@ class particleFilter
 		       distanceTransform *dist_transform, 
 		       RandomTransform &tf, bool miss = false);
   //void addObservation (double obs[3], double cube[3], int idx_obs);
-  void estimateGaussian(cspace &x_mean, cspace &x_est_stat, bool record = false);
+  void estimateGaussian(cspace &x_mean, cspace &x_est_stat, bool record = false) const;
   void getAllParticles(Particles &particles_dest);
 
 

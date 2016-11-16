@@ -51,7 +51,6 @@ cspace ParticleDistribution::sampleFrom(){
 
   std::normal_distribution<double> dist(0, 1);
   std::uniform_real_distribution<double> distribution(0, this->size());
-  // std::uniform_real_distribution<double> distribution(0, numParticles);
 
   Eigen::VectorXd samples(cdim, 1);
   Eigen::VectorXd rot_sample(cdim, 1);
@@ -80,12 +79,10 @@ cspace ParticleDistribution::sampleFrom(){
 void ParticleDistribution::updateBandwidth(){
 
   Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)this->data(), cdim, this->size());
-  // Eigen::MatrixXd mat = Eigen::Map<Eigen::MatrixXd>((double *)this->data(), cdim, numParticles);
   Eigen::MatrixXd mat_centered = mat.colwise() - mat.rowwise().mean();
   Eigen::MatrixXd cov_mat = (mat_centered * mat_centered.adjoint()) / double(max2(mat.cols()-1,1));
 
   double coeff = pow(this->size(), -0.2) * 0.87055/1.2155/1.2155;
-  // double coeff = pow(numParticles, -0.2) * 0.87055/1.2155/1.2155;
   Eigen::MatrixXd H_cov = coeff * cov_mat;
   // cout << "H_cov: " << H_cov << endl;
 
@@ -199,7 +196,7 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 
 }
 
-void particleFilter::estimateGaussian(cspace &x_mean, cspace &x_est_stat, bool record) {
+void particleFilter::estimateGaussian(cspace &x_mean, cspace &x_est_stat, bool record) const {
 
   ofstream outputData;
   if(record){
@@ -207,8 +204,6 @@ void particleFilter::estimateGaussian(cspace &x_mean, cspace &x_est_stat, bool r
     outputData.open("/home/bsaund/MeanCov.txt", std::ios_base::app);
     outputData << numObs << "\t";
   }
-
-
 
   cout << "Estimated Mean: ";
   for (int k = 0; k < cdim; k++) {
@@ -240,6 +235,10 @@ void particleFilter::estimateGaussian(cspace &x_mean, cspace &x_est_stat, bool r
   }
 }
 
+
+/*
+ *  Used primarily to print output with logrithmic frequency
+ */
 int isPowerOfTwo (unsigned int x){
   return ((x != 0) && ((x & (~x + 1)) == x));
 }

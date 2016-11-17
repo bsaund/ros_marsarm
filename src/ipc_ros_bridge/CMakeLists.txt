@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 2.8.3)
 add_definitions(-std=c++11)
 project(ipc_ros_bridge)
 
+if(true)
+  return()
+endif()
+
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -15,9 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
 # This message does not appear to actually print to the command line
 # message(WARNING, "Not building IPC package")
 
-if(true)
-  return()
-endif()
+
 
 
 

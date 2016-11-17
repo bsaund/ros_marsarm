@@ -5,6 +5,12 @@ Code for the mars arm particle filter and touch planning
 ROS indigo
 
 Eigen
+-Note: You will probably need to create a symlink to eigen3
+cd /usr/include
+ln -s Eigen eigen3/Eigen
+
+PCL - point cloud library
+
 
 [Catkin tools](https://catkin-tools.readthedocs.io/en/latest/) if you want to follow the syntax below
 

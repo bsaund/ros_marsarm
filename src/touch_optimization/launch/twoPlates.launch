@@ -7,8 +7,6 @@
   <arg name="localization_object" default="real_plate"/>
 
 
-  <node pkg="rviz" type="rviz" name="ParticleViz" 
-	args="-d $(find using_markers)/src/two_plates.rviz" required="true"/>
 
   <group ns="plate_1">
     <rosparam param="initial_uncertainties">
@@ -70,6 +68,8 @@
     <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
   </group>
 
+  <node pkg="rviz" type="rviz" name="ParticleViz" 
+	args="-d $(find using_markers)/src/two_plates.rviz" required="true"/>
 
 
 

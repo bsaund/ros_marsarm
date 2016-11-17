@@ -12,10 +12,18 @@
 
   <rosparam command="load" file="$(find touch_optimization)/configs/twoEdges.yaml"/>
 
+  <rosparam param="relationshipsFile" subst_value="True">
+    $(find touch_optimization)/configs/relationships.json
+  </rosparam>
+
   <group ns="baseParticles">
     <node pkg="using_markers" type="plotParticles" 
 	  name="markers" output="screen"/>
     <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
+    <param name="localization_object_cad" type="str"
+       	   value="package://custom_ray_trace/sdf/$(arg localization_object).stl"/>
+    <param name="localization_object_filepath" type="str"
+    	   value="$(find custom_ray_trace)/sdf/$(arg localization_object).stl"/>
   </group>
 
 
@@ -24,6 +32,10 @@
 	  name="markers" output="screen"/>
 
     <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
+    <param name="localization_object_cad" type="str" 
+	   value="package://custom_ray_trace/sdf/right_datum.stl"/>
+    <param name="localization_object_filepath" type="str"
+	   value="$(find custom_ray_trace)/sdf/right_datum.stl"/>
   </group>
 
 
@@ -36,6 +48,10 @@
       <!-- [0, 0, 0, 1.57, 0, 0] -->
       [0, 0, 0, 0, 0, 0]
     </rosparam>
+    <param name="localization_object_cad" type="str" 
+	   value="package://custom_ray_trace/sdf/top_datum.stl"/>
+    <param name="localization_object_filepath" type="str"
+	   value="$(find custom_ray_trace)/sdf/top_datum.stl"/>
   </group>
 
 

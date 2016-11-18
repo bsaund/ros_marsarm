@@ -114,10 +114,11 @@ Visualization Manager:
       Value: false
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /baseParticles/ray_trace_markers
+      Marker Topic: ray_trace_markers
       Name: Marker
       Namespaces:
-        {}
+        ray: true
+        ray_intersection: true
       Queue Size: 100
       Value: true
   Enabled: true

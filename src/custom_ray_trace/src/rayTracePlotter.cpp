@@ -8,9 +8,9 @@
 
 RayTracePlotter::RayTracePlotter(){
   marker_pub = 
-    n.advertise<visualization_msgs::Marker>("ray_trace_markers", 1000);
+    n.advertise<visualization_msgs::Marker>("/ray_trace_markers", 1000);
   marker_pub_array = 
-    n.advertise<visualization_msgs::MarkerArray>("ray_trace_markers_array", 10);
+    n.advertise<visualization_msgs::MarkerArray>("/ray_trace_markers_array", 10);
 
 }
 

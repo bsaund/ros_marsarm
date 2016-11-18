@@ -84,6 +84,7 @@ Visualization Manager:
       Name: Marker
       Namespaces:
         particles: true
+        true_part: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -104,7 +105,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /top_datum/ray_trace_markers
+      Marker Topic: /ray_trace_markers
       Name: Marker
       Namespaces:
         ray: true

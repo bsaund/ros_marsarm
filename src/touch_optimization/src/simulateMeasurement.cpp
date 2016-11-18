@@ -19,11 +19,12 @@ int simulateMeasurement(Ray measurementAction, RayTracer &rayt,
   double distToPart;
 
   if(!rayt.traceRay(measurementAction, distToPart)){
+    //measurement missed part
     return -1;
   }
 
   intersection = start + (end-start).normalize() * (distToPart);
-  std::cout << "Intersection at: " << intersection.getX() << "  " << intersection.getY() << "   " << intersection.getZ() << std::endl;
+  // std::cout << "Intersection at: " << intersection.getX() << "  " << intersection.getY() << "   " << intersection.getZ() << std::endl;
   tf::Point ray_dir(end.x()-start.x(),end.y()-start.y(),end.z()-start.z());
   ray_dir = ray_dir.normalize();
 
@@ -35,8 +36,14 @@ int simulateMeasurement(Ray measurementAction, RayTracer &rayt,
   dir.z=ray_dir.z();
 
   particle_filter::AddObservation pfilter_obs;
+  std::string ns = ros::this_node::getNamespace();
+  ns.erase(0,2);
+
   pfilter_obs.request.p = obs;
   pfilter_obs.request.dir = dir;
+  pfilter_obs.request.object = ns;
+  pfilter_obs.request.mesh_resource = rayt.stlFilePath;
+  
   if(!pfilterAdd.call(pfilter_obs)){
     ROS_INFO("Failed to call add observation");
   }

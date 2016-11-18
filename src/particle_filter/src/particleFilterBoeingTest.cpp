@@ -14,10 +14,11 @@
 
 #include "particle_filter/PFilterInit.h"
 #include "particle_filter/AddObservation.h"
+
 #include "randomTransform.h"
 #include "stlParser.h"
-// #include <custom_ray_trace/stlParser.h>
-// #include <custom_ray_trace/rayTracer.h>
+#include "relationships.h"
+
 #include <math.h>
 #include <string>
 #include <array>
@@ -46,6 +47,7 @@ private:
   
   distanceTransform *dist_transform;
   // ParticleHandler pHandler;
+  Relationships rel;
 
   bool getMesh(std::string filename,   vector<vec4x3> &loadedMesh);
 
@@ -125,32 +127,47 @@ void PFilterTest::sendParticles(std_msgs::Empty emptyMsg)
   pub_particles.publish(getParticlePoseArray());
 }
 
+
+/*
+ *  Updates the particle filter by the touch observation described in req
+ */
 bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
 			 particle_filter::AddObservation::Response &resp)
 {
   geometry_msgs::Point obs = req.p;
   geometry_msgs::Point dir = req.dir; 
+  std::string observedObject = req.object;
+
+  std::string ns = ros::this_node::getNamespace();
+  ns.erase(0,2);
+
+
   ROS_INFO("Adding Observation...") ;
   ROS_INFO("point: %f, %f, %f", obs.x, obs.y, obs.z);
   ROS_INFO("dir: %f, %f, %f", dir.x, dir.y, dir.z);
   double obs2[2][3] = {{obs.x, obs.y, obs.z}, {dir.x, dir.y, dir.z}};
 
-
-  std::vector<double> tfParams;
-  if(n.getParam("relationship", tfParams)){
-    ROS_INFO("Adding observation with offset");
-    cspace cspaceTF{tfParams[0], tfParams[1], 
-	tfParams[2], tfParams[3], 
-	tfParams[4], tfParams[5]};
-    FixedTransform tf(cspaceTF); 
-    pFilter_.addObservation(obs2, mesh, dist_transform, tf, 0);
-  } else {
+  if(ns == observedObject){
     pFilter_.addObservation(obs2, mesh, dist_transform, 0);
-  }
+    ROS_INFO("...Done adding direct observation");
+    pub_particles.publish(getParticlePoseArray());
+    return true;
+  } 
   
+  if(rel.count(observedObject)){
+    vector<vec4x3> hitMesh;
+    getMesh(req.mesh_resource, hitMesh);
+    FixedTransform tf(rel[ns]); 
+    pFilter_.addObservation(obs2, hitMesh, dist_transform, tf, 0);
+    ROS_INFO("...Done adding implicit observation");
+    pub_particles.publish(getParticlePoseArray());
+    return true;
+  }
 
 
-  ROS_INFO("...Done adding observation");
+
+
+  ROS_INFO("No Relationship detected for %s", ns.c_str());
   pub_particles.publish(getParticlePoseArray());
   return true;
 }
@@ -263,9 +280,6 @@ void visualize()
 PFilterTest::PFilterTest(int n_particles, cspace b_init[2]) :
   pFilter_(n_particles, b_init, 0.0001, 0.0035, 0.0001, 0.00),
   num_voxels{200, 200, 200}//,
-  // pFilter_(n_particles, b_init, 0.001, 0.0025, 0.0001, 0.00),
-  // num_voxels{300, 300, 300}//,
-  //dist_transform(num_voxels)
   // particleFilter (int n_particles, cspace b_init[2], 
   // 				double Xstd_ob=0.0001 (measurement error), 
   //                            double Xstd_tran=0.0025, (gausian kernel sampling std
@@ -275,20 +289,23 @@ PFilterTest::PFilterTest(int n_particles, cspace b_init[2]) :
 
 
 {
-  
-  // sub_init = n.subscribe("/particle_filter_init", 1, &PFilterTest::initDistribution, this);
+
   sub_request_particles = n.subscribe("request_particles", 1, &PFilterTest::sendParticles, this);
   srv_add_obs = n.advertiseService("particle_filter_add", &PFilterTest::addObs, this);
   pub_particles = n.advertise<geometry_msgs::PoseArray>("particles_from_filter", 5);
-  ROS_INFO("Loading Boeing Particle Filter");
+
+  // ROS_INFO("Loading Boeing Particle Filter");
+
   std::string stlFilePath;
   if(!n.getParam("localization_object_filepath", stlFilePath)){
     ROS_INFO("Failed to get param: localization_object_filepath");
   }
+  rel = parseRelationshipsFile(n);
+
   getMesh(stlFilePath, mesh);
 
 
-  ROS_INFO("start create dist_transform");
+  // ROS_INFO("start create dist_transform");
   dist_transform = new distanceTransform(num_voxels);
 
   tf::TransformListener tf_listener_;
@@ -340,7 +357,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "pfilterTest");
   ros::NodeHandle n;
 
-  ROS_INFO("Testing particle filter");
+  // ROS_INFO("Testing particle filter");
   
   cspace b_Xprior[2];	
   computeInitialDistribution(b_Xprior, n);
@@ -352,3 +369,7 @@ int main(int argc, char **argv)
   workerThread.join();
 #endif
 }
+
+
+
+

@@ -50,6 +50,9 @@ private:
   Relationships rel;
 
   bool getMesh(std::string filename,   vector<vec4x3> &loadedMesh);
+#ifdef POINT_CLOUD
+  void initPointCloud();
+#endif
 
 public:
   vector<vec4x3> mesh;
@@ -157,8 +160,16 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
   if(rel.count(observedObject)){
     vector<vec4x3> hitMesh;
     getMesh(req.mesh_resource, hitMesh);
-    FixedTransform tf(rel[ns]); 
-    pFilter_.addObservation(obs2, hitMesh, dist_transform, tf, 0);
+
+    // FixedTransform tf(rel[observedObject]); 
+    ROS_INFO("object: %s", observedObject.c_str());
+    // std::unique_ptr<RandomTransform> tf = rel[observedObject];
+    rel[observedObject];
+    ROS_INFO("Assigned transform");
+    ROS_INFO("First val: %f", rel[observedObject]->getMean()[0]);
+    // ROS_INFO("First val: %f", tf->getMean()[0]);
+    pFilter_.addObservation(obs2, hitMesh, dist_transform, *rel[observedObject], 0);
+    // pFilter_.addObservation(obs2, hitMesh, dist_transform, tf, 0);
     ROS_INFO("...Done adding implicit observation");
     pub_particles.publish(getParticlePoseArray());
     return true;
@@ -231,44 +242,69 @@ geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
  */
 void visualize()
 {
-	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
-	viewer->initCameraParameters ();
+  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
+  viewer->initCameraParameters ();
 
-	int v1 = 0;
-	viewer->createViewPort(0.0, 0.0, 0.5, 1.0, v1);
-	viewer->setBackgroundColor (0, 0, 0, v1);
-	viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1,1,1, "sample cloud1", v1);
-	viewer->addText("x y z", 15, 120, 20, 1, 1, 1, "v1 text", v1);
+  int v1 = 0;
+  viewer->createViewPort(0.0, 0.0, 0.5, 1.0, v1);
+  viewer->setBackgroundColor (0, 0, 0, v1);
+  viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1,1,1, "sample cloud1", v1);
+  viewer->addText("x y z", 15, 120, 20, 1, 1, 1, "v1 text", v1);
 
-	int v2 = 1;
-	viewer->createViewPort(0.5, 0.0, 1.0, 1.0, v2);
-	viewer->setBackgroundColor (0, 0, 0, v2);
-	viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1,1,1, "sample cloud2", v2);
-	viewer->addText("roll pitch yaw", 15, 120, 20, 1, 1, 1, "v2 text", v2);
-	viewer->addCoordinateSystem (1.0);
-	try {
-		while (!viewer->wasStopped ())
-		{
-			boost::mutex::scoped_lock updateLock(updateModelMutex);
-			if(update)
-			{
-				if(!viewer->updatePointCloud<pcl::PointXYZ>(basic_cloud_ptr1, "sample cloud1"))
-					viewer->addPointCloud<pcl::PointXYZ>(basic_cloud_ptr1, "sample cloud1", v1);
-				if(!viewer->updatePointCloud<pcl::PointXYZ>(basic_cloud_ptr2, "sample cloud2"))
-					viewer->addPointCloud<pcl::PointXYZ>(basic_cloud_ptr2, "sample cloud2", v2);
-				update = false;
-			}
-			updateLock.unlock();
-			viewer->spinOnce (100);
-		}
-	} catch(boost::thread_interrupted&)
-	{
-		viewer->close();
-		return;
-	}
+  int v2 = 1;
+  viewer->createViewPort(0.5, 0.0, 1.0, 1.0, v2);
+  viewer->setBackgroundColor (0, 0, 0, v2);
+  viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1,1,1, "sample cloud2", v2);
+  viewer->addText("roll pitch yaw", 15, 120, 20, 1, 1, 1, "v2 text", v2);
+  viewer->addCoordinateSystem (1.0);
+  try {
+    while (!viewer->wasStopped ())
+      {
+	boost::mutex::scoped_lock updateLock(updateModelMutex);
+	if(update)
+	  {
+	    if(!viewer->updatePointCloud<pcl::PointXYZ>(basic_cloud_ptr1, "sample cloud1"))
+	      viewer->addPointCloud<pcl::PointXYZ>(basic_cloud_ptr1, "sample cloud1", v1);
+	    if(!viewer->updatePointCloud<pcl::PointXYZ>(basic_cloud_ptr2, "sample cloud2"))
+	      viewer->addPointCloud<pcl::PointXYZ>(basic_cloud_ptr2, "sample cloud2", v2);
+	    update = false;
+	  }
+	updateLock.unlock();
+	viewer->spinOnce (100);
+      }
+  } catch(boost::thread_interrupted&)
+    {
+      viewer->close();
+      return;
+    }
 }
-#endif
 
+void PFilterTest::initPointCloud(){
+  std::vector<cspace> particles;
+  pFilter_.getAllParticles(particles);
+  boost::mutex::scoped_lock updateLock(updateModelMutex);	
+  basic_cloud_ptr1->points.clear();
+  basic_cloud_ptr2->points.clear();
+  for (int j = 0; j < NUM_PARTICLES; j++ ) {
+    pcl::PointXYZ basic_point;
+    basic_point.x = particles[j][0] * 2;
+    basic_point.y = particles[j][1] * 2;
+    basic_point.z = particles[j][2] * 2;
+    basic_cloud_ptr1->points.push_back(basic_point);
+    basic_point.x = particles[j][3] * 2;
+    basic_point.y = particles[j][4] * 2;
+    basic_point.z = particles[j][5] * 2;
+    basic_cloud_ptr2->points.push_back(basic_point);
+  }
+  basic_cloud_ptr1->width = (int) basic_cloud_ptr1->points.size ();
+  basic_cloud_ptr1->height = 1;
+  basic_cloud_ptr2->width = (int) basic_cloud_ptr2->points.size ();
+  basic_cloud_ptr2->height = 1;
+  update = true;
+  updateLock.unlock();
+}
+
+#endif
 
 
 
@@ -280,11 +316,11 @@ void visualize()
 PFilterTest::PFilterTest(int n_particles, cspace b_init[2]) :
   pFilter_(n_particles, b_init, 0.0001, 0.0035, 0.0001, 0.00),
   num_voxels{200, 200, 200}//,
-  // particleFilter (int n_particles, cspace b_init[2], 
-  // 				double Xstd_ob=0.0001 (measurement error), 
-  //                            double Xstd_tran=0.0025, (gausian kernel sampling std
-  // 				double Xstd_scatter=0.0001, (scatter particles a little before computing mean of distance transform
-  //                            double R=0.01) (probe radius);
+// particleFilter (int n_particles, cspace b_init[2], 
+// 				double Xstd_ob=0.0001 (measurement error), 
+//                            double Xstd_tran=0.0025, (gausian kernel sampling std
+// 				double Xstd_scatter=0.0001, (scatter particles a little before computing mean of distance transform
+//                            double R=0.01) (probe radius);
 
 
 
@@ -319,29 +355,9 @@ PFilterTest::PFilterTest(int n_particles, cspace b_init[2]) :
 
 
 #ifdef POINT_CLOUD
-  std::vector<cspace> particles;
-  pFilter_.getAllParticles(particles);
-  boost::mutex::scoped_lock updateLock(updateModelMutex);	
-  basic_cloud_ptr1->points.clear();
-  basic_cloud_ptr2->points.clear();
-  for (int j = 0; j < NUM_PARTICLES; j++ ) {
-  	pcl::PointXYZ basic_point;
-  	basic_point.x = particles[j][0] * 2;
-  	basic_point.y = particles[j][1] * 2;
-  	basic_point.z = particles[j][2] * 2;
-  	basic_cloud_ptr1->points.push_back(basic_point);
-	basic_point.x = particles[j][3] * 2;
-  	basic_point.y = particles[j][4] * 2;
-  	basic_point.z = particles[j][5] * 2;
-  	basic_cloud_ptr2->points.push_back(basic_point);
-  }
-  basic_cloud_ptr1->width = (int) basic_cloud_ptr1->points.size ();
-  basic_cloud_ptr1->height = 1;
-  basic_cloud_ptr2->width = (int) basic_cloud_ptr2->points.size ();
-  basic_cloud_ptr2->height = 1;
-  update = true;
-  updateLock.unlock();
-  #endif
+  initPointCloud();
+#endif
+
   ros::Duration(1.0).sleep();
   pub_particles.publish(getParticlePoseArray());
 }

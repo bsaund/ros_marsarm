@@ -11,14 +11,14 @@
   	  name="observer" output="screen"/>
   </group>
 
-  <group ns="plate_1">
-    <rosparam param="measurement">
-      [0, 0, 1.3, 0, 0, -0.4]
-    </rosparam>
+  <!-- <group ns="plate_1"> -->
+  <!--   <rosparam param="measurement"> -->
+  <!--     [0, 0, 1.3, 0, 0, -0.4] -->
+  <!--   </rosparam> -->
 
-    <node pkg="particle_filter" type="observe"
-  	  name="observer" output="screen"/>
-  </group>
+  <!--   <node pkg="particle_filter" type="observe" -->
+  <!-- 	  name="observer" output="screen"/> -->
+  <!-- </group> -->
 
 
 

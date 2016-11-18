@@ -121,6 +121,7 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
   include/${PROJECT_NAME}
+  include
 )
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
@@ -143,10 +144,14 @@ add_definitions(${PCL_DEFINITIONS})
 # target_link_libraries(pfilter6D
 #  ${catkin_LIBRARIES})
 
+add_library(json src/jsoncpp.cpp)
+
 add_library(pfilterBoeing src/particleFilter.cpp)
 target_link_libraries(pfilterBoeing
   ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES})
+  ${PCL_LIBRARIES}
+  json
+)
 
 add_library(Matrix src/matrix.cpp)
 target_link_libraries(Matrix
@@ -188,6 +193,11 @@ target_link_libraries(triBox
   
 add_executable(observe src/observe.cpp)
 target_link_libraries(observe
+  ${catkin_LIBRARIES}
+)
+
+add_executable(observation_distributor src/observationDistributor.cpp)
+target_link_libraries(observation_distributor
   ${catkin_LIBRARIES}
 )
 

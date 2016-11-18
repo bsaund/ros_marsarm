@@ -21,6 +21,7 @@ right_datum:
   # localization_object_cad: package://custom_ray_trace/sdf/right_datum.stl
   # localization_object_filepath: package://custom_ray_trace/sdf/right_datum.stl # 
   particle_frame: [0, 0, 0, 0, 0, 0]
+  true_frame: [0, 0, 0, 0, 0, 0]
 
 top_datum:
   color: [0.5, 0.5, 0, 0.2]

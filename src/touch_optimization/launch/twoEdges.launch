@@ -44,16 +44,14 @@
 	  name="markers" output="screen"/>
 
     <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
-    <rosparam param="relationship">
-      <!-- [0, 0, 0, 1.57, 0, 0] -->
-      [0, 0, 0, 0, 0, 0]
-    </rosparam>
     <param name="localization_object_cad" type="str" 
 	   value="package://custom_ray_trace/sdf/top_datum.stl"/>
     <param name="localization_object_filepath" type="str"
 	   value="$(find custom_ray_trace)/sdf/top_datum.stl"/>
   </group>
 
+  <node pkg="particle_filter" type="observation_distributor" name="observation_dist" 
+	required="true" output="screen"/>
 
   <!-- <group ns="goal_hole"> -->
   <!--   <node pkg="using_markers" type="plotParticles"  -->

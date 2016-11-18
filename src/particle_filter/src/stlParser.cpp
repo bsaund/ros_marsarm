@@ -25,8 +25,8 @@ vector<vec4x3> importSTL(string filename)
 	}
 	stlFile.read((char *)&title, 80 * sizeof(char));
 	stlFile.read((char *)&num_triangles, sizeof(num_triangles));
-	cout << title << endl;
-	cout << num_triangles << endl;
+	// cout << title << endl;
+	// cout << num_triangles << endl;
 	vector<vec4x3> mesh(num_triangles);
 	Eigen::Vector3f normal_vec, edge1, edge2;
 	Eigen::Vector3f vet[4];

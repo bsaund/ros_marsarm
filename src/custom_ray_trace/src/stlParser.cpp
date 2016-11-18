@@ -29,8 +29,8 @@ stl::Mesh stl::importSTL(string filename)
   }
   stlFile.read((char *)&title, 80 * sizeof(char));
   stlFile.read((char *)&num_triangles, sizeof(num_triangles));
-  cout << title << endl;
-  cout << num_triangles << endl;
+  // cout << title << endl;
+  // cout << num_triangles << endl;
   stl::Mesh mesh(num_triangles);
   Eigen::Vector3d normal_vec, edge1, edge2;
   Eigen::Vector3d vet[4];

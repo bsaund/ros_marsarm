@@ -92,6 +92,7 @@ class RayTracer
 
   void transformRayToPartFrame(Ray &ray);
   ParticleHandler particleHandler;
+  std::string stlFilePath;
 };
 
 

@@ -1,6 +1,6 @@
 /*
  *  Parse relationships file at the location defined by a rosparam
- *   Store only the values relevant to this namespace in the Relationships
+ *   Store only the relationships relevant to this namespace in the Relationships
  */
 
 #ifndef RELATIONSHIPS_H
@@ -31,8 +31,9 @@ bool parseJsonFile(std::string filePath, Json::Value &root){
     ROS_INFO("Parsing Json File '%s' failed", filePath.c_str());
     return false;
   }
-
 }
+
+
 
 Relationships parseRelationshipsFile(ros::NodeHandle n){
   Relationships rel;

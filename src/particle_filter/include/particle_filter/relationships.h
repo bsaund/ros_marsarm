@@ -63,25 +63,10 @@ Relationships parseRelationshipsFile(ros::NodeHandle n){
     }
     RandomTransform *tf;
     tf = new FixedTransform(transform);
-    /* FixedTransform tf = new FixedTransform(transform);  */
-    /* std::shared_ptr<RandomTransform> tf_ptr(&tf); */
+
     rel.insert(std::make_pair(subMem, std::shared_ptr<RandomTransform>(tf)));
-    /* rel.insert(std::make_pair(subMem, tf_ptr)); */
-    /* rel.insert({subMem, transform}); */
   }
 
-  for(auto subMem : subMembers){
-    ROS_INFO("TestStart");
-    ROS_INFO("Val: %f", rel[subMem]->getMean()[0]);
-    ROS_INFO("TestEnd");
-  }
-
-
-  /* ROS_INFO("size: %d", rel.size()); */
-  /* for(auto m : rel){ */
-    /* ROS_INFO("%s: \[%f, %f, %f, %f, %f, %f\]", m.first.c_str(), m.second[0], */
-    /* 	     m.second[1], m.second[2], m.second[3], m.second[4], m.second[5]); */
-  /* } */
   return rel;
 }
 

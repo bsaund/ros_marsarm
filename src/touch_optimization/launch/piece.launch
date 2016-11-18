@@ -1,0 +1,13 @@
+<launch>
+  <arg name="pieceName"/>
+  <group ns="$(arg pieceName)">
+    <node pkg="using_markers" type="plotParticles" 
+	  name="markers" output="screen"/>
+
+    <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
+    <param name="localization_object_cad" type="str" 
+	   value="package://custom_ray_trace/sdf/$(arg pieceName).stl"/>
+    <param name="localization_object_filepath" type="str"
+	   value="$(find custom_ray_trace)/sdf/$(arg pieceName).stl"/>
+  </group>
+</launch>

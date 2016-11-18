@@ -16,7 +16,7 @@ goal_hole:
 
 right_datum:
   color: [0, 0, 1, 0.2]
-  initial_uncertainties: [0.01, 0.01, 0.01, 0.0001, 0.0001, 0.0001]
+  initial_uncertainties: [0.01, 0.0001, 0.01, 0.0001, 0.0001, 0.0001]
   localization_object: right_datum
   # localization_object_cad: package://custom_ray_trace/sdf/right_datum.stl
   # localization_object_filepath: package://custom_ray_trace/sdf/right_datum.stl # 
@@ -25,7 +25,7 @@ right_datum:
 
 top_datum:
   color: [0.5, 0.5, 0, 0.2]
-  initial_uncertainties: [0.01, 0.01, 0.01, 0.0001, 0.0001, 0.0001]
+  initial_uncertainties: [0.01, 0.0001, 0.01, 0.0001, 0.0001, 0.0001]
   localization_object: top_datum
   # localization_object_cad: package://custom_ray_trace/sdf/top_datum.stl
   # localization_object_filepath: package://custom_ray_trace/sdf/top_datum.stl 

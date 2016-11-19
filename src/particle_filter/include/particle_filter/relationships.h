@@ -33,7 +33,25 @@ bool parseJsonFile(std::string filePath, Json::Value &root){
   }
 }
 
+std::shared_ptr<FixedTransform> getFixedFromJson(Json::Value jsonTf){
+  cspace cspaceTf;
+  for(int i=0; i<cdim; i++){
+    cspaceTf[i] = jsonTf["mean"][i].asDouble();
+  }
+  return std::shared_ptr<FixedTransform>(new FixedTransform(cspaceTf));
+}
 
+std::shared_ptr<RandomTransform> getTfFromJson(Json::Value jsonTf){
+  std::shared_ptr<RandomTransform> tf;
+  std::string type = jsonTf["type"].asString();
+  if(type == "fixed"){
+      tf = getFixedFromJson(jsonTf);
+  } else if(type == "normal"){
+  } else{
+    ROS_INFO("Unknown tf type: %s", type.c_str());
+  }
+  return tf;
+}
 
 Relationships parseRelationshipsFile(ros::NodeHandle n){
   Relationships rel;
@@ -57,15 +75,11 @@ Relationships parseRelationshipsFile(ros::NodeHandle n){
 
   Json::Value::Members subMembers = root[ns].getMemberNames();
   for(auto subMem : subMembers){
-    cspace transform;
-    Json::Value jsonTf = root[ns][subMem];
-    for(int i=0; i<cdim; i++){
-      transform[i] = jsonTf[i].asDouble();
-    }
-    RandomTransform *tf;
-    tf = new FixedTransform(transform);
 
-    rel.insert(std::make_pair(subMem, std::shared_ptr<RandomTransform>(tf)));
+    Json::Value jsonTf = root[ns][subMem];
+
+    rel.insert(std::make_pair(subMem, 
+			      getTfFromJson(jsonTf)));
   }
 
   return rel;

@@ -1,6 +1,10 @@
 {"right_datum": 
-    {"top_datum": [0,0,0,0,0,0]},
+ {"top_datum": {
+     "type": "fixed",
+     "mean": [0,0,0,0,0,0]}},
  "top_datum": 
- {"right_datum": [0,0,0,0,0,0]}
+ {"right_datum": {
+     "type": "fixed",
+     "mean": [0,0,0,0,0,0]}}
 }
 

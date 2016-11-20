@@ -32,7 +32,7 @@ class UniformRandomTransform : public RandomTransform
 {
  public:
   UniformRandomTransform(cspace meanTF, cspace rangeTF){    
-    *dist = std::uniform_real_distribution<double>(-1, 1);
+    dist = std::uniform_real_distribution<double>(-1, 1);
     mean = meanTF;
     range = rangeTF;
   }
@@ -40,11 +40,10 @@ class UniformRandomTransform : public RandomTransform
   cspace sampleTransform(){    
     cspace sampled;
     for(int i=0; i<cdim; i++){
-      sampled[i] = mean[i] + (*dist)(rd)*range[i];
+      sampled[i] = mean[i] + dist(rd)*range[i];
     }
-    return getMean();  
+    return sampled;  
   }
-
 
   cspace getMean(){    return mean;  }
   cspace getVariance(){    return range;  }
@@ -52,7 +51,7 @@ class UniformRandomTransform : public RandomTransform
  private:
   cspace mean, range;
   random_device rd;
-  std::uniform_real_distribution<double> *dist; 
+  std::uniform_real_distribution<double> dist; 
 };
 
 

@@ -16,6 +16,11 @@
 #include "randomTransform.h"
 
 
+/*
+ *  Relationships is a map for a specific piece "pieceA" such that
+ *   Relationships["pieceB"] returns the transform distribution
+ *   from B to A
+ */
 typedef std::unordered_map<std::string, std::shared_ptr<RandomTransform>> Relationships;
 /* typedef std::unordered_map<std::string, cspace> Relationships; */
 
@@ -41,18 +46,34 @@ std::shared_ptr<FixedTransform> getFixedFromJson(Json::Value jsonTf){
   return std::shared_ptr<FixedTransform>(new FixedTransform(cspaceTf));
 }
 
+
+std::shared_ptr<UniformRandomTransform> getUniformFromJson(Json::Value jsonTf){
+  cspace mean, range;
+  for(int i=0; i<cdim; i++){
+    mean[i] = jsonTf["mean"][i].asDouble();
+    range[i] = jsonTf["range"][i].asDouble();
+  }
+  return std::shared_ptr<UniformRandomTransform>(new UniformRandomTransform(mean, range));
+}
+
 std::shared_ptr<RandomTransform> getTfFromJson(Json::Value jsonTf){
   std::shared_ptr<RandomTransform> tf;
   std::string type = jsonTf["type"].asString();
   if(type == "fixed"){
-      tf = getFixedFromJson(jsonTf);
-  } else if(type == "normal"){
+    tf = getFixedFromJson(jsonTf);
+  } else if(type == "uniform"){
+    tf = getUniformFromJson(jsonTf);
   } else{
     ROS_INFO("Unknown tf type: %s", type.c_str());
   }
   return tf;
 }
 
+
+/*
+ *  Reads in a json file specified by the /relationshipsFile rosparam
+ *   Returns the Relationships relevant to this piece (namespace)
+ */
 Relationships parseRelationshipsFile(ros::NodeHandle n){
   Relationships rel;
   std::string ns = ros::this_node::getNamespace();

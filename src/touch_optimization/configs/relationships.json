@@ -1,10 +1,12 @@
 {"right_datum": 
  {"top_datum": {
-     "type": "fixed",
-     "mean": [0,0,0,0,0,0]}},
+     "type": "uniform",
+     "mean":  [0,0,0,0,0,0],
+     "range": [0,0,0.01,0,0,0]}},
  "top_datum": 
  {"right_datum": {
-     "type": "fixed",
-     "mean": [0,0,0,0,0,0]}}
+     "type": "uniform",
+     "mean":  [0,0,0,0,0,0],
+     "range": [0,0,0.01,0,0,0]}}
 }
 

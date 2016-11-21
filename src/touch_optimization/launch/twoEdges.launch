@@ -16,16 +16,9 @@
     $(find touch_optimization)/configs/relationships.json
   </rosparam>
 
-  <group ns="baseParticles">
-    <node pkg="using_markers" type="plotParticles" 
-	  name="markers" output="screen"/>
-    <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
-    <param name="localization_object_cad" type="str"
-       	   value="package://custom_ray_trace/sdf/$(arg localization_object).stl"/>
-    <param name="localization_object_filepath" type="str"
-    	   value="$(find custom_ray_trace)/sdf/$(arg localization_object).stl"/>
-  </group>
-
+  <include file="$(find touch_optimization)/launch/piece.launch">
+    <arg name="pieceName" value="$(arg localization_object)"/>
+  </include>
 
   <include file="$(find touch_optimization)/launch/piece.launch"> 
     <arg name="pieceName" value="right_datum"/> 

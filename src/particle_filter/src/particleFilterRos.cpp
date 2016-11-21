@@ -35,7 +35,7 @@ boost::mutex updateModelMutex;
 void visualize();
 #endif
 
-class PFilterTest
+class PFilterRos
 {
 private:
   ros::NodeHandle n;
@@ -59,7 +59,7 @@ public:
   int num_voxels[3];
   geometry_msgs::PoseArray getParticlePoseArray();
   particleFilter pFilter_;
-  PFilterTest(int n_particles, cspace b_init[2]);
+  PFilterRos(int n_particles, cspace b_init[2]);
   // void addObs(geometry_msgs::Point obs);
   bool addObs(particle_filter::AddObservation::Request &req,
 	      particle_filter::AddObservation::Response &resp);
@@ -125,7 +125,7 @@ tf::Pose poseAt(cspace particle_pose)
 
 }
 
-void PFilterTest::sendParticles(std_msgs::Empty emptyMsg)
+void PFilterRos::sendParticles(std_msgs::Empty emptyMsg)
 {
   pub_particles.publish(getParticlePoseArray());
 }
@@ -134,7 +134,7 @@ void PFilterTest::sendParticles(std_msgs::Empty emptyMsg)
 /*
  *  Updates the particle filter by the touch observation described in req
  */
-bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
+bool PFilterRos::addObs(particle_filter::AddObservation::Request &req,
 			 particle_filter::AddObservation::Response &resp)
 {
   geometry_msgs::Point obs = req.p;
@@ -184,12 +184,12 @@ bool PFilterTest::addObs(particle_filter::AddObservation::Request &req,
 }
 
 
-bool PFilterTest::getMesh(std::string stlFilePath, vector<vec4x3> &loadedMesh){
+bool PFilterRos::getMesh(std::string stlFilePath, vector<vec4x3> &loadedMesh){
   loadedMesh = importSTL(stlFilePath);
 }
 
 
-geometry_msgs::PoseArray PFilterTest::getParticlePoseArray()
+geometry_msgs::PoseArray PFilterRos::getParticlePoseArray()
 {
   std::vector<cspace> particles;
   pFilter_.getAllParticles(particles);
@@ -279,7 +279,7 @@ void visualize()
     }
 }
 
-void PFilterTest::initPointCloud(){
+void PFilterRos::initPointCloud(){
   std::vector<cspace> particles;
   pFilter_.getAllParticles(particles);
   boost::mutex::scoped_lock updateLock(updateModelMutex);	
@@ -313,7 +313,7 @@ void PFilterTest::initPointCloud(){
 
 
 
-PFilterTest::PFilterTest(int n_particles, cspace b_init[2]) :
+PFilterRos::PFilterRos(int n_particles, cspace b_init[2]) :
   pFilter_(n_particles, b_init, 0.0001, 0.0035, 0.0001, 0.00),
   num_voxels{200, 200, 200}//,
 // particleFilter (int n_particles, cspace b_init[2], 
@@ -326,8 +326,8 @@ PFilterTest::PFilterTest(int n_particles, cspace b_init[2]) :
 
 {
 
-  sub_request_particles = n.subscribe("request_particles", 1, &PFilterTest::sendParticles, this);
-  srv_add_obs = n.advertiseService("particle_filter_add", &PFilterTest::addObs, this);
+  sub_request_particles = n.subscribe("request_particles", 1, &PFilterRos::sendParticles, this);
+  srv_add_obs = n.advertiseService("particle_filter_add", &PFilterRos::addObs, this);
   pub_particles = n.advertise<geometry_msgs::PoseArray>("particles_from_filter", 5);
 
   // ROS_INFO("Loading Boeing Particle Filter");
@@ -370,14 +370,14 @@ int main(int argc, char **argv)
   update = false;
   boost::thread workerThread(visualize);
 #endif
-  ros::init(argc, argv, "pfilterTest");
+  ros::init(argc, argv, "pfilter_wrapper");
   ros::NodeHandle n;
 
   // ROS_INFO("Testing particle filter");
   
   cspace b_Xprior[2];	
   computeInitialDistribution(b_Xprior, n);
-  PFilterTest pFilterTest(NUM_PARTICLES, b_Xprior);
+  PFilterRos pFilterRos(NUM_PARTICLES, b_Xprior);
   
   ros::spin();
 #ifdef POINT_CLOUD

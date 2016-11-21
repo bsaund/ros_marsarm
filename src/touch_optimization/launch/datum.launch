@@ -15,7 +15,7 @@
   <group ns="baseParticles">
     <node pkg="using_markers" type="plotParticles" 
 	  name="markers" output="screen"/>
-    <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
+    <include file="$(find particle_filter)/launch/pfilterRos.launch"/>
   </group>
 
 
@@ -23,7 +23,7 @@
     <node pkg="using_markers" type="plotParticles" 
 	  name="markers" output="screen"/>
 
-    <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
+    <include file="$(find particle_filter)/launch/pfilterRos.launch"/>
   </group>
 
 
@@ -31,7 +31,7 @@
     <node pkg="using_markers" type="plotParticles" 
 	  name="markers" output="screen"/>
 
-    <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
+    <include file="$(find particle_filter)/launch/pfilterRos.launch"/>
   </group>
 
 
@@ -39,7 +39,7 @@
     <node pkg="using_markers" type="plotParticles" 
 	  name="markers" output="screen"/>
 
-    <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
+    <include file="$(find particle_filter)/launch/pfilterRos.launch"/>
   </group>
 
   

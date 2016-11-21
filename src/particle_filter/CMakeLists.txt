@@ -146,8 +146,8 @@ add_definitions(${PCL_DEFINITIONS})
 
 add_library(json src/jsoncpp.cpp)
 
-add_library(pfilterBoeing src/particleFilter.cpp)
-target_link_libraries(pfilterBoeing
+add_library(pfilter src/particleFilter.cpp)
+target_link_libraries(pfilter
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
   json
@@ -201,10 +201,10 @@ target_link_libraries(observation_distributor
   ${catkin_LIBRARIES}
 )
 
-add_executable(pfilterBoeingTest src/particleFilterBoeingTest.cpp)
-target_link_libraries(pfilterBoeingTest
+add_executable(pfilter_ros src/particleFilterRos.cpp)
+target_link_libraries(pfilter_ros
   ${catkin_LIBRARIES}
-  pfilterBoeing
+  pfilter
   Matrix
   stlParser
   distanceTransformNew

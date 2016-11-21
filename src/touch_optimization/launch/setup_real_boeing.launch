@@ -43,7 +43,7 @@
     <node pkg="using_markers" type="plotParticles" 
 	  name="markers" output="screen"/>
 
-    <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/>
+    <include file="$(find particle_filter)/launch/pfilterRos.launch"/>
   </group>
 
 
@@ -53,7 +53,7 @@
 <!-- Temporary file used to generate particles and send images to RViz -->
   <!-- <include file="$(find using_markers)/launch/particles.launch"/> -->
 
-  <!-- <include file="$(find particle_filter)/launch/pfilterBoeing.launch"/> -->
+  <!-- <include file="$(find particle_filter)/launch/pfilterRos.launch"/> -->
 
 <!-- Gazebo ray tracing service used to calculate values of a touch -->
   <!-- <include file="$(find gazebo_ray_trace)/launch/headless_ray_tracing_service.launch"> -->

@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="particle_filter" type="pfilter_ros" name="particle_ros_wrapper" output="screen"/>
+</launch>

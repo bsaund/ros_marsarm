@@ -89,7 +89,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /baseParticles/visualization_marker
+      Marker Topic: /wood_boeing/visualization_marker
       Name: Marker
       Namespaces:
         particles: true
@@ -108,7 +108,7 @@ Visualization Manager:
       Marker Topic: /ray_trace_markers
       Name: Marker
       Namespaces:
-        ray: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -156,10 +156,10 @@ Visualization Manager:
         Z: -0.0402265
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.344797
+      Pitch: 0.354797
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.44222
+      Yaw: 5.47722
     Saved: ~
 Window Geometry:
   Displays:

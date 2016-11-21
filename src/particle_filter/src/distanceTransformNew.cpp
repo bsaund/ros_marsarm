@@ -21,8 +21,8 @@ distanceTransform::distanceTransform(int n_voxels[3]) {
     num_voxels[i] = n_voxels[i];
   }
   const double LARGE_NUM = 10000000;
-  dist_transform = new vector<vector<vector<double>>>(num_voxels[0], vector<vector<double>>(num_voxels[1], vector<double>(num_voxels[2])));
-  obstacle_map = new vector<vector<vector<double>>>(num_voxels[0], vector<vector<double>>(num_voxels[1], vector<double>(num_voxels[2], LARGE_NUM)));
+  dist_transform = vector<vector<vector<double>>>(num_voxels[0], vector<vector<double>>(num_voxels[1], vector<double>(num_voxels[2])));
+  obstacle_map = vector<vector<vector<double>>>(num_voxels[0], vector<vector<double>>(num_voxels[1], vector<double>(num_voxels[2], LARGE_NUM)));
 }
 
 
@@ -43,7 +43,7 @@ double distanceTransform::getDistance(const double point[3]){
 		       voxel_size));
   int zind = int(floor((point[2] - world_range[2][0]) / 
 		       voxel_size));
-  return (*dist_transform)[xind][yind][zind];
+  return dist_transform[xind][yind][zind];
 }
 
 
@@ -64,7 +64,7 @@ void distanceTransform::voxelizeSTL(vector<vec4x3> &mesh, double World_Range[3][
   for (int i = 0; i < num_voxels[0]; i++) {
     for (int j = 0; j < num_voxels[1]; j++) {
       for (int k = 0; k < num_voxels[2]; k++) {
-	(*obstacle_map)[i][j][k] = LARGE_NUM;
+	obstacle_map[i][j][k] = LARGE_NUM;
       }
     }
   }
@@ -128,7 +128,7 @@ void distanceTransform::voxelizeSTL(vector<vec4x3> &mesh, double World_Range[3][
 		  voxel_center[1] = iy;
 		  voxel_center[2] = iz;
 		  if (triBoxOverlap(voxel_center, box_halfsize, triverts) == 1) {
-		    (*obstacle_map)[int(floor((ix - world_range[0][0]) / voxel_size))]
+		    obstacle_map[int(floor((ix - world_range[0][0]) / voxel_size))]
 		      [int(floor((iy - world_range[1][0]) / voxel_size))]
 		      [int(floor((iz - world_range[2][0]) / voxel_size))] = 0;
 		    /*if (iy < 0.2) {
@@ -143,8 +143,8 @@ void distanceTransform::voxelizeSTL(vector<vec4x3> &mesh, double World_Range[3][
 }
 
 
-void distanceTransform::distanceTransform_1D(vector<vector<vector<double>>> *dist_transform_1D, int range[3],
-					     vector<vector<vector<double>>> *cost_fun, int dir, int idx1, int idx2)
+void distanceTransform::distanceTransform_1D(vector<vector<vector<double>>> &dist_transform_1D, int range[3],
+					     vector<vector<vector<double>>> &cost_fun, int dir, int idx1, int idx2)
 {
   int k = 0;
   int *envelope = new int[range[dir]];
@@ -155,11 +155,11 @@ void distanceTransform::distanceTransform_1D(vector<vector<vector<double>>> *dis
   double s;
   if (dir == 0) {
     for (int q = 1; q < range[dir]; q++) {
-      s = (((*cost_fun)[q][idx1][idx2] + double(q * q)) - ((*cost_fun)[envelope[k]][idx1][idx2] + double(envelope[k] * envelope[k]))) / double(2 * q - 2 * envelope[k]);
+      s = ((cost_fun[q][idx1][idx2] + double(q * q)) - (cost_fun[envelope[k]][idx1][idx2] + double(envelope[k] * envelope[k]))) / double(2 * q - 2 * envelope[k]);
       while (s <= bound[k])
 	{
 	  k = k - 1;
-	  s = (((*cost_fun)[q][idx1][idx2] + double(q * q)) - ((*cost_fun)[envelope[k]][idx1][idx2] + double(envelope[k] * envelope[k]))) / double(2 * q - 2 * envelope[k]);
+	  s = ((cost_fun[q][idx1][idx2] + double(q * q)) - (cost_fun[envelope[k]][idx1][idx2] + double(envelope[k] * envelope[k]))) / double(2 * q - 2 * envelope[k]);
 	}
       k = k + 1;
       envelope[k] = q;
@@ -172,16 +172,16 @@ void distanceTransform::distanceTransform_1D(vector<vector<vector<double>>> *dis
       while (bound[k + 1] < q) {
 	k = k + 1;
       }
-      (*dist_transform_1D)[q][idx1][idx2] = double((q - envelope[k]) * (q - envelope[k])) + (*cost_fun)[envelope[k]][idx1][idx2];
+      dist_transform_1D[q][idx1][idx2] = double((q - envelope[k]) * (q - envelope[k])) + cost_fun[envelope[k]][idx1][idx2];
     }
   }
   else if (dir == 1) {
     for (int q = 1; q < range[dir]; q++) {
-      s = (((*cost_fun)[idx1][q][idx2] + double(q * q)) - ((*cost_fun)[idx1][envelope[k]][idx2] + double(envelope[k] * envelope[k]))) / double(2 * q - 2 * envelope[k]);
+      s = ((cost_fun[idx1][q][idx2] + double(q * q)) - (cost_fun[idx1][envelope[k]][idx2] + double(envelope[k] * envelope[k]))) / double(2 * q - 2 * envelope[k]);
       while (s <= bound[k])
 	{
 	  k = k - 1;
-	  s = (((*cost_fun)[idx1][q][idx2] + double(q * q)) - ((*cost_fun)[idx1][envelope[k]][idx2] + double(envelope[k] * envelope[k]))) / double(2 * q - 2 * envelope[k]);
+	  s = ((cost_fun[idx1][q][idx2] + double(q * q)) - (cost_fun[idx1][envelope[k]][idx2] + double(envelope[k] * envelope[k]))) / double(2 * q - 2 * envelope[k]);
 	}
       k = k + 1;
       envelope[k] = q;
@@ -194,17 +194,17 @@ void distanceTransform::distanceTransform_1D(vector<vector<vector<double>>> *dis
       while (bound[k + 1] < q) {
 	k = k + 1;
       }
-      (*dist_transform_1D)[idx1][q][idx2] = double((q - envelope[k]) * (q - envelope[k])) + (*cost_fun)[idx1][envelope[k]][idx2];
+      dist_transform_1D[idx1][q][idx2] = double((q - envelope[k]) * (q - envelope[k])) + cost_fun[idx1][envelope[k]][idx2];
     }
   }
   else {
     for (int q = 1; q < range[dir]; q++) {
-      double t = ((*cost_fun)[idx1][idx2][q] + double(q * q)) - ((*cost_fun)[idx1][idx2][envelope[k]]);
-      s = (((*cost_fun)[idx1][idx2][q] + double(q * q)) - ((*cost_fun)[idx1][idx2][envelope[k]] + double(envelope[k] * envelope[k]))) / double(2 * q - 2 * envelope[k]);
+      double t = (cost_fun[idx1][idx2][q] + double(q * q)) - (cost_fun[idx1][idx2][envelope[k]]);
+      s = ((cost_fun[idx1][idx2][q] + double(q * q)) - (cost_fun[idx1][idx2][envelope[k]] + double(envelope[k] * envelope[k]))) / double(2 * q - 2 * envelope[k]);
       while (s <= bound[k])
 	{
 	  k = k - 1;
-	  s = (((*cost_fun)[idx1][idx2][q] + double(q * q)) - ((*cost_fun)[idx1][idx2][envelope[k]] + double(envelope[k] * envelope[k]))) / double(2 * q - 2 * envelope[k]);
+	  s = ((cost_fun[idx1][idx2][q] + double(q * q)) - (cost_fun[idx1][idx2][envelope[k]] + double(envelope[k] * envelope[k]))) / double(2 * q - 2 * envelope[k]);
 	}
       k = k + 1;
       envelope[k] = q;
@@ -217,12 +217,14 @@ void distanceTransform::distanceTransform_1D(vector<vector<vector<double>>> *dis
       while (bound[k + 1] < q) {
 	k = k + 1;
       }
-      (*dist_transform_1D)[idx1][idx2][q] = double((q - envelope[k]) * (q - envelope[k])) + (*cost_fun)[idx1][idx2][envelope[k]];
+      dist_transform_1D[idx1][idx2][q] = double((q - envelope[k]) * (q - envelope[k])) + cost_fun[idx1][idx2][envelope[k]];
     }
   }
   delete[] envelope;
   delete[] bound;
 }
+
+
 void distanceTransform::build()
 {
   for (int i = 0; i < num_voxels[0]; i++) {
@@ -238,7 +240,7 @@ void distanceTransform::build()
     for (int k = 0; k < num_voxels[2]; k++) {
       distanceTransform_1D(dist_transform, num_voxels, obstacle_map, 0, j, k);
       for (int i = 0; i < num_voxels[0]; i++) {
-	(*dist_transform)[i][j][k] = sqrt((*dist_transform)[i][j][k]) * voxel_size;
+	dist_transform[i][j][k] = sqrt(dist_transform[i][j][k]) * voxel_size;
       }
     }
   }

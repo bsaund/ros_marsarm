@@ -15,7 +15,7 @@
 #include "particle_filter/PFilterInit.h"
 #include "particle_filter/AddObservation.h"
 
-#include "randomTransform.h"
+#include "transformDistribution.h"
 #include "stlParser.h"
 #include "relationships.h"
 

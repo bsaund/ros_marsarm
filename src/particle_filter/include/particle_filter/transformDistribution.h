@@ -5,7 +5,7 @@
 #include "PfDefinitions.h"
 #include "tf/tf.h"
 
-class RandomTransform
+class TransformDistribution
 {
  public:
   virtual cspace sampleTransform() = 0;
@@ -16,10 +16,10 @@ class RandomTransform
 
 
 
-class FixedTransform : public RandomTransform
+class FixedTfDist : public TransformDistribution
 {
  public:
-  FixedTransform(cspace transform){    tr = transform;  }
+  FixedTfDist(cspace transform){    tr = transform;  }
   cspace sampleTransform(){    return tr;  }
   cspace getMean(){    return tr;  }
   cspace getVariance(){    return cspace{};  }
@@ -28,10 +28,10 @@ class FixedTransform : public RandomTransform
   cspace tr;
 };
 
-class UniformRandomTransform : public RandomTransform
+class UniformTfDist : public TransformDistribution
 {
  public:
-  UniformRandomTransform(cspace meanTF, cspace rangeTF){    
+  UniformTfDist(cspace meanTF, cspace rangeTF){    
     dist = std::uniform_real_distribution<double>(-1, 1);
     mean = meanTF;
     range = rangeTF;
@@ -56,7 +56,7 @@ class UniformRandomTransform : public RandomTransform
 
 
 
-/* class GaussianTransform : public RandomTransform */
+/* class GaussianTransform : public TransformDistribution */
 /* { */
 /* } */
 

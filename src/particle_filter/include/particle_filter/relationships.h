@@ -13,7 +13,7 @@
 #include <streambuf>
 #include "PfDefinitions.h"
 #include <unordered_map>
-#include "randomTransform.h"
+#include "transformDistribution.h"
 
 
 /*
@@ -21,7 +21,7 @@
  *   Relationships["pieceB"] returns the transform distribution
  *   from B to A
  */
-typedef std::unordered_map<std::string, std::shared_ptr<RandomTransform>> Relationships;
+typedef std::unordered_map<std::string, std::shared_ptr<TransformDistribution>> Relationships;
 /* typedef std::unordered_map<std::string, cspace> Relationships; */
 
 /*
@@ -38,26 +38,26 @@ bool parseJsonFile(std::string filePath, Json::Value &root){
   }
 }
 
-std::shared_ptr<FixedTransform> getFixedFromJson(Json::Value jsonTf){
+std::shared_ptr<FixedTfDist> getFixedFromJson(Json::Value jsonTf){
   cspace cspaceTf;
   for(int i=0; i<cdim; i++){
     cspaceTf[i] = jsonTf["mean"][i].asDouble();
   }
-  return std::shared_ptr<FixedTransform>(new FixedTransform(cspaceTf));
+  return std::shared_ptr<FixedTfDist>(new FixedTfDist(cspaceTf));
 }
 
 
-std::shared_ptr<UniformRandomTransform> getUniformFromJson(Json::Value jsonTf){
+std::shared_ptr<UniformTfDist> getUniformFromJson(Json::Value jsonTf){
   cspace mean, range;
   for(int i=0; i<cdim; i++){
     mean[i] = jsonTf["mean"][i].asDouble();
     range[i] = jsonTf["range"][i].asDouble();
   }
-  return std::shared_ptr<UniformRandomTransform>(new UniformRandomTransform(mean, range));
+  return std::shared_ptr<UniformTfDist>(new UniformTfDist(mean, range));
 }
 
-std::shared_ptr<RandomTransform> getTfFromJson(Json::Value jsonTf){
-  std::shared_ptr<RandomTransform> tf;
+std::shared_ptr<TransformDistribution> getTfFromJson(Json::Value jsonTf){
+  std::shared_ptr<TransformDistribution> tf;
   std::string type = jsonTf["type"].asString();
   if(type == "fixed"){
     tf = getFixedFromJson(jsonTf);

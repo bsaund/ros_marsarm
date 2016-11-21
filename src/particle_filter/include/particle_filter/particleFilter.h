@@ -7,7 +7,7 @@
 #include <Eigen/Dense>
 #include "distanceTransformNew.h"
 #include "PfDefinitions.h"
-#include "randomTransform.h"
+#include "transformDistribution.h"
 using namespace std;
 
 
@@ -40,7 +40,7 @@ class particleFilter
   void addObservation (double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss = false);
   void addObservation (double obs[2][3], vector<vec4x3> &mesh, 
 		       distanceTransform *dist_transform, 
-		       RandomTransform &tf, bool miss = false);
+		       TransformDistribution &tf, bool miss = false);
   //void addObservation (double obs[3], double cube[3], int idx_obs);
   void estimateGaussian(cspace &x_mean, cspace &x_est_stat, bool record = false) const;
   void getAllParticles(Particles &particles_dest);
@@ -72,7 +72,7 @@ class particleFilter
 
   bool updateParticles(const double cur_M[2][3], vector<vec4x3> &mesh, 
 		       distanceTransform *dist_transform, 
-		       RandomTransform &tf, bool miss);
+		       TransformDistribution &tf, bool miss);
 
 };
 void Transform(const double measure[2][3], cspace src, double dest[2][3]);

@@ -151,7 +151,7 @@ void particleFilter::createParticles(Particles &particles_dest, cspace b_Xprior[
 
 void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, bool miss)
 {
-  FixedTransform tf(cspace{});
+  FixedTfDist tf(cspace{});
   addObservation(obs, mesh, dist_transform, tf, miss);
 }
 
@@ -163,7 +163,7 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
  *        miss: if it is a miss touch
  * output: none
  */
-void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, RandomTransform &tf, bool miss)
+void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, TransformDistribution &tf, bool miss)
 {
   numObs++;
 
@@ -325,7 +325,7 @@ bool insideBounds(double point[3], double bounds[3][2]){
  *        Xstd_tran: gaussian kernel standard deviation when sampling
  * output: return whether previous estimate is bad (not used here)
  */
-bool particleFilter::updateParticles(const double measurementWorldFr[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, RandomTransform &tf, bool miss){
+bool particleFilter::updateParticles(const double measurementWorldFr[2][3], vector<vec4x3> &mesh, distanceTransform *dist_transform, TransformDistribution &tf, bool miss){
   std::unordered_set<string> bins;
   std::random_device rd;
   std::normal_distribution<double> dist(0, 1);

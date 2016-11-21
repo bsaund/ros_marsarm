@@ -26,9 +26,6 @@ class ParticleDistribution : public Particles
 class particleFilter
 {
  public:
-  /* static const int cdim = 6; */
-
-
   int numParticles; // number of particles
   int maxNumParticles;
   int numObs = 0;
@@ -56,8 +53,7 @@ class particleFilter
   double R; // probe radius
 
   // internal variables
-  cspace b_Xprior[2]; // Initial distribution (mean and variance)
-  //cspace b_Xpre[2];   // Previous (estimated) distribution (mean and variance)
+
   ParticleDistribution particles;  // Current set of particles
   ParticleDistribution particlesPrev; // Previous set of particles
   /* Eigen::MatrixXd cov_mat; */

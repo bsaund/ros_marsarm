@@ -36,9 +36,6 @@ using namespace std;
 #define N_MIN 50
 #define DISPLACE_INTERVAL 0.015
 #define SAMPLE_RATE 0.50
-#define MAX_ITERATION 100000
-#define COV_MULTIPLIER 5.0
-#define MIN_STD 1.0e-6
 
 int total_time = 0;
 int converge_count = 0;
@@ -113,13 +110,10 @@ particleFilter::particleFilter(int n_particles, cspace b_init[2],
   : numParticles(n_particles), maxNumParticles(n_particles), Xstd_ob(Xstd_ob),
     Xstd_tran(Xstd_tran), Xstd_scatter(Xstd_scatter), R(R)
 {
-  b_Xprior[0] = b_init[0];
-  b_Xprior[1] = b_init[1];
   particles.resize(numParticles);
   particlesPrev.resize(numParticles);
 
-
-  createParticles(particlesPrev, b_Xprior, numParticles);
+  createParticles(particlesPrev, b_init, numParticles);
   particlesPrev.updateBandwidth();
 }
 
@@ -194,6 +188,11 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
 
 }
 
+
+/*
+ *  Estimates the mean and variance of the particle distribution.
+ *   optionally writes these values to a file
+ */
 void particleFilter::estimateGaussian(cspace &x_mean, cspace &x_est_stat, bool record) const {
 
   ofstream outputData;
@@ -418,27 +417,20 @@ bool particleFilter::updateParticles(const double measurementWorldFr[2][3], vect
       count_bar = 0;
       D -= R;
 #else
-      if (checkInObject(mesh, measurementPartFr[0]) == 1 && D != 0) {
-	// if (gradient.dot(touch_dir) <= epsilon)
-	// 	continue;
-	D = -D - R;
+      if (checkInObject(mesh, measurementPartFr[0]) == 1) {
+	D = -D;
       }
-      else if (D == 0) {
-	D = - R;
-      }
-      else {
-	// if (gradient.dot(touch_dir) >= -epsilon)
-	// 	continue;
-	D = D - R;
-      }
+      D -= R;
 #endif
-
       
       if (D < -signed_dist_check || D > signed_dist_check)
 	continue;
 
 
-#ifndef COMBINE_RAYCASTING	
+#ifndef COMBINE_RAYCASTING
+
+      //Some checking to see if robot could reasonable probe this point,
+      // or would the probe crash in to the part	
       safe_point[1][0] = trans_M[1][0];
       safe_point[1][1] = trans_M[1][1];
       safe_point[1][2] = trans_M[1][2];

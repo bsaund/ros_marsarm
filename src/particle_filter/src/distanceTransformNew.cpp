@@ -2,8 +2,8 @@
 #include <vector>
 #include <Eigen/Dense>
 #include <array>
-#include "distanceTransformNew.h"
 #include "tribox.h"
+#include "distanceTransformNew.h"
 
 #define max3(a,b,c) ((a>b?a:b)>c?(a>b?a:b):c)
 #define max2(a,b) (a>b?a:b)
@@ -11,7 +11,6 @@
 #define min2(a,b) (a<b?a:b)
 
 using namespace std;
-typedef array<array<float, 3>, 4> vec4x3;
 
 /*distanceTransform::distanceTransform(double World_Range[3][2], double Grid_Res) :voxel_size(Grid_Res) {
   memcpy(world_range, World_Range, 6 * sizeof(double));
@@ -27,6 +26,25 @@ distanceTransform::distanceTransform(int n_voxels[3]) {
 }
 
 
+bool distanceTransform::pointIsInBounds(const double point[3]){
+  for(int i=0; i<3; i++){
+    if(point[i] <= world_range[i][0])
+      return false;
+    if(point[i] >= world_range[i][1])
+      return false;
+  }
+  return true;
+}
+
+double distanceTransform::getDistance(const double point[3]){
+  int xind = int(floor((point[0] - world_range[0][0]) / 
+		       voxel_size));
+  int yind = int(floor((point[1] - world_range[1][0]) / 
+		       voxel_size));
+  int zind = int(floor((point[2] - world_range[2][0]) / 
+		       voxel_size));
+  return (*dist_transform)[xind][yind][zind];
+}
 
 
 void distanceTransform::voxelizeSTL(vector<vec4x3> &mesh, double World_Range[3][2])

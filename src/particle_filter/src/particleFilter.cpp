@@ -15,6 +15,7 @@
 #include "particleFilter.h"
 #include "matrix.h"
 #include "stlParser.h"
+#include <math.h>
 
 
 using namespace std;
@@ -23,15 +24,13 @@ using namespace std;
 #define ADAPTIVE_NUMBER
 #define ADAPTIVE_BANDWIDTH
 
-# define Pi          3.141592653589793238462643383279502884L
-
 #define SQ(x) ((x)*(x))
 #define bzero(b,len) (memset((b), '\0', (len)), (void) 0)
 #define max3(a,b,c) ((a>b?a:b)>c?(a>b?a:b):c)
 #define max2(a,b) (a>b?a:b)
 #define min3(a,b,c) ((a<b?a:b)<c?(a<b?a:b):c)
 #define min2(a,b) (a<b?a:b)
-typedef array<array<float, 3>, 4> vec4x3;
+
 #define epsilon 0.0001
 #define ARM_LENGTH 0.8
 #define N_MIN 50
@@ -283,7 +282,10 @@ void particleFilter::buildDistTransformAroundPoint(const double cur_M[2][3], vec
   var_measure[0] /= num_Mean;
   var_measure[1] /= num_Mean;
   var_measure[2] /= num_Mean;
-  distTransSize = max2(2 * max3(sqrt(var_measure[0]), sqrt(var_measure[1]), sqrt(var_measure[2])), 20 * Xstd_ob);
+  distTransSize = max2(2 * max3(sqrt(var_measure[0]), 
+				sqrt(var_measure[1]), 
+				sqrt(var_measure[2])), 
+		       20 * Xstd_ob);
   // distTransSize = 100 * 0.0005;
   cout << "Touch Std: " << sqrt(var_measure[0]) << "  " << sqrt(var_measure[1]) << "  " << sqrt(var_measure[2]) << endl;
   double world_range[3][2];
@@ -297,18 +299,6 @@ void particleFilter::buildDistTransformAroundPoint(const double cur_M[2][3], vec
   dist_transform->voxelizeSTL(mesh, world_range);
   dist_transform->build();
   
-}
-
-
-
-bool insideBounds(double point[3], double bounds[3][2]){
-  for(int i=0; i<3; i++){
-    if(point[i] <= bounds[i][0])
-      return false;
-    if(point[i] >= bounds[i][1])
-      return false;
-  }
-  return true;
 }
 
 
@@ -338,7 +328,6 @@ bool particleFilter::updateParticles(const double measurementWorldFr[2][3], vect
   Particles b_X = particlesPrev;
   int idx = 0;
   cspace tempState;
-  double D;
   double measurementPartFr[2][3];
 
   double unsigned_dist_check = R + Xstd_ob;
@@ -352,7 +341,7 @@ bool particleFilter::updateParticles(const double measurementWorldFr[2][3], vect
   int num_bins = 0;
   int count_bar = 0;
   double trans_M[2][3];
-  Transform(measurementWorldFr, tf.sampleTransform(), trans_M);
+  Transform(measurementWorldFr, tf.getMean(), trans_M);
   
 
   if (!miss) {
@@ -373,12 +362,6 @@ bool particleFilter::updateParticles(const double measurementWorldFr[2][3], vect
       // inverseTransform(measurementWorldFr, tf.sampleTransform(), measurementPartFr);
       inverseTransform(measurementWorldFr, tempState, measurementPartFr);
       Transform(measurementPartFr, stf, measurementPartFr);
-
-      // cout << "sampledtf" << stf[0] << ", " << stf[1] << ", " << 
-      // 	stf[2] << ", " << stf[3] << ", " << stf[4] << ", " << stf[5] << "\n";
-      // cout << "curM" << measurementWorldFr[0][0] << ", " << measurementWorldFr[0][1] << ", " << measurementWorldFr[0][2] << "\n";
-
-      // cout << "curinvM" << measurementPartFr[0][0] << ", " << measurementPartFr[0][1] << ", " << measurementPartFr[0][2] << "\n";
 
       count += 1;
       // if(isPowerOfTwo(count) && count > 1000){
@@ -403,22 +386,13 @@ bool particleFilter::updateParticles(const double measurementWorldFr[2][3], vect
       // 	cout << ", " << dist_transform->world_range[2][1] << ")]\n";
       // }
 
-      touch_dir << measurementPartFr[1][0], measurementPartFr[1][1], measurementPartFr[1][2];
+
       // reject particles ourside of distance transform
-      if (!insideBounds(measurementPartFr[0], dist_transform->world_range)) {
+      if (!dist_transform->pointIsInBounds(measurementPartFr[0])) {
 	continue;
       }
 			
-      int xind = int(floor((measurementPartFr[0][0] - dist_transform->world_range[0][0]) / 
-			   dist_transform->voxel_size));
-      int yind = int(floor((measurementPartFr[0][1] - dist_transform->world_range[1][0]) / 
-			   dist_transform->voxel_size));
-      int zind = int(floor((measurementPartFr[0][2] - dist_transform->world_range[2][0]) / 
-			   dist_transform->voxel_size));
-      D = (*dist_transform->dist_transform)[xind][yind][zind];
-
-      double dist_adjacent[3] = { 0, 0, 0 };
-
+      double D = dist_transform->getDistance(measurementPartFr[0]);
 
       // if(isPowerOfTwo(count) && count > 1000){
       // 	cout << "Sampled " << count << " particles\t";
@@ -426,67 +400,73 @@ bool particleFilter::updateParticles(const double measurementWorldFr[2][3], vect
       // 	cout << "D: " << D << " measurement World: " << trans_M[0][0];
       // 	cout << ", " << trans_M[0][1] << ", " << trans_M[0][2] << "\n";
       // }
-      if (D <= unsigned_dist_check) {
-	count2 ++;
-#ifdef COMBINE_RAYCASTING
-	if (checkIntersections(mesh, measurementPartFr[0], measurementPartFr[1], ARM_LENGTH, D)) {
-	  count_bar ++;
-	  if (count_bar > 1000){
-	    std::cout<< "!!!!!!!! BREAKING DUE TO INTERSECTIONS !!!!!" << "\n";
-	    break;
-	  }
-	  continue;
-	}
-	count_bar = 0;
-	D -= R;
-#else
-	if (checkInObject(mesh, measurementPartFr[0]) == 1 && D != 0) {
-	  // if (gradient.dot(touch_dir) <= epsilon)
-	  // 	continue;
-	  D = -D - R;
-	}
-	else if (D == 0) {
-	  D = - R;
-	}
-	else {
-	  // if (gradient.dot(touch_dir) >= -epsilon)
-	  // 	continue;
-	  D = D - R;
-	}
-#endif
-      }
-      else
+
+      //reject particle too far away;
+      if (D > unsigned_dist_check) 
 	continue;
-      if (D >= -signed_dist_check && D <= signed_dist_check) {
-#ifndef COMBINE_RAYCASTING	
-	safe_point[1][0] = trans_M[1][0];
-	safe_point[1][1] = trans_M[1][1];
-	safe_point[1][2] = trans_M[1][2];
-	safe_point[0][0] = trans_M[0][0] - trans_M[1][0] * ARM_LENGTH;
-	safe_point[0][1] = trans_M[0][1] - trans_M[1][1] * ARM_LENGTH;
-	safe_point[0][2] = trans_M[0][2] - trans_M[1][2] * ARM_LENGTH;
-	count3 ++;
-	if (checkObstacles(mesh, tempState, safe_point , D + R) == 1) {
-	  count_bar ++;
-	  if (count_bar > 1000)
-	    break;
-	  continue;
+
+      count2 ++;
+#ifdef COMBINE_RAYCASTING
+      if (checkIntersections(mesh, measurementPartFr[0], measurementPartFr[1], ARM_LENGTH, D)) {
+	count_bar ++;
+	if (count_bar > 1000){
+	  std::cout<< "!!!!!!!! BREAKING DUE TO INTERSECTIONS !!!!!" << "\n";
+	  break;
 	}
-	count_bar = 0;
+	continue;
+      }
+      count_bar = 0;
+      D -= R;
+#else
+      if (checkInObject(mesh, measurementPartFr[0]) == 1 && D != 0) {
+	// if (gradient.dot(touch_dir) <= epsilon)
+	// 	continue;
+	D = -D - R;
+      }
+      else if (D == 0) {
+	D = - R;
+      }
+      else {
+	// if (gradient.dot(touch_dir) >= -epsilon)
+	// 	continue;
+	D = D - R;
+      }
 #endif
-	particles[i] = tempState;
+
+      
+      if (D < -signed_dist_check || D > signed_dist_check)
+	continue;
+
+
+#ifndef COMBINE_RAYCASTING	
+      safe_point[1][0] = trans_M[1][0];
+      safe_point[1][1] = trans_M[1][1];
+      safe_point[1][2] = trans_M[1][2];
+      safe_point[0][0] = trans_M[0][0] - trans_M[1][0] * ARM_LENGTH;
+      safe_point[0][1] = trans_M[0][1] - trans_M[1][1] * ARM_LENGTH;
+      safe_point[0][2] = trans_M[0][2] - trans_M[1][2] * ARM_LENGTH;
+      count3 ++;
+      if (checkObstacles(mesh, tempState, safe_point , D + R) == 1) {
+	count_bar ++;
+	if (count_bar > 1000)
+	  break;
+	continue;
+      }
+      count_bar = 0;
+#endif
+      particles[i] = tempState;
 
 #ifdef ADAPTIVE_NUMBER
-	if (checkEmptyBin(&bins, particles[i]) == 1) {
-	  num_bins++;
-	  // if (i >= N_MIN) {
-	  //int numBins = bins.size();
-	  numParticles = min2(maxNumParticles, max2((num_bins - 1) * 2, N_MIN));
-	  // }
-	}
+      if (checkEmptyBin(&bins, particles[i]) == 1) {
+	num_bins++;
+	// if (i >= N_MIN) {
+	//int numBins = bins.size();
+	numParticles = min2(maxNumParticles, max2((num_bins - 1) * 2, N_MIN));
+	// }
+      }
 #endif
-	i++;;
-      }			
+      i++;;
+
     }
     cout << "Number of total iterations: " << count << endl;
     cout << "Number of iterations after unsigned_dist_check: " << count2 << endl;
@@ -565,6 +545,7 @@ bool particleFilter::updateParticles(const double measurementWorldFr[2][3], vect
 //--------------------!!!!!!!!!!!!!!!---------------
 //--------------------      MAIN     ---------------
 //--------------------!!!!!!!!!!!!!!!---------------
+//  Note: Main is not used anymore. 
 int main()
 {
   vector<vec4x3> mesh = importSTL("boeing_part_binary.stl");
@@ -579,14 +560,14 @@ int main()
 
   double cube_para[3] = { 6, 4, 2 }; // cube size: 6m x 4m x 2m with center at the origin.
   //double range[3][2] = { {-3.5, 3.5}, {-2.5, 2.5}, {-1.5, 1.5} };
-  cspace X_true = { 2.12, 1.388, 0.818, Pi / 6 + Pi / 400, Pi / 12 + Pi / 220, Pi / 18 - Pi / 180 }; // true state of configuration
+  cspace X_true = { 2.12, 1.388, 0.818, M_PI / 6 + M_PI / 400, M_PI / 12 + M_PI / 220, M_PI / 18 - M_PI / 180 }; // true state of configuration
   //particleFilter::cspace X_true = { 0, 0, 0.818, 0, 0, 0 }; // true state of configuration
   cout << "True state: " << X_true[0] << ' ' << X_true[1] << ' ' << X_true[2] << ' ' 
        << X_true[3] << ' ' << X_true[4] << ' ' << X_true[5] << endl;
-  cspace b_Xprior[2] = { { 2.11, 1.4, 0.81, Pi / 6, Pi / 12, Pi / 18 },
-					 { 0.03, 0.03, 0.03, Pi / 180, Pi / 180, Pi / 180 } }; // our prior belief
+  cspace b_Xprior[2] = { { 2.11, 1.4, 0.81, M_PI / 6, M_PI / 12, M_PI / 18 },
+					 { 0.03, 0.03, 0.03, M_PI / 180, M_PI / 180, M_PI / 180 } }; // our prior belief
   //particleFilter::cspace b_Xprior[2] = { { 0, 0, 0.81, 0, 0, 0 },
-  //									 { 0.001, 0.001, 0.001, Pi / 3600, Pi / 3600, Pi / 3600 } }; // our prior belief
+  //									 { 0.001, 0.001, 0.001, M_PI / 3600, M_PI / 3600, M_PI / 3600 } }; // our prior belief
 
   particleFilter pfilter(numParticles, b_Xprior, Xstd_ob, Xstd_tran, Xstd_scatter, R);
   distanceTransform *dist_transform = new distanceTransform(num_voxels);

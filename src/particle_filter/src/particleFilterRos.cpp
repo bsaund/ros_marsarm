@@ -23,9 +23,8 @@
 #include <string>
 #include <array>
 
-//#define POINT_CLOUD
+#define POINT_CLOUD
 #define NUM_PARTICLES 500
-typedef array<array<float, 3>, 4> vec4x3;
 
 #ifdef POINT_CLOUD
 pcl::PointCloud<pcl::PointXYZ>::Ptr basic_cloud_ptr1(new pcl::PointCloud<pcl::PointXYZ>);
@@ -66,6 +65,11 @@ public:
   void sendParticles(std_msgs::Empty);
 };
 
+/*
+ *  Sets binit to the initial distribution parameters 
+ *   based on ros parameters (currently
+ *   restricted to a gaussian).
+ */
 void computeInitialDistribution(cspace binit[2], ros::NodeHandle n)
 {
 
@@ -81,7 +85,6 @@ void computeInitialDistribution(cspace binit[2], ros::NodeHandle n)
     pFrame.resize(6);
   }
 
-
   binit[0][0] = pFrame[0];
   binit[0][1] = pFrame[1];
   binit[0][2] = pFrame[2];
@@ -96,11 +99,6 @@ void computeInitialDistribution(cspace binit[2], ros::NodeHandle n)
   binit[1][4] = uncertainties[4];
   binit[1][5] = uncertainties[5];
 
-}
-
-double SQ(double d)
-{
-  return d*d;
 }
 
 
@@ -125,6 +123,10 @@ tf::Pose poseAt(cspace particle_pose)
 
 }
 
+/*
+ *  Publishes the particles in response to a request
+ *   over a ros message
+ */
 void PFilterRos::sendParticles(std_msgs::Empty emptyMsg)
 {
   pub_particles.publish(getParticlePoseArray());
@@ -314,7 +316,7 @@ void PFilterRos::initPointCloud(){
 
 
 PFilterRos::PFilterRos(int n_particles, cspace b_init[2]) :
-  pFilter_(n_particles, b_init, 0.0001, 0.0035, 0.0001, 0.00),
+  pFilter_(n_particles, b_init, 0.001, 0.0035, 0.0001, 0.00),
   num_voxels{200, 200, 200}//,
 // particleFilter (int n_particles, cspace b_init[2], 
 // 				double Xstd_ob=0.0001 (measurement error), 

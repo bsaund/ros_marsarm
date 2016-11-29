@@ -6,7 +6,7 @@
 #ifndef RELATIONSHIPS_H
 #define RELATIONSHIPS_H
 
-#include "json/json.h"
+#include "json/jsonInternalLib.h"
 #include <ros/ros.h>
 #include <string>
 #include <fstream>

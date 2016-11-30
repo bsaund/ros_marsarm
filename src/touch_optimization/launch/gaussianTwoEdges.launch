@@ -1,0 +1,39 @@
+<launch>
+
+<!-- This is used to load the cad files for visualization and ray tracing.  -->
+<!-- There needs to be corresponding files  -->
+<!-- gazebo_ray_trace/sdf/[localization_object_cad].stl -->
+<!-- gazebo_ray_trace/worlds/[localization_object_cad].world -->
+  <arg name="localization_object" default="wood_boeing"/>
+
+
+  <node pkg="rviz" type="rviz" name="ParticleViz" 
+	args="-d $(find using_markers)/src/twoEdges.rviz" required="true"/>
+
+  <rosparam command="load" file="$(find touch_optimization)/configs/twoEdges.yaml"/>
+
+  <rosparam param="relationshipsFile" subst_value="True">
+    $(find touch_optimization)/configs/gaussianRelationships.json
+  </rosparam>
+
+  <include file="$(find touch_optimization)/launch/piece.launch">
+    <arg name="pieceName" value="$(arg localization_object)"/>
+  </include>
+
+  <include file="$(find touch_optimization)/launch/piece.launch"> 
+    <arg name="pieceName" value="right_datum"/> 
+  </include>
+
+  <include file="$(find touch_optimization)/launch/piece.launch"> 
+    <arg name="pieceName" value="top_datum"/> 
+  </include>
+
+  <!-- <include file="$(find touch_optimization)/launch/piece.launch">  -->
+  <!--   <arg name="pieceName" value="goal_hole"/>  -->
+  <!-- </include> -->
+
+
+  <node pkg="particle_filter" type="observation_distributor" name="observation_dist" 
+	required="true" output="screen"/>
+
+</launch>

@@ -56,8 +56,33 @@ class UniformTfDist : public TransformDistribution
 
 
 
-/* class GaussianTransform : public TransformDistribution */
-/* { */
-/* } */
+class GaussianTfDist: public TransformDistribution 
+{ 
+  public:
+  GaussianTfDist(cspace meanTF, cspace rangeTF){
+    for(int i=0; i<cdim; i++){
+      dist[i] = std::normal_distribution<double>(meanTF[i], rangeTF[i]);
+    }
+    mean = meanTF;
+    range = rangeTF;
+  }
+
+  cspace sampleTransform(){    
+    //cout << "gaussian sampled!";
+    cspace sampled;
+    for(int i=0; i<cdim; i++){
+      sampled[i] = dist[i](rd);
+    }
+    return sampled;  
+  }
+
+  cspace getMean(){    return mean;  }
+  cspace getVariance(){    return range;  }
+  
+ private:
+  cspace mean, range;
+  random_device rd;
+  std::normal_distribution<double> dist[cdim]; 
+};
 
 #endif

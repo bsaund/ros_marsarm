@@ -1,0 +1,11 @@
+{"right_datum": 
+ {"top_datum": {
+     "type": "gaussian",
+     "mean":  [0,0,0,0,0,0],
+     "range": [0.01,0.01,0.01,0.01,0.01,0.01]}},
+ "top_datum": 
+ {"right_datum": {
+     "type": "gaussian",
+     "mean":  [0,0,0,0,0,0],
+     "range": [0.01,0.01,0.01,0.01,0.01,0.01]}}
+}

@@ -56,6 +56,15 @@ std::shared_ptr<UniformTfDist> getUniformFromJson(Json::Value jsonTf){
   return std::shared_ptr<UniformTfDist>(new UniformTfDist(mean, range));
 }
 
+std::shared_ptr<GaussianTfDist> getGaussianFromJson(Json::Value jsonTf){
+  cspace mean, range;
+  for(int i=0; i<cdim; i++){
+    mean[i] = jsonTf["mean"][i].asDouble();
+    range[i] = jsonTf["range"][i].asDouble();
+  }
+  return std::shared_ptr<GaussianTfDist>(new GaussianTfDist(mean, range));
+}
+
 std::shared_ptr<TransformDistribution> getTfFromJson(Json::Value jsonTf){
   std::shared_ptr<TransformDistribution> tf;
   std::string type = jsonTf["type"].asString();
@@ -63,6 +72,8 @@ std::shared_ptr<TransformDistribution> getTfFromJson(Json::Value jsonTf){
     tf = getFixedFromJson(jsonTf);
   } else if(type == "uniform"){
     tf = getUniformFromJson(jsonTf);
+  } else if(type == "gaussian"){
+    tf = getGaussianFromJson(jsonTf);
   } else{
     ROS_INFO("Unknown tf type: %s", type.c_str());
   }

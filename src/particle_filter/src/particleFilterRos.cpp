@@ -23,7 +23,7 @@
 #include <string>
 #include <array>
 
-#define POINT_CLOUD
+//#define POINT_CLOUD
 #define NUM_PARTICLES 500
 
 #ifdef POINT_CLOUD

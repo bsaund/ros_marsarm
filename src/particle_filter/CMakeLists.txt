@@ -59,6 +59,7 @@ add_message_files(
 add_service_files(
   FILES
   AddObservation.srv
+  EstimateGaussian.srv
 )
 
 ## Generate actions in the 'action' folder

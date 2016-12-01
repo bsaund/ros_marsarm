@@ -14,6 +14,7 @@
 
 #include "particle_filter/PFilterInit.h"
 #include "particle_filter/AddObservation.h"
+#include "particle_filter/EstimateGaussian.h"
 
 #include "transformDistribution.h"
 #include "stlParser.h"
@@ -41,6 +42,7 @@ private:
   ros::Subscriber sub_init;
   ros::Subscriber sub_request_particles;
   ros::ServiceServer srv_add_obs;
+  ros::ServiceServer srv_est_gaus;
   ros::Publisher pub_particles;
   tf::StampedTransform trans_;
   
@@ -62,6 +64,8 @@ public:
   // void addObs(geometry_msgs::Point obs);
   bool addObs(particle_filter::AddObservation::Request &req,
 	      particle_filter::AddObservation::Response &resp);
+  bool estGaus(particle_filter::EstimateGaussian::Request &req,
+	      particle_filter::EstimateGaussian::Response &resp);
   void sendParticles(std_msgs::Empty);
 };
 
@@ -185,6 +189,32 @@ bool PFilterRos::addObs(particle_filter::AddObservation::Request &req,
   return true;
 }
 
+
+/*
+ *  Exposes Estimate Gaussian function
+ */
+
+bool PFilterRos::estGaus(particle_filter::EstimateGaussian::Request &req,
+			 particle_filter::EstimateGaussian::Response &resp)
+{
+
+  cspace x_mean, x_est_stat;
+  pFilter_.estimateGaussian(x_mean, x_est_stat);
+
+  std::vector<float> mean, cov;
+
+  for (int k = 0; k < cdim; k++) {
+    mean.push_back(x_mean[k]);
+    cov.push_back(x_est_stat[k]);
+  }
+
+  resp.Mean = mean;
+  resp.Cov = cov;
+
+  resp.success = true;
+  ROS_INFO("Service called!");
+  return true;
+}
 
 bool PFilterRos::getMesh(std::string stlFilePath, vector<vec4x3> &loadedMesh){
   loadedMesh = importSTL(stlFilePath);
@@ -330,6 +360,7 @@ PFilterRos::PFilterRos(int n_particles, cspace b_init[2]) :
 
   sub_request_particles = n.subscribe("request_particles", 1, &PFilterRos::sendParticles, this);
   srv_add_obs = n.advertiseService("particle_filter_add", &PFilterRos::addObs, this);
+  srv_est_gaus = n.advertiseService("particle_filter_estimate_gaussian", &PFilterRos::estGaus, this);
   pub_particles = n.advertise<geometry_msgs::PoseArray>("particles_from_filter", 5);
 
   // ROS_INFO("Loading Boeing Particle Filter");

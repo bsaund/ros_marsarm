@@ -169,8 +169,8 @@ static void processHistogram(std::vector<Bin> &unproc,
   processBins(unproc, proc);
   processParticles(unproc, proc, numRepeated);
 
-  // printParticles(proc);
-  // printBins(proc);
+  printParticles(proc);
+  printBins(proc);
 
   //TEST CODE!!!!
   // CalcEntropy::ProcessedHistogram comb;
@@ -194,6 +194,9 @@ namespace CalcEntropy{
 
     std::vector<Bin> hist;
     histogram(p, binSize, hist);
+
+		// std::cout << "Size; " << p.size() << "\n";
+		// std::cout << "NumParticles " << numParticles << "\n";
 
     CalcEntropy::ProcessedHistogram procHist;
     procHist.particle.resize(numParticles);

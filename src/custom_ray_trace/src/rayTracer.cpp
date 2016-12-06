@@ -179,11 +179,20 @@ RayTracer::RayTracer()
 bool RayTracer::loadMesh(){
   if(!n_.getParam("localization_object_filepath", stlFilePath)){
     ROS_INFO("Failed to get param");
+		return false;
   }
-
   mesh = stl::importSTL(stlFilePath);
   // surroundingBox = stl::getSurroundingBox(mesh);
 }
+
+bool RayTracer::loadMesh(std::string pieceName){
+	std::string path = "/" + pieceName + "/localization_object_filepath";
+  if(!n_.getParam(path, stlFilePath)){
+    ROS_INFO("Failed to get param \s", path.c_str());
+  }
+  mesh = stl::importSTL(stlFilePath);
+}
+
 
 /*
  *   Generates Bounding Volumn Hierarchy

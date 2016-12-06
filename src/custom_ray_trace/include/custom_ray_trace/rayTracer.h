@@ -73,6 +73,7 @@ class RayTracer
   RayTracer();
   ~RayTracer();
   bool loadMesh();
+  bool loadMesh(std::string pieceName);
   void generateBVH();
   bool bvhIntersection(BVHRay &ray, IntersectionInfo &I);
   int getIntersection(array<double,3> pstart, array<double,3> dir, double &distToPart);

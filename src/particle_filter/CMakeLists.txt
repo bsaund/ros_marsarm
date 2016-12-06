@@ -106,8 +106,9 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES particle_filter
+	DEPENDS roscpp
+ INCLUDE_DIRS include
+ LIBRARIES json
 #  CATKIN_DEPENDS gazebo_ray_trace roscpp
 #  DEPENDS system_lib
 )
@@ -244,12 +245,18 @@ target_link_libraries(pfilter_ros
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
 
-## Mark cpp header files for installation
-install(DIRECTORY include/${PROJECT_NAME}/
+
+install(TARGETS json
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
+
+
+
+install(DIRECTORY include/${PROJECT_NAME}/ include/json/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
-  PATTERN ".svn" EXCLUDE
-)
+  FILES_MATCHING PATTERN "*.h")
+
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
@@ -270,3 +277,5 @@ install(DIRECTORY include/${PROJECT_NAME}/
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+

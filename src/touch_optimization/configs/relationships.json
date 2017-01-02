@@ -2,11 +2,31 @@
  {"top_datum": {
      "type": "uniform",
      "mean":  [0,0,0,0,0,0],
-     "range": [0,0,0.01,0,0,0]}},
+     "range": [0,0,0.01,0,0,0]},
+  "back_datum": {
+      "type": "uniform",
+      "mean":  [0,0,0,0,0,0],
+      "range": [0,0.1,0.1,0,0,0]}
+ },
  "top_datum": 
  {"right_datum": {
      "type": "uniform",
      "mean":  [0,0,0,0,0,0],
-     "range": [0,0,0.01,0,0,0]}}
+     "range": [0,0,0.01,0,0,0]},
+  "back_datum": {
+      "type": "uniform",
+      "mean":  [0,0,0,0,0,0],
+      "range": [0,0,0,0,0,0]}
+ }, 
+ "back_datum":
+ {"top_datum": {
+     "type": "uniform",
+     "mean":  [0,0,0,0,0,0],
+     "range": [0,0,0,0,0,0]},
+  "right_datum": {
+      "type": "uniform",
+      "mean":  [0,0,0,0,0,0],
+      "range": [0,0,0,0,0,0]}
+ }
 }
 

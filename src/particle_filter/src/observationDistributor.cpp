@@ -35,8 +35,12 @@ int main(int argc, char **argv)
   ros::ServiceClient right_add = 
     n.serviceClient<particle_filter::AddObservation>("/right_datum/particle_filter_add");
 
+  ros::ServiceClient back_add = 
+    n.serviceClient<particle_filter::AddObservation>("/back_datum/particle_filter_add");
+
   pfilterSrvs.push_back(top_add);
   pfilterSrvs.push_back(right_add);
+  pfilterSrvs.push_back(back_add);
 
   
 

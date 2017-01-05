@@ -3,7 +3,7 @@
 #include "particle_filter/AddObservation.h"
 
 int simulateMeasurement(Ray measurementAction, RayTracer &rayt,
-			 ros::ServiceClient pfilterAdd, double noiseStdDev) 
+			 ros::ServiceClient &pfilterAdd, double noiseStdDev) 
 {
   std::random_device rd;
   std::normal_distribution<double> randn(0.0, noiseStdDev);

@@ -8,6 +8,8 @@
 #include <tf/tf.h>
 
 
+
+
 Ray getIntersectingRay(std::vector<RayTracer*> &rayts){
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -41,9 +43,27 @@ Ray getIntersectingRay(std::vector<RayTracer*> &rayts){
   return measurementRay;
 }
 
+void simulateMeasurement(Ray ray, std::vector<RayTracer*> &rayts, ros::ServiceClient &srv_add){
+  RayTracer* firstPart;
+  double minD = std::numeric_limits<double>::max();
+  double d;
+
+  for(auto &rayt : rayts){
+    if(!rayt->traceRay(ray, d))
+      continue;
+    if(d > minD)
+      continue;
+    minD = d;
+    firstPart = rayt;
+  }
+  simulateMeasurement(ray, *firstPart, srv_add, 0.001);
+}
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "simulating_measurement");
+
+  ROS_INFO("TEST 1");
   ros::NodeHandle n;
   RayTracePlotter plt;
   std::vector<std::string> pieces = {"top_datum", "right_datum", "J1_section",
@@ -60,9 +80,12 @@ int main(int argc, char **argv)
     rayts.push_back(rayt);
   }
 
+  ros::ServiceClient srv_add = 
+    n.serviceClient<particle_filter::AddObservation>("/observation_distributor");
+
+
   Ray mRay = getIntersectingRay(rayts);
   plt.deleteAll();
   plt.plotRay(mRay);
   ros::Duration(1).sleep();
- 
 }

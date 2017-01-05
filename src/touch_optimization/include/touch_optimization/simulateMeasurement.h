@@ -6,7 +6,7 @@
 
 
 int simulateMeasurement(Ray measurementAction, RayTracer &rayt,
-			 ros::ServiceClient pfilterAdd, double noiseStdDev);
+			 ros::ServiceClient &pfilterAdd, double noiseStdDev);
 
 
 #endif

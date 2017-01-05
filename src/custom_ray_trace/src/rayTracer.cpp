@@ -53,17 +53,26 @@ Ray Ray::getTransformed(tf::Transform trans) const
 
 ParticleHandler::ParticleHandler()
 {
-  particlesInitialized = false;
-  newParticles = true;
   std::string name;
   if(!rosnode.getParam("localization_object", name)){
     ROS_INFO("Failed to get param: localization_object");
+    return;
   }
+  connectToParticles(name);
+}
+
+ParticleHandler::ParticleHandler(std::string name){
+  connectToParticles(name);
+}
+
+void ParticleHandler::connectToParticles(std::string name){
+  particlesInitialized = false;
+  newParticles = true;
 
   tf_listener_.waitForTransform("/my_frame", name, ros::Time(0), ros::Duration(10.0));
   tf_listener_.lookupTransform(name, "/my_frame", ros::Time(0), trans_);
   particleSub = rosnode.subscribe("particles_from_filter", 1000, 
-				     &ParticleHandler::setParticles, this);
+				  &ParticleHandler::setParticles, this);
   requestParticlesPub = rosnode.advertise<std_msgs::Empty>("request_particles", 5);
 }
 
@@ -180,7 +189,11 @@ RayTracer::RayTracer()
   loadMesh();
 }
 
-RayTracer::RayTracer(std::string pieceName)
+/*
+ *  Load the piecename mesh 
+ */
+RayTracer::RayTracer(std::string pieceName) 
+  : particleHandler(pieceName)
 {
   loadMesh(pieceName);
 }
@@ -188,7 +201,7 @@ RayTracer::RayTracer(std::string pieceName)
 /* Loads the stl mesh of the default and does preprocessing */
 bool RayTracer::loadMesh(){
   if(!n_.getParam("localization_object_filepath", stlFilePath)){
-    ROS_INFO("Failed to get param");
+    ROS_INFO("Failed to get mesh param: localization_object_filepath");
 		return false;
   }
   mesh = stl::importSTL(stlFilePath);
@@ -200,7 +213,7 @@ bool RayTracer::loadMesh(){
 bool RayTracer::loadMesh(std::string pieceName){
   std::string path = "/" + pieceName + "/localization_object_filepath";
   if(!n_.getParam(path, stlFilePath)){
-    ROS_INFO("Failed to get param \s", path.c_str());
+    ROS_INFO("Failed to get mesh param \s", path.c_str());
   }
   mesh = stl::importSTL(stlFilePath);
   generateBVH();

@@ -180,6 +180,11 @@ RayTracer::RayTracer()
   loadMesh();
 }
 
+RayTracer::RayTracer(std::string pieceName)
+{
+  loadMesh(pieceName);
+}
+
 /* Loads the stl mesh of the default and does preprocessing */
 bool RayTracer::loadMesh(){
   if(!n_.getParam("localization_object_filepath", stlFilePath)){

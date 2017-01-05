@@ -36,7 +36,7 @@ Ray getIntersectingRay(std::vector<RayTracer*> &rayts){
   }
   ROS_INFO("");
   ROS_INFO("Took %f seconds", (ros::Time::now() - start).toSec());
-  ROS_INFO("Samples %d rays", count);
+  ROS_INFO("Sampled %d rays", count);
   ROS_INFO("Hit with min dist %f", minD);
   return measurementRay;
 }
@@ -55,15 +55,10 @@ int main(int argc, char **argv)
 
 
   for(std::string &piece:pieces){
-    RayTracer* rayt = new RayTracer();
-    rayt->loadMesh(piece);
+    RayTracer* rayt = new RayTracer(piece);
+    // rayt->loadMesh(piece);
     rayts.push_back(rayt);
   }
-  // RayTracer rayt;
-  // rayts.resize(pieces.size());
-  // for(int i=0; i<pieces.size(); i++){
-  //   rayts[i].loadMesh(pieces[i]);
-  // }
 
   Ray mRay = getIntersectingRay(rayts);
   plt.deleteAll();

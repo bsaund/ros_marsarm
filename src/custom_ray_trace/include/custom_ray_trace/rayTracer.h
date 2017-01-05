@@ -75,6 +75,7 @@ class RayTracer
  public:
 
   RayTracer();
+  RayTracer(std::string pieceName);
   ~RayTracer();
   bool loadMesh();
   bool loadMesh(std::string pieceName);

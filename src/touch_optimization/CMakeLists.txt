@@ -211,6 +211,12 @@ target_link_libraries(simulate_measurement_exec
   simulate_measurement
 )
 
+add_executable(simulate_random src/simulateRandomMeasurements.cpp)
+target_link_libraries(simulate_random
+  ${catkin_LIBRARIES}
+  simulate_measurement
+)
+
 
 
 ## Add cmake target dependencies of the executable

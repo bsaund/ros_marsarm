@@ -1,0 +1,8 @@
+<launch>
+  <group ns="right_datum">
+    <node pkg="touch_optimization" type="simulate_random" 
+	  name="simulating_measurement" output="screen"/>
+
+  </group>
+
+</launch>

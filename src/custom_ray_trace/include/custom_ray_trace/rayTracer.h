@@ -23,9 +23,13 @@ class Ray
   tf::Point end;
 
   tf::Vector3 getDirection() const;
+  double getLength() const;
   Ray transform(tf::Transform trans);
   Ray getTransformed(tf::Transform trans) const;
   tf::Point travelAlongFor(double dist) const;
+
+  double length;
+
 };
 
 class ParticleHandler

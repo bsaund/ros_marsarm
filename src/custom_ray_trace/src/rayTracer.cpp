@@ -17,13 +17,19 @@ Ray::Ray(tf::Point start_, tf::Point end_)
 {
   start = start_;
   end = end_;
+  length = (end-start).length();
 }
 
 tf::Vector3 Ray::getDirection() const
 {
   return (end-start).normalize();
 }
-  
+
+double Ray::getLength() const
+{
+  return length;
+}
+
 Ray Ray::transform(tf::Transform trans)
 {
   start = trans*start;
@@ -172,25 +178,27 @@ RayTracer::~RayTracer()
 RayTracer::RayTracer()
 {
   loadMesh();
-  generateBVH();
 }
 
-
+/* Loads the stl mesh of the default and does preprocessing */
 bool RayTracer::loadMesh(){
   if(!n_.getParam("localization_object_filepath", stlFilePath)){
     ROS_INFO("Failed to get param");
 		return false;
   }
   mesh = stl::importSTL(stlFilePath);
+  generateBVH();
   // surroundingBox = stl::getSurroundingBox(mesh);
 }
 
+/* Loads the stl mesh of the named part and does preprocessing */
 bool RayTracer::loadMesh(std::string pieceName){
-	std::string path = "/" + pieceName + "/localization_object_filepath";
+  std::string path = "/" + pieceName + "/localization_object_filepath";
   if(!n_.getParam(path, stlFilePath)){
     ROS_INFO("Failed to get param \s", path.c_str());
   }
   mesh = stl::importSTL(stlFilePath);
+  generateBVH();
 }
 
 
@@ -275,7 +283,8 @@ bool RayTracer::tracePartFrameRay(const Ray &ray, double &distToPart)
   bool intersect = bvhIntersection(bvhray, I);
   if (intersect)
     distToPart = I.t;
-  return intersect;
+  return intersect && distToPart < ray.length;
+  // return intersect;
   // return getIntersection(startArr, dirArr, distToPart);
 }
 

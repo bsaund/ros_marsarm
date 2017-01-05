@@ -151,14 +151,15 @@ bool PFilterRos::addObs(particle_filter::AddObservation::Request &req,
   ns.erase(0,2);
 
 
-  ROS_INFO("Adding Observation...") ;
-  ROS_INFO("point: %f, %f, %f", obs.x, obs.y, obs.z);
-  ROS_INFO("dir: %f, %f, %f", dir.x, dir.y, dir.z);
   double obs2[2][3] = {{obs.x, obs.y, obs.z}, {dir.x, dir.y, dir.z}};
 
   if(ns == observedObject){
     pFilter_.addObservation(obs2, mesh, dist_transform, 0);
-    ROS_INFO("...Done adding direct observation");
+    ROS_INFO("Adding Observation...") ;
+    ROS_INFO("point: %f, %f, %f", obs.x, obs.y, obs.z);
+    ROS_INFO("dir: %f, %f, %f", dir.x, dir.y, dir.z);
+
+    ROS_INFO("...Done adding direct observation on %s", ns.c_str());
     pub_particles.publish(getParticlePoseArray());
     return true;
   } 
@@ -168,15 +169,15 @@ bool PFilterRos::addObs(particle_filter::AddObservation::Request &req,
     getMesh(req.mesh_resource, hitMesh);
 
     // FixedTransform tf(rel[observedObject]); 
-    ROS_INFO("object: %s", observedObject.c_str());
+    // ROS_INFO("object: %s", observedObject.c_str());
     // std::unique_ptr<RandomTransform> tf = rel[observedObject];
     rel[observedObject];
-    ROS_INFO("Assigned transform");
-    ROS_INFO("First val: %f", rel[observedObject]->getMean()[0]);
+    // ROS_INFO("Assigned transform");
+    // ROS_INFO("First val: %f", rel[observedObject]->getMean()[0]);
     // ROS_INFO("First val: %f", tf->getMean()[0]);
     pFilter_.addObservation(obs2, hitMesh, dist_transform, *rel[observedObject], 0);
     // pFilter_.addObservation(obs2, hitMesh, dist_transform, tf, 0);
-    ROS_INFO("...Done adding implicit observation");
+    ROS_INFO("Done adding implicit observation for %s", ns.c_str());
     pub_particles.publish(getParticlePoseArray());
     return true;
   }

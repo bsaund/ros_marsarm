@@ -6,6 +6,7 @@
 #include "particle_filter/relationships.h"
 #include "particle_filter/transformDistribution.h"
 #include <tf/tf.h>
+#include "simulateMeasurement.h"
 
 
 
@@ -43,7 +44,7 @@ Ray getIntersectingRay(std::vector<RayTracer*> &rayts){
   return measurementRay;
 }
 
-void simulateMeasurement(Ray ray, std::vector<RayTracer*> &rayts, ros::ServiceClient &srv_add){
+void simOnAllParts(Ray ray, std::vector<RayTracer*> &rayts, ros::ServiceClient &srv_add){
   RayTracer* firstPart;
   double minD = std::numeric_limits<double>::max();
   double d;
@@ -85,6 +86,7 @@ int main(int argc, char **argv)
 
 
   Ray mRay = getIntersectingRay(rayts);
+  simOnAllParts(mRay, rayts, srv_add);
   plt.deleteAll();
   plt.plotRay(mRay);
   ros::Duration(1).sleep();

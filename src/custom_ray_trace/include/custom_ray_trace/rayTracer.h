@@ -50,6 +50,7 @@ class ParticleHandler
   std::vector<tf::Transform> particles;
   std::vector<tf::Transform> subsetParticles;
   bool newParticles;  
+  std::string partName;
 
   tf::StampedTransform getTransformToPartFrame();  
   void setParticles(geometry_msgs::PoseArray p);
@@ -79,6 +80,7 @@ class RayTracer
   RayTracer();
   RayTracer(std::string pieceName);
   ~RayTracer();
+  std::string getName();
   bool loadMesh();
   bool loadMesh(std::string pieceName);
   void generateBVH();

@@ -13,7 +13,8 @@ std::vector<ros::ServiceClient> pfilterSrvs;
 
 bool distributeObservationData(particle_filter::AddObservation::Request &req,
 			       particle_filter::AddObservation::Response &resp){
-  ROS_INFO("Received Observation");
+  ROS_INFO("Received Observation: ");
+  ROS_INFO("Measurement on part: %s", req.object.c_str());
   particle_filter::AddObservation pfilter_obs;
   pfilter_obs.request = req;
   for(auto srv : pfilterSrvs){

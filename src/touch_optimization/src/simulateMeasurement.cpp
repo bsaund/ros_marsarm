@@ -36,12 +36,13 @@ int simulateMeasurement(Ray measurementAction, RayTracer &rayt,
   dir.z=ray_dir.z();
 
   particle_filter::AddObservation pfilter_obs;
-  std::string ns = ros::this_node::getNamespace();
-  ns.erase(0,2);
+  // std::string ns = ros::this_node::getNamespace();
+  // ns.erase(0,2);
 
   pfilter_obs.request.p = obs;
   pfilter_obs.request.dir = dir;
-  pfilter_obs.request.object = ns;
+  // pfilter_obs.request.object = ns;
+  pfilter_obs.request.object = rayt.getName();
   pfilter_obs.request.mesh_resource = rayt.stlFilePath;
   
   if(!pfilterAdd.call(pfilter_obs)){

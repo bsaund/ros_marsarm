@@ -86,8 +86,9 @@ int main(int argc, char **argv)
 
 
   Ray mRay = getIntersectingRay(rayts);
-  simOnAllParts(mRay, rayts, srv_add);
+
   plt.deleteAll();
   plt.plotRay(mRay);
+  simOnAllParts(mRay, rayts, srv_add);
   ros::Duration(1).sleep();
 }

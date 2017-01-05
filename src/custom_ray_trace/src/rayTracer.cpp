@@ -66,6 +66,7 @@ ParticleHandler::ParticleHandler(std::string name){
 }
 
 void ParticleHandler::connectToParticles(std::string name){
+  partName = name;
   particlesInitialized = false;
   newParticles = true;
 
@@ -186,6 +187,12 @@ RayTracer::~RayTracer()
 
 RayTracer::RayTracer()
 {
+  if(!n_.getParam("localization_object_filepath", stlFilePath)){
+    ROS_INFO("Failed to get mesh param: localization_object_filepath");
+    ROS_INFO("MESH NOT LOADED");
+    return;
+  }
+
   loadMesh();
 }
 
@@ -198,12 +205,12 @@ RayTracer::RayTracer(std::string pieceName)
   loadMesh(pieceName);
 }
 
+std::string RayTracer::getName(){
+  return particleHandler.partName;
+}
+
 /* Loads the stl mesh of the default and does preprocessing */
 bool RayTracer::loadMesh(){
-  if(!n_.getParam("localization_object_filepath", stlFilePath)){
-    ROS_INFO("Failed to get mesh param: localization_object_filepath");
-		return false;
-  }
   mesh = stl::importSTL(stlFilePath);
   generateBVH();
   // surroundingBox = stl::getSurroundingBox(mesh);
@@ -215,8 +222,7 @@ bool RayTracer::loadMesh(std::string pieceName){
   if(!n_.getParam(path, stlFilePath)){
     ROS_INFO("Failed to get mesh param \s", path.c_str());
   }
-  mesh = stl::importSTL(stlFilePath);
-  generateBVH();
+  loadMesh();
 }
 
 

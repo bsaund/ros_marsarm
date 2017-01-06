@@ -182,7 +182,8 @@ bool ParticleHandler::theseAreNewParticles(){
  */
 RayTracer::~RayTracer()
 {
-  delete bvh;
+  if(bvh != NULL)
+    delete bvh;
 }
 
 RayTracer::RayTracer()

@@ -44,9 +44,30 @@ int simulateMeasurement(Ray measurementAction, RayTracer &rayt,
   // pfilter_obs.request.object = ns;
   pfilter_obs.request.object = rayt.getName();
   pfilter_obs.request.mesh_resource = rayt.stlFilePath;
-  
+
   if(!pfilterAdd.call(pfilter_obs)){
     ROS_INFO("Failed to call add observation");
   }
+  ROS_INFO("Test3.5");
   return 1;
+}
+
+int simOnAllParts(Ray ray, std::vector<RayTracer*> &rayts, ros::ServiceClient &srv_add,
+		   double noiseStdDev){
+  RayTracer* firstPart;
+  double minD = std::numeric_limits<double>::max();
+  double d;
+
+  for(auto &rayt : rayts){
+    if(!rayt->traceRay(ray, d))
+      continue;
+    if(d > minD)
+      continue;
+    minD = d;
+    firstPart = rayt;
+  }
+  if(minD > std::numeric_limits<double>::max() - 1)
+    return -1;
+  
+  return simulateMeasurement(ray, *firstPart, srv_add, noiseStdDev);
 }

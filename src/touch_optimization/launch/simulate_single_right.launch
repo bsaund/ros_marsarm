@@ -1,6 +1,6 @@
 <launch>
   <group ns="right_datum">
-    <rosparam param="measurement">
+    <rosparam param="measurement1">
       [1.3, -0.04, 0.1, 1.1, -0.04, 0.1]
     </rosparam>
 

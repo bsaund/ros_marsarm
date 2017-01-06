@@ -1,6 +1,6 @@
 <launch>
   <group ns="top_datum">
-    <rosparam param="measurement">
+    <rosparam param="measurement1">
       [0.5, -0.02, 0.3, 0.5, -0.02, 0.1]
     </rosparam>
 

@@ -44,21 +44,6 @@ Ray getIntersectingRay(std::vector<RayTracer*> &rayts){
   return measurementRay;
 }
 
-void simOnAllParts(Ray ray, std::vector<RayTracer*> &rayts, ros::ServiceClient &srv_add){
-  RayTracer* firstPart;
-  double minD = std::numeric_limits<double>::max();
-  double d;
-
-  for(auto &rayt : rayts){
-    if(!rayt->traceRay(ray, d))
-      continue;
-    if(d > minD)
-      continue;
-    minD = d;
-    firstPart = rayt;
-  }
-  simulateMeasurement(ray, *firstPart, srv_add, 0.001);
-}
 
 int main(int argc, char **argv)
 {
@@ -91,6 +76,6 @@ int main(int argc, char **argv)
   plt.plotRay(mRay);
   plt.plotRay(mRay); //Message is sometimes lost
   plt.plotRay(mRay); //3rd time's a charm
-  simOnAllParts(mRay, rayts, srv_add);
+  simOnAllParts(mRay, rayts, srv_add, 0.001);
   ros::Duration(1).sleep();
 }

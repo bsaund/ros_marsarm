@@ -21,34 +21,49 @@ int main(int argc, char **argv)
   std::random_device rd;
   std::vector<double> measurement;
 
-
-
-  if(!n.getParam("measurement", measurement)){
-    ROS_INFO("Failed to get param: measurement");
-    return -1;
-  }
-
-  tf::Point start(measurement[0], measurement[1], measurement[2]);
-  tf::Point end(measurement[3], measurement[4], measurement[5]);
-  Ray measurementRay(start,end);
-
-  plt.deleteAll();
-  plt.plotRay(measurementRay); 
-
   ros::ServiceClient srv_add = 
     n.serviceClient<particle_filter::AddObservation>("/observation_distributor");
 
-
-  ROS_INFO("Running...");
-
-
-  int hitPart = simulateMeasurement(measurementRay, plt, srv_add, 0.001);
-
-  if(hitPart < 0) {
-    ROS_INFO("NO INTERSECTION, Skipping");
-    ros::Duration(2).sleep();
-    return -1;
+  std::vector<std::string> pieces = {"top_datum", "right_datum", "J1_section",
+				    "bottom_section", "back_datum"};
+  std::vector<RayTracer*> rayts;
+  for(std::string &piece:pieces){
+    RayTracer* rayt = new RayTracer(piece);
+    rayts.push_back(rayt);
   }
 
+
+  int i = 1;
+  while(true){
+    std::stringstream ss;
+    ss << "measurement" << i;
+    if(!n.getParam(ss.str(), measurement)){
+      if(i < 2){
+	ROS_ERROR("Failed to get any measurement params");
+	return -1;
+      }
+      ROS_INFO("Test5");
+      return 0;
+    }
+
+    tf::Point start(measurement[0], measurement[1], measurement[2]);
+    tf::Point end(measurement[3], measurement[4], measurement[5]);
+    Ray measurementRay(start,end);
+
+    plt.deleteAll();
+    plt.plotRay(measurementRay); 
+
+    ROS_INFO("Running...");
+
+    int hitPart = simOnAllParts(measurementRay, rayts, srv_add, 0.001);
+
+    if(hitPart < 0) {
+      ROS_INFO("NO INTERSECTION, Skipping");
+      ros::Duration(2).sleep();
+      return -1;
+    }
+    i++;
+  }
+  ROS_INFO("Test4");
   return 0;
 }

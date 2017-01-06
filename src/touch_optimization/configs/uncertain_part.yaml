@@ -8,7 +8,7 @@ wood_boeing:
 
 goal_hole:
   color: [0, 1, 0, 0.7]
-  initial_uncertainties: [0.01, 0.01, 0.01, 0.0001, 0.0001, 0.0001]
+  initial_uncertainties: [0.04, 0.04, 0.04, 0.04, 0.04, 0.04]
   localization_object: goal_hole
   # localization_object_cad: package://custom_ray_trace/sdf/goal_hole.stl
   # localization_object_filepath: package://custom_ray_trace/sdf/goal_hole.stl 
@@ -16,7 +16,7 @@ goal_hole:
 
 right_datum:
   color: [0, 0, 1, 0.2]
-  initial_uncertainties: [0.01, 0.0001, 0.01, 0.0001, 0.0001, 0.0001]
+  initial_uncertainties: [0.04, 0.04, 0.04, 0.04, 0.04, 0.04]
   localization_object: right_datum
   # localization_object_cad: package://custom_ray_trace/sdf/right_datum.stl
   # localization_object_filepath: package://custom_ray_trace/sdf/right_datum.stl # 
@@ -25,7 +25,7 @@ right_datum:
 
 top_datum:
   color: [0.5, 0.5, 0, 0.2]
-  initial_uncertainties: [0.01, 0.0001, 0.01, 0.0001, 0.0001, 0.0001]
+  initial_uncertainties: [0.04, 0.04, 0.04, 0.04, 0.04, 0.04]
   localization_object: top_datum
   # localization_object_cad: package://custom_ray_trace/sdf/top_datum.stl
   # localization_object_filepath: package://custom_ray_trace/sdf/top_datum.stl 
@@ -34,21 +34,21 @@ top_datum:
 
 J1_section:
   color: [ 0.5, 0.5, 0.5, 0.1]
-  initial_uncertainties: [0.01, 0.0001, 0.01, 0.0001, 0.0001, 0.0001]
+  initial_uncertainties: [0.04, 0.04, 0.04, 0.04, 0.04, 0.04]
   localization_object: J1_section
   particle_frame: [0, 0, 0, 0, 0, 0]
   true_frame: [0, 0, 0, 0, 0, 0]
 
 bottom_section:
   color: [ 0.5, 0.5, 0.5, 0.1]
-  initial_uncertainties: [0.01, 0.0001, 0.01, 0.0001, 0.0001, 0.0001]
+  initial_uncertainties: [0.04, 0.04, 0.04, 0.04, 0.04, 0.04]
   localization_object: bottom_section
   particle_frame: [0, 0, 0, 0, 0, 0]
   true_frame: [0, 0, 0, 0, 0, 0]
 
 back_datum:
   color: [ 0.5, 0.5, 0.5, 0.1]
-  initial_uncertainties: [0.01, 0.0001, 0.01, 0.0001, 0.0001, 0.0001]
+  initial_uncertainties: [0.04, 0.04, 0.04, 0.04, 0.04, 0.04]
   localization_object: back_datum
   particle_frame: [0, 0, 0, 0, 0, 0]
   true_frame: [0, 0, 0, 0, 0, 0]

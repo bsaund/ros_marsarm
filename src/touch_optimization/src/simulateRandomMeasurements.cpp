@@ -89,6 +89,8 @@ int main(int argc, char **argv)
 
   plt.deleteAll();
   plt.plotRay(mRay);
+  plt.plotRay(mRay); //Message is sometimes lost
+  plt.plotRay(mRay); //3rd time's a charm
   simOnAllParts(mRay, rayts, srv_add);
   ros::Duration(1).sleep();
 }

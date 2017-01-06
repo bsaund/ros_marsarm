@@ -40,6 +40,10 @@
     <arg name="pieceName" value="back_datum"/> 
   </include>
 
+  <include file="$(find touch_optimization)/launch/piece.launch"> 
+    <arg name="pieceName" value="goal_hole"/> 
+  </include>
+
   <!-- <include file="$(find touch_optimization)/launch/piece.launch">  -->
   <!--   <arg name="pieceName" value="goal_hole"/>  -->
   <!-- </include> -->

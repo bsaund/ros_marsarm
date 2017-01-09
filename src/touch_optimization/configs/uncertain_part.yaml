@@ -12,6 +12,7 @@ goal_hole:
   localization_object: goal_hole
   # localization_object_cad: package://custom_ray_trace/sdf/goal_hole.stl
   # localization_object_filepath: package://custom_ray_trace/sdf/goal_hole.stl 
+  true_frame: [0, 0, 0, 0, 0, 0]
   particle_frame: [0, 0, 0, 0, 0, 0]
 
 right_datum:

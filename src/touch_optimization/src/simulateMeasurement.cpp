@@ -48,7 +48,6 @@ int simulateMeasurement(Ray measurementAction, RayTracer &rayt,
   if(!pfilterAdd.call(pfilter_obs)){
     ROS_INFO("Failed to call add observation");
   }
-  ROS_INFO("Test3.5");
   return 1;
 }
 

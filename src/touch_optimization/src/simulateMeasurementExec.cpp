@@ -42,7 +42,6 @@ int main(int argc, char **argv)
 	ROS_ERROR("Failed to get any measurement params");
 	return -1;
       }
-      ROS_INFO("Test5");
       return 0;
     }
 
@@ -64,6 +63,5 @@ int main(int argc, char **argv)
     }
     i++;
   }
-  ROS_INFO("Test4");
   return 0;
 }

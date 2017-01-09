@@ -15,6 +15,9 @@
     <rosparam param="measurement5">
       [1.0, -0.1, 0.1, 1.0, 0.1, 0.1]
     </rosparam>
+    <rosparam param="measurement6">
+      [1.0, -0.1, 0.05, 1.0, 0.1, 0.05]
+    </rosparam>
 
 
 

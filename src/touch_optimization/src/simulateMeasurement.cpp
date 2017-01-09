@@ -52,6 +52,10 @@ int simulateMeasurement(Ray measurementAction, RayTracer &rayt,
   return 1;
 }
 
+/*
+ * Simulates the measurement ray on the part composed of the pieces defined by the 
+ *  RayTracers given
+ */
 int simOnAllParts(Ray ray, std::vector<RayTracer*> &rayts, ros::ServiceClient &srv_add,
 		   double noiseStdDev){
   RayTracer* firstPart;

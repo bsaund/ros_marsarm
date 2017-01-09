@@ -58,6 +58,18 @@ int simulateMeasurement(Ray measurementAction, RayTracer &rayt,
 int simOnAllParts(Ray ray, std::vector<RayTracer*> &rayts, ros::ServiceClient &srv_add,
 		   double noiseStdDev){
   RayTracer* firstPart;
+  
+  if(!getIntersectingRayTracer(ray, rayts, firstPart))
+    return -1;
+  
+  return simulateMeasurement(ray, *firstPart, srv_add, noiseStdDev);
+}
+
+/*
+ *  Sets hitPart to be the ray tracer of the part the ray hits.
+ *   Returns false if no part was hit
+ */
+bool getIntersectingRayTracer(Ray ray, std::vector<RayTracer*> &rayts, RayTracer* hitPart){
   double minD = std::numeric_limits<double>::max();
   double d;
 
@@ -67,13 +79,11 @@ int simOnAllParts(Ray ray, std::vector<RayTracer*> &rayts, ros::ServiceClient &s
     if(d > minD)
       continue;
     minD = d;
-    firstPart = rayt;
+    hitPart = rayt;
   }
-  if(minD > std::numeric_limits<double>::max() - 1)
-    return -1;
-  
-  return simulateMeasurement(ray, *firstPart, srv_add, noiseStdDev);
+  return minD < std::numeric_limits<double>::max();
 }
+
 
 /*
  *  Returns a vector of ray tracers, one for each piece that could be intersected

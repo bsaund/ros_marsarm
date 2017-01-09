@@ -12,6 +12,8 @@ int simOnAllParts(Ray ray, std::vector<RayTracer*> &rayts,
 		   ros::ServiceClient &srv_add,
 		   double noiseStdDev);
 
+std::vector<RayTracer*> getAllRayTracers();
 
+bool getIntersectingRayTracer(Ray ray, std::vector<RayTracer*> &rayts, RayTracer* hitPart);
 
 #endif

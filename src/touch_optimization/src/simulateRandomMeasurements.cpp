@@ -52,19 +52,8 @@ int main(int argc, char **argv)
   ROS_INFO("TEST 1");
   ros::NodeHandle n;
   RayTracePlotter plt;
-  std::vector<std::string> pieces = {"top_datum", "right_datum", "J1_section",
-				    "bottom_section", "back_datum"};
-  std::vector<RayTracer*> rayts;
 
-  // rayts.resize(2);
-
-
-
-  for(std::string &piece:pieces){
-    RayTracer* rayt = new RayTracer(piece);
-    // rayt->loadMesh(piece);
-    rayts.push_back(rayt);
-  }
+  std::vector<RayTracer*> rayts = getAllRayTracers();
 
   ros::ServiceClient srv_add = 
     n.serviceClient<particle_filter::AddObservation>("/observation_distributor");

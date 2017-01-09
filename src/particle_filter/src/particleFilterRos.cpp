@@ -25,7 +25,7 @@
 #include <array>
 
 //#define POINT_CLOUD
-#define NUM_PARTICLES 500
+#define NUM_PARTICLES 50
 
 #ifdef POINT_CLOUD
 pcl::PointCloud<pcl::PointXYZ>::Ptr basic_cloud_ptr1(new pcl::PointCloud<pcl::PointXYZ>);

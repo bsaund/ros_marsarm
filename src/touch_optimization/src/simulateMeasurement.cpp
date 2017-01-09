@@ -74,3 +74,19 @@ int simOnAllParts(Ray ray, std::vector<RayTracer*> &rayts, ros::ServiceClient &s
   
   return simulateMeasurement(ray, *firstPart, srv_add, noiseStdDev);
 }
+
+/*
+ *  Returns a vector of ray tracers, one for each piece that could be intersected
+ *  Warning: Poor memory management, could cause memory leaks
+ */
+std::vector<RayTracer*> getAllRayTracers(){
+  std::vector<std::string> pieces = {"top_datum", "right_datum", "J1_section",
+				    "bottom_section", "back_datum"};
+  std::vector<RayTracer*> rayts;
+
+  for(std::string &piece:pieces){
+    RayTracer* rayt = new RayTracer(piece);
+    rayts.push_back(rayt);
+  }
+  return rayts;
+}

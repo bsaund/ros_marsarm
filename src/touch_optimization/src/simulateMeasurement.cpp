@@ -75,11 +75,11 @@ double getIG(Ray ray, std::vector<RayTracer*> rayts, Relationships rel,
   RayTracer* hitPart;
   if(!getIntersectingRayTracer(ray, rayts, hitPart))
     return 0;
-  ROS_INFO("Test2");
+
   
   std::string partName = hitPart->getName();
 
-  ROS_INFO("Hit part %s", partName.c_str());
+  // ROS_INFO("Hit part %s", partName.c_str());
 
   std::vector<CalcEntropy::ConfigDist> distsToParticles;
   

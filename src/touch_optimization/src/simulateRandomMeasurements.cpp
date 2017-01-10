@@ -51,12 +51,12 @@ Ray getBestRandomRay(std::vector<RayTracer*> &rayts, RayTracePlotter &plt, Relat
 
   for(int i=0; i<1000; i++){
     Ray ray = getIntersectingRay(rayts);
-    plt.plotRay(ray, i);
+    // plt.plotRay(ray, i);
     double ig = getIG(ray, rayts, rel, 0.002, 0.01);
     std::ostringstream oss;
     ig = ig>0 ? ig : 0;
     oss << ig;
-    plt.labelRay(ray.start, oss.str(), i);
+    // plt.labelRay(ray.start, oss.str(), i);
 
     if(bestIg < ig){
       bestIg = ig;
@@ -85,12 +85,14 @@ int main(int argc, char **argv)
 
 
   // Ray mRay = getIntersectingRay(rayts);
-  Ray mRay = getBestRandomRay(rayts, plt, rel);
+  for(int i=0; i<10; i++){
+    Ray mRay = getBestRandomRay(rayts, plt, rel);
 
-  plt.deleteAll();
-  plt.plotRay(mRay);
-  plt.plotRay(mRay); //Message is sometimes lost
-  plt.plotRay(mRay); //3rd time's a charm
-  simOnAllParts(mRay, rayts, srv_add, 0.001);
-  ros::Duration(1).sleep();
+    plt.deleteAll();
+    plt.plotRay(mRay);
+    plt.plotRay(mRay); //Message is sometimes lost
+    plt.plotRay(mRay); //3rd time's a charm
+    simOnAllParts(mRay, rayts, srv_add, 0.001);
+    ros::Duration(1).sleep();
+  }
 }

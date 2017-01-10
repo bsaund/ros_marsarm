@@ -24,7 +24,7 @@ Ray getIntersectingRay(std::vector<RayTracer*> &rayts){
   double minD=std::numeric_limits<double>::max();
 
   while(!hit){
-      std::uniform_real_distribution<> dis(-1,1);
+      std::uniform_real_distribution<> dis(-1,1.5);
       tf::Point start(dis(gen), dis(gen), dis(gen));
       tf::Point dir(dis(gen), dis(gen), dis(gen));
       measurementRay = Ray(start, dir.normalize() + start);
@@ -37,11 +37,35 @@ Ray getIntersectingRay(std::vector<RayTracer*> &rayts){
       }
       count++;
   }
-  ROS_INFO("");
-  ROS_INFO("Took %f seconds", (ros::Time::now() - start).toSec());
-  ROS_INFO("Sampled %d rays", count);
-  ROS_INFO("Hit with min dist %f", minD);
+  // ROS_INFO("");
+  // ROS_INFO("Took %f seconds", (ros::Time::now() - start).toSec());
+  // ROS_INFO("Sampled %d rays", count);
+  // ROS_INFO("Hit with min dist %f", minD);
   return measurementRay;
+}
+
+
+Ray getBestRandomRay(std::vector<RayTracer*> &rayts, RayTracePlotter &plt, Relationships &rel){
+  double bestIg = 0;
+  Ray bestRay;
+
+  for(int i=0; i<1000; i++){
+    Ray ray = getIntersectingRay(rayts);
+    plt.plotRay(ray, i);
+    double ig = getIG(ray, rayts, rel, 0.002, 0.01);
+    std::ostringstream oss;
+    ig = ig>0 ? ig : 0;
+    oss << ig;
+    plt.labelRay(ray.start, oss.str(), i);
+
+    if(bestIg < ig){
+      bestIg = ig;
+      bestRay = ray;
+    }
+  }
+  
+  
+  return bestRay;
 }
 
 
@@ -52,6 +76,7 @@ int main(int argc, char **argv)
   ROS_INFO("TEST 1");
   ros::NodeHandle n;
   RayTracePlotter plt;
+  Relationships rel = parseRelationshipsFile(n);
 
   std::vector<RayTracer*> rayts = getAllRayTracers();
 
@@ -59,7 +84,8 @@ int main(int argc, char **argv)
     n.serviceClient<particle_filter::AddObservation>("/observation_distributor");
 
 
-  Ray mRay = getIntersectingRay(rayts);
+  // Ray mRay = getIntersectingRay(rayts);
+  Ray mRay = getBestRandomRay(rayts, plt, rel);
 
   plt.deleteAll();
   plt.plotRay(mRay);

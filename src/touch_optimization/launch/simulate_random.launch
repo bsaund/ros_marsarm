@@ -1,6 +1,6 @@
 <launch>
   <!-- <group ns="right_datum"> -->
-  <group ns="random_measurements">
+  <group ns="goal_hole">
     <node pkg="touch_optimization" type="simulate_random" 
 	  name="simulating_measurement" output="screen"/>
 

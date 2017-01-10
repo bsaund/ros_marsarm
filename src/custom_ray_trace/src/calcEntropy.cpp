@@ -169,8 +169,8 @@ static void processHistogram(std::vector<Bin> &unproc,
   processBins(unproc, proc);
   processParticles(unproc, proc, numRepeated);
 
-  printParticles(proc);
-  printBins(proc);
+  // printParticles(proc);
+  // printBins(proc);
 
   //TEST CODE!!!!
   // CalcEntropy::ProcessedHistogram comb;

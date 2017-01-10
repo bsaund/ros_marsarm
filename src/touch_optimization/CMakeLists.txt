@@ -162,10 +162,7 @@ target_link_libraries(simulate_measurement
   ${catkin_LIBRARIES}
 )
 
-add_executable(get_IG src/getIG.cpp)
-target_link_libraries(get_IG
-  ${catkin_LIBRARIES}
-)
+
 
 
 add_executable(boeing_localization src/boeingLocalization.cpp)
@@ -213,6 +210,12 @@ target_link_libraries(simulate_measurement_exec
 
 add_executable(simulate_random src/simulateRandomMeasurements.cpp)
 target_link_libraries(simulate_random
+  ${catkin_LIBRARIES}
+  simulate_measurement
+)
+
+add_executable(get_IG src/getIG.cpp)
+target_link_libraries(get_IG
   ${catkin_LIBRARIES}
   simulate_measurement
 )

@@ -1,6 +1,7 @@
 #include "simulateMeasurement.h"
 #include <ros/console.h>
 #include "particle_filter/AddObservation.h"
+#include "particle_filter/relationships.h"
 
 int simulateMeasurement(Ray measurementAction, RayTracer &rayt,
 			 ros::ServiceClient &pfilterAdd, double noiseStdDev) 
@@ -66,10 +67,45 @@ int simOnAllParts(Ray ray, std::vector<RayTracer*> &rayts, ros::ServiceClient &s
 }
 
 /*
+ *  Calcs IG for a measurement Ray which hits one of the objects in rayts
+ *   The object for which the IG is calculated is the namespace of the node
+ */
+double getIG(Ray ray, std::vector<RayTracer*> rayts, Relationships rel, 
+	     double radialErr, double depthErr){
+  RayTracer* hitPart;
+  if(!getIntersectingRayTracer(ray, rayts, hitPart))
+    return 0;
+  ROS_INFO("Test2");
+  
+  std::string partName = hitPart->getName();
+
+  ROS_INFO("Hit part %s", partName.c_str());
+
+  std::vector<CalcEntropy::ConfigDist> distsToParticles;
+  
+  if(rel.count(partName) == 0)
+    return 0;
+
+  for(int i=0; i<100; i++){
+    cspace tfp = rel[partName]->sampleTransform();
+    tf::Quaternion q = tf::createQuaternionFromRPY(tfp[3], tfp[4], tfp[5]);
+    tf::Transform tf(q, tf::Vector3(tfp[0], tfp[1], tfp[2]));
+    std::vector<CalcEntropy::ConfigDist> tmp;
+    hitPart->traceCylinderAllParticles(Ray(tf*ray.start, tf*ray.end), radialErr, tmp);
+    distsToParticles.insert(distsToParticles.end(),
+			    tmp.begin(), tmp.end());
+
+  }
+  return CalcEntropy::calcIG(distsToParticles, depthErr, 
+			     hitPart->particleHandler.getNumSubsetParticles());
+}
+
+
+/*
  *  Sets hitPart to be the ray tracer of the part the ray hits.
  *   Returns false if no part was hit
  */
-bool getIntersectingRayTracer(Ray ray, std::vector<RayTracer*> &rayts, RayTracer* hitPart){
+bool getIntersectingRayTracer(Ray ray, std::vector<RayTracer*> &rayts, RayTracer* &hitPart){
   double minD = std::numeric_limits<double>::max();
   double d;
 

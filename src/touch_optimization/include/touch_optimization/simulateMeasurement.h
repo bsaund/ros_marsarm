@@ -3,7 +3,7 @@
 
 #include <ros/ros.h>
 #include "custom_ray_trace/rayTracer.h"
-
+#include "particle_filter/relationships.h"
 
 int simulateMeasurement(Ray measurementAction, RayTracer &rayt,
 			 ros::ServiceClient &pfilterAdd, double noiseStdDev);
@@ -14,6 +14,10 @@ int simOnAllParts(Ray ray, std::vector<RayTracer*> &rayts,
 
 std::vector<RayTracer*> getAllRayTracers();
 
-bool getIntersectingRayTracer(Ray ray, std::vector<RayTracer*> &rayts, RayTracer* hitPart);
+bool getIntersectingRayTracer(Ray ray, std::vector<RayTracer*> &rayts, RayTracer* &hitPart);
+
+double getIG(Ray ray, std::vector<RayTracer*> rayts, Relationships rel, 
+	     double radialErr, double depthErr);
+
 
 #endif

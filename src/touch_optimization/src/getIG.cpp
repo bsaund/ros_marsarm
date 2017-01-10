@@ -11,6 +11,7 @@
 #include "custom_ray_trace/rayTracer.h"
 #include "particle_filter/relationships.h"
 #include "particle_filter/transformDistribution.h"
+#include "simulateMeasurement.h"
 #include <tf/tf.h>
 
 int main(int argc, char **argv)
@@ -35,30 +36,32 @@ int main(int argc, char **argv)
   plt.plotRay(measurementRay); 
 
 
-  plt.loadMesh("top_datum");
-
+  std::vector<RayTracer*> rayts = getAllRayTracers();
 	
   Relationships rel = parseRelationshipsFile(n);
   // CalcEntropy::ConfigDist distsToParticles;
-  std::vector<CalcEntropy::ConfigDist> distsToParticles;
-  for(int i=0; i<100; i++){
-    cspace tfp= rel["top_datum"]->sampleTransform();
-    // ROS_INFO("TF z: %f", tfp[2]); 
-    tf::Quaternion q = tf::createQuaternionFromRPY(tfp[3], tfp[4], tfp[5]);
-    tf::Transform tf(q, tf::Vector3(tfp[0], tfp[1], tfp[2]));
-    std::vector<CalcEntropy::ConfigDist> tmp;
-    plt.traceCylinderAllParticles(Ray(tf*start, tf*end), 0.002, tmp);
-    distsToParticles.insert(distsToParticles.end(),
-			    tmp.begin(), tmp.end());
-  }
+  // std::vector<CalcEntropy::ConfigDist> distsToParticles;
+  // for(int i=0; i<100; i++){
+  //   cspace tfp= rel["top_datum"]->sampleTransform();
+  //   // ROS_INFO("TF z: %f", tfp[2]); 
+  //   tf::Quaternion q = tf::createQuaternionFromRPY(tfp[3], tfp[4], tfp[5]);
+  //   tf::Transform tf(q, tf::Vector3(tfp[0], tfp[1], tfp[2]));
+  //   std::vector<CalcEntropy::ConfigDist> tmp;
+  //   plt.traceCylinderAllParticles(Ray(tf*start, tf*end), 0.002, tmp);
+  //   distsToParticles.insert(distsToParticles.end(),
+  // 			    tmp.begin(), tmp.end());
+  // }
 
-  ROS_INFO("MeasurementSize %d", distsToParticles.size());
+
+  double ig = getIG(measurementRay, rayts, rel, 0.002, 0.01);
+
+  // ROS_INFO("MeasurementSize %d", distsToParticles.size());
 
   std::ostringstream oss;
-  double ig;
+
   // ig = plt.getIG(measurementRay, 0.01, 0.005);
-  ig = CalcEntropy::calcIG(distsToParticles, 
-			   0.01, plt.particleHandler.getNumSubsetParticles());
+  // ig = CalcEntropy::calcIG(distsToParticles, 
+  // 			   0.01, plt.particleHandler.getNumSubsetParticles());
   ig = ig>0 ? ig : 0;
   oss << ig;
   plt.labelRay(start, oss.str());

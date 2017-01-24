@@ -3,6 +3,11 @@
 #include "particle_filter/AddObservation.h"
 #include "particle_filter/relationships.h"
 
+
+
+/*
+ *  Simulates a measurement with some noise and passes that measurement to the particle filter
+ */
 int simulateMeasurement(Ray measurementAction, RayTracer &rayt,
 			 ros::ServiceClient &pfilterAdd, double noiseStdDev) 
 {
@@ -87,9 +92,10 @@ double getIG(Ray ray, std::vector<RayTracer*> rayts, Relationships rel,
     return 0;
 
   for(int i=0; i<100; i++){
-    cspace tfp = rel[partName]->sampleTransform();
-    tf::Quaternion q = tf::createQuaternionFromRPY(tfp[3], tfp[4], tfp[5]);
-    tf::Transform tf(q, tf::Vector3(tfp[0], tfp[1], tfp[2]));
+    // cspace tfp = rel[partName]->sampleTransform();
+    // tf::Quaternion q = tf::createQuaternionFromRPY(tfp[3], tfp[4], tfp[5]);
+    // tf::Transform tf(q, tf::Vector3(tfp[0], tfp[1], tfp[2]));
+    tf::Transform tf = rel[partName]->sampleTransform();
     std::vector<CalcEntropy::ConfigDist> tmp;
     hitPart->traceCylinderAllParticles(Ray(tf*ray.start, tf*ray.end), radialErr, tmp);
     distsToParticles.insert(distsToParticles.end(),

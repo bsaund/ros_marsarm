@@ -8,9 +8,14 @@
 class TransformDistribution
 {
  public:
-  virtual cspace sampleTransform() = 0;
+  virtual cspace sampleCSpace() = 0;
   virtual cspace getMean() = 0;
   virtual cspace getVariance() = 0;
+  tf::Transform sampleTransform(){
+    cspace tfp = sampleCSpace();
+    tf::Quaternion q = tf::createQuaternionFromRPY(tfp[3], tfp[4], tfp[5]);
+    return tf::Transform(q, tf::Vector3(tfp[0], tfp[1], tfp[2]));
+  }
 };
 
 
@@ -20,7 +25,7 @@ class FixedTfDist : public TransformDistribution
 {
  public:
   FixedTfDist(cspace transform){    tr = transform;  }
-  cspace sampleTransform(){    return tr;  }
+  cspace sampleCSpace(){    return tr;  }
   cspace getMean(){    return tr;  }
   cspace getVariance(){    return cspace{};  }
   
@@ -37,7 +42,7 @@ class UniformTfDist : public TransformDistribution
     range = rangeTF;
   }
 
-  cspace sampleTransform(){    
+  cspace sampleCSpace(){    
     cspace sampled;
     for(int i=0; i<cdim; i++){
       sampled[i] = mean[i] + dist(rd)*range[i];
@@ -67,7 +72,7 @@ class GaussianTfDist: public TransformDistribution
     range = rangeTF;
   }
 
-  cspace sampleTransform(){    
+  cspace sampleCSpace(){    
     //cout << "gaussian sampled!";
     cspace sampled;
     for(int i=0; i<cdim; i++){

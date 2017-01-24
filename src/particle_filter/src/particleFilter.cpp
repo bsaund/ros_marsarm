@@ -355,7 +355,7 @@ bool particleFilter::updateParticles(const double measurementWorldFr[2][3], vect
 
       tempState = particlesPrev.sampleFrom();
 
-      cspace stf = tf.sampleTransform();
+      cspace stf = tf.sampleCSpace();
       Transform(measurementWorldFr, stf, trans_M);
 
       // inverseTransform(measurementWorldFr, tf.sampleTransform(), measurementPartFr);

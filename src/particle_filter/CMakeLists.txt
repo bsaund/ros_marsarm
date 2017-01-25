@@ -108,7 +108,7 @@ generate_messages(
 catkin_package(
 	DEPENDS roscpp
  INCLUDE_DIRS include
- LIBRARIES json
+ LIBRARIES json part_relationships
 #  CATKIN_DEPENDS gazebo_ray_trace roscpp
 #  DEPENDS system_lib
 )
@@ -148,11 +148,17 @@ add_definitions(${PCL_DEFINITIONS})
 
 add_library(json src/jsoncpp.cpp)
 
+add_library(part_relationships src/relationships.cpp)
+target_link_libraries(part_relationships
+  ${catkin_LIBRARIES}
+  json
+)
+
 add_library(pfilter src/particleFilter.cpp)
 target_link_libraries(pfilter
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
-  json
+  part_relationships
 )
 
 add_library(Matrix src/matrix.cpp)
@@ -246,7 +252,7 @@ target_link_libraries(pfilter_ros
 # )
 
 
-install(TARGETS json
+install(TARGETS json part_relationships
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})

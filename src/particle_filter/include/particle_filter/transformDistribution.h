@@ -55,7 +55,7 @@ class UniformTfDist : public TransformDistribution
   
  private:
   cspace mean, range;
-  random_device rd;
+  std::random_device rd;
   std::uniform_real_distribution<double> dist; 
 };
 
@@ -86,7 +86,7 @@ class GaussianTfDist: public TransformDistribution
   
  private:
   cspace mean, range;
-  random_device rd;
+  std::random_device rd;
   std::normal_distribution<double> dist[cdim]; 
 };
 

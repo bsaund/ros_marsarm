@@ -54,6 +54,7 @@ int simulateMeasurement(Ray measurementAction, RayTracer &rayt,
   if(!pfilterAdd.call(pfilter_obs)){
     ROS_INFO("Failed to call add observation");
   }
+  ros::spinOnce();
   return 1;
 }
 
@@ -76,7 +77,7 @@ int simOnAllParts(Ray ray, std::vector<RayTracer*> &rayts, ros::ServiceClient &s
  *   The object for which the IG is calculated is the namespace of the node
  */
 double getIG(Ray ray, std::vector<RayTracer*> rayts, Relationships rel, 
-	     double radialErr, double depthErr){
+	     double radialErr, double depthErr, bool printDebug){
   RayTracer* hitPart;
   if(!getIntersectingRayTracer(ray, rayts, hitPart))
     return 0;
@@ -84,26 +85,31 @@ double getIG(Ray ray, std::vector<RayTracer*> rayts, Relationships rel,
   
   std::string partName = hitPart->getName();
 
-  // ROS_INFO("Hit part %s", partName.c_str());
+  if(printDebug){
+    ROS_INFO("Hit part %s", partName.c_str());
+  }
 
   std::vector<CalcEntropy::ConfigDist> distsToParticles;
+
+  return hitPart->getIG(ray, radialErr, depthErr);
   
   if(rel.count(partName) == 0)
     return 0;
 
-  for(int i=0; i<100; i++){
-    // cspace tfp = rel[partName]->sampleTransform();
-    // tf::Quaternion q = tf::createQuaternionFromRPY(tfp[3], tfp[4], tfp[5]);
-    // tf::Transform tf(q, tf::Vector3(tfp[0], tfp[1], tfp[2]));
-    tf::Transform tf = rel[partName]->sampleTransform();
-    std::vector<CalcEntropy::ConfigDist> tmp;
-    hitPart->traceCylinderAllParticles(Ray(tf*ray.start, tf*ray.end), radialErr, tmp);
-    distsToParticles.insert(distsToParticles.end(),
-			    tmp.begin(), tmp.end());
 
-  }
-  return CalcEntropy::calcIG(distsToParticles, depthErr, 
-			     hitPart->particleHandler.getNumSubsetParticles());
+  ///NEEDS WORK
+  // for(int i=0; i<100; i++){
+  //   tf::Transform tf = rel[partName]->sampleTransform();
+  //   std::vector<CalcEntropy::ConfigDist> tmp;
+  //   hitPart->traceCylinderAllParticles(Ray(tf*ray.start, tf*ray.end), radialErr, tmp);
+  //   distsToParticles.insert(distsToParticles.end(),
+  // 			    tmp.begin(), tmp.end());
+  // }
+
+
+
+  // return CalcEntropy::calcIG(distsToParticles, depthErr, 
+  // 			     hitPart->particleHandler.getNumSubsetParticles());
 }
 
 

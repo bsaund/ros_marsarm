@@ -67,11 +67,11 @@ void ParticleHandler::setParticles(geometry_msgs::PoseArray p)
   subsetParticles = vector<tf::Transform>(particles);
   subsetParticles.resize(num);
 
-  ROS_INFO_THROTTLE(10, "First Subset Particle: %f, %f, %f", subsetParticles[0].getOrigin().getX(),
-	   subsetParticles[0].getOrigin().getY(),
-	   subsetParticles[0].getOrigin().getZ());
+  // ROS_INFO_THROTTLE(10, "First Subset Particle: %f, %f, %f", subsetParticles[0].getOrigin().getX(),
+  // 	   subsetParticles[0].getOrigin().getY(),
+  // 	   subsetParticles[0].getOrigin().getZ());
   
-  // ROS_INFO("Subset Particles Size %d", subsetParticles.size());
+  ROS_INFO("Set particles for %s", partName.c_str());
   
   particlesInitialized = true;
   newParticles = true;

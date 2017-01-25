@@ -38,7 +38,7 @@ int main(int argc, char **argv)
 
   std::vector<RayTracer*> rayts = getAllRayTracers();
 	
-  Relationships rel = parseRelationshipsFile(n);
+  PartRelationships rel(n);
   // CalcEntropy::ConfigDist distsToParticles;
   // std::vector<CalcEntropy::ConfigDist> distsToParticles;
   // for(int i=0; i<100; i++){

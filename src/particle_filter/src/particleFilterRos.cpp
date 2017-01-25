@@ -48,7 +48,7 @@ private:
   
   distanceTransform *dist_transform;
   // ParticleHandler pHandler;
-  Relationships rel;
+  PartRelationships rel;
 
   bool getMesh(std::string filename,   vector<vec4x3> &loadedMesh);
 #ifdef POINT_CLOUD
@@ -164,18 +164,18 @@ bool PFilterRos::addObs(particle_filter::AddObservation::Request &req,
     return true;
   } 
   
-  if(rel.count(observedObject)){
+  if(rel.has(ns, observedObject)){
     vector<vec4x3> hitMesh;
     getMesh(req.mesh_resource, hitMesh);
 
     // FixedTransform tf(rel[observedObject]); 
     // ROS_INFO("object: %s", observedObject.c_str());
     // std::unique_ptr<RandomTransform> tf = rel[observedObject];
-    rel[observedObject];
+
     // ROS_INFO("Assigned transform");
     // ROS_INFO("First val: %f", rel[observedObject]->getMean()[0]);
     // ROS_INFO("First val: %f", tf->getMean()[0]);
-    pFilter_.addObservation(obs2, hitMesh, dist_transform, *rel[observedObject], 0);
+    pFilter_.addObservation(obs2, hitMesh, dist_transform, *rel.of(ns, observedObject), 0);
     // pFilter_.addObservation(obs2, hitMesh, dist_transform, tf, 0);
     ROS_INFO("Done adding implicit observation for %s", ns.c_str());
     pub_particles.publish(getParticlePoseArray());
@@ -371,7 +371,7 @@ PFilterRos::PFilterRos(int n_particles, cspace b_init[2]) :
   if(!n.getParam("localization_object_filepath", stlFilePath)){
     ROS_INFO("Failed to get param: localization_object_filepath");
   }
-  rel = parseRelationshipsFile(n);
+  rel.parseRelationshipsFile(n);
 
   getMesh(stlFilePath, mesh);
 

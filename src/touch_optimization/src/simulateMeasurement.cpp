@@ -76,7 +76,7 @@ int simOnAllParts(Ray ray, std::vector<RayTracer*> &rayts, ros::ServiceClient &s
  *  Calcs IG for a measurement Ray which hits one of the objects in rayts
  *   The object for which the IG is calculated is the namespace of the node
  */
-double getIG(Ray ray, std::vector<RayTracer*> rayts, Relationships rel, 
+double getIG(Ray ray, std::vector<RayTracer*> rayts, PartRelationships &rel, 
 	     double radialErr, double depthErr, bool printDebug){
   RayTracer* hitPart;
   if(!getIntersectingRayTracer(ray, rayts, hitPart))
@@ -85,16 +85,19 @@ double getIG(Ray ray, std::vector<RayTracer*> rayts, Relationships rel,
   
   std::string partName = hitPart->getName();
 
-  if(printDebug){
-    ROS_INFO("Hit part %s", partName.c_str());
-  }
 
   std::vector<CalcEntropy::ConfigDist> distsToParticles;
-
-  return hitPart->getIG(ray, radialErr, depthErr);
   
-  if(rel.count(partName) == 0)
-    return 0;
+  double ig = hitPart->getIG(ray, radialErr, depthErr);
+
+  if(printDebug){
+    ROS_INFO("Hit part %s with ig: %f", partName.c_str(), ig);
+  }
+
+  return ig;
+  
+  // if(rel.count(partName) == 0)
+  //   return 0;
 
 
   ///NEEDS WORK

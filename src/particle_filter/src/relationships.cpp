@@ -59,38 +59,60 @@ std::shared_ptr<TransformDistribution> getTfFromJson(Json::Value jsonTf){
 }
 
 
+
+std::shared_ptr<TransformDistribution> PartRelationships::of(std::string from, std::string to){
+  return map[std::make_pair(from, to)];
+}
+
+
+/*
+ *  Returns true if the relationship between from and to is defined
+ */
+bool PartRelationships::has(std::string from, std::string to){
+  return map.count(std::make_pair(from, to)) > 0;
+}
+
+
+PartRelationships::PartRelationships(ros::NodeHandle &n){
+  parseRelationshipsFile(n);
+}
+
+
 /*
  *  Reads in a json file specified by the /relationshipsFile rosparam
- *   Returns the Relationships relevant to this piece (namespace)
+ *   Returns true if the initialization was successful
  */
-Relationships parseRelationshipsFile(ros::NodeHandle n){
-  Relationships rel;
+bool PartRelationships::parseRelationshipsFile(ros::NodeHandle &n){
+
   std::string ns = ros::this_node::getNamespace();
   ns.erase(0,2);
   std::string filePath;
   if(!n.getParam("/relationshipsFile", filePath)){
     ROS_INFO("No relationships file parameter found for %s", ns.c_str());
-    return rel;
+    return false;
   }
 
   Json::Value root;
   if(!parseJsonFile(filePath, root)){
-    return rel;
+    return false;
   }
 
   if(!root.isMember(ns)){
     ROS_DEBUG("no relationships found for %s", ns.c_str());
-    return rel;
+  }
+  
+  Json::Value::Members rootMembers = root.getMemberNames();
+  for(auto rootMem : rootMembers){
+    Json::Value::Members subMembers = root[rootMem].getMemberNames();
+    for(auto subMem : subMembers){
+
+      Json::Value jsonTf = root[rootMem][subMem];
+
+      std::pair<std::string, std::string> key = std::make_pair(rootMem, subMem);
+      map.insert(std::make_pair(key, 
+				getTfFromJson(jsonTf)));
+    }
   }
 
-  Json::Value::Members subMembers = root[ns].getMemberNames();
-  for(auto subMem : subMembers){
-
-    Json::Value jsonTf = root[ns][subMem];
-
-    rel.insert(std::make_pair(subMem, 
-			      getTfFromJson(jsonTf)));
-  }
-
-  return rel;
+  return true;
 }

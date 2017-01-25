@@ -17,11 +17,41 @@
 
 
 /*
+ *  Hash function for pairs. It has a lot of collisions, but who cares about performance...
+ */
+struct pairhash {
+public:
+  template <typename T, typename U>
+  std::size_t operator()(const std::pair<T, U> &x) const
+  {
+    return ~std::hash<T>()(x.first) ^ std::hash<U>()(x.second);
+  }
+};
+
+
+
+
+/*
  *  Relationships is a map for a specific piece "pieceA" such that
  *   Relationships["pieceB"] returns the transform distribution
  *   from B to A
  */
-typedef std::unordered_map<std::string, std::shared_ptr<TransformDistribution>> Relationships;
+
+class PartRelationships{
+ public:
+  PartRelationships() {};
+  PartRelationships(ros::NodeHandle &n);
+  std::unordered_map<std::pair<std::string, std::string>, 
+                               std::shared_ptr<TransformDistribution>,
+                               pairhash> map;
+
+  std::shared_ptr<TransformDistribution> of(std::string from, std::string to);
+  bool has(std::string from, std::string to);
+
+  bool parseRelationshipsFile(ros::NodeHandle &n);
+};
+
+
 /* typedef std::unordered_map<std::string, cspace> Relationships; */
 
 
@@ -30,7 +60,7 @@ std::shared_ptr<FixedTfDist> getFixedFromJson(Json::Value jsonTf);
 std::shared_ptr<UniformTfDist> getUniformFromJson(Json::Value jsonTf);
 std::shared_ptr<GaussianTfDist> getGaussianFromJson(Json::Value jsonTf);
 std::shared_ptr<TransformDistribution> getTfFromJson(Json::Value jsonTf);
-Relationships parseRelationshipsFile(ros::NodeHandle n);
+
 
 
 

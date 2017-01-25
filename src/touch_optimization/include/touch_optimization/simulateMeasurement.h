@@ -16,8 +16,8 @@ std::vector<RayTracer*> getAllRayTracers();
 
 bool getIntersectingRayTracer(Ray ray, std::vector<RayTracer*> &rayts, RayTracer* &hitPart);
 
-double getIG(Ray ray, std::vector<RayTracer*> rayts, Relationships rel, 
-	     double radialErr, double depthErr);
+double getIG(Ray ray, std::vector<RayTracer*> rayts, PartRelationships &rel, 
+	     double radialErr, double depthErr, bool printDebug = false);
 
 
 #endif

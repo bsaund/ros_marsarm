@@ -45,18 +45,34 @@ Ray getIntersectingRay(std::vector<RayTracer*> &rayts){
 }
 
 
-Ray getBestRandomRay(std::vector<RayTracer*> &rayts, RayTracePlotter &plt, Relationships &rel){
+Ray getBestRandomRay(std::vector<RayTracer*> &rayts, RayTracePlotter &plt, PartRelationships &rel,
+		     bool printDebug = false){
+
   double bestIg = 0;
   Ray bestRay;
+  
+  if(printDebug){
+    std::string ns = ros::this_node::getNamespace();
+    ROS_INFO("Working in namespace %s", ns.c_str());
+  }
 
-  for(int i=0; i<1000; i++){
+  for(int i=0; i<100; i++){
     Ray ray = getIntersectingRay(rayts);
-    // plt.plotRay(ray, i);
-    double ig = getIG(ray, rayts, rel, 0.002, 0.01);
+
+    double ig = getIG(ray, rayts, rel, 0.002, 0.01, printDebug);
     std::ostringstream oss;
     ig = ig>0 ? ig : 0;
     oss << ig;
-    // plt.labelRay(ray.start, oss.str(), i);
+
+
+    if(printDebug){
+      plt.deleteAll();
+      plt.plotRay(ray, 1);
+      plt.labelRay(ray.start, oss.str(), 1);
+      if(std::cin.get() == 'c'){;
+	break;
+      }
+    }
 
     if(bestIg < ig){
       bestIg = ig;
@@ -64,7 +80,11 @@ Ray getBestRandomRay(std::vector<RayTracer*> &rayts, RayTracePlotter &plt, Relat
     }
   }
   
-  
+  if(printDebug){
+    ROS_INFO("Best Ray: ");
+    getIG(bestRay, rayts, rel, 0.002, 0.01, printDebug);
+  }
+
   return bestRay;
 }
 
@@ -72,11 +92,12 @@ Ray getBestRandomRay(std::vector<RayTracer*> &rayts, RayTracePlotter &plt, Relat
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "simulating_measurement");
+  bool debug = true;
 
   ROS_INFO("TEST 1");
   ros::NodeHandle n;
   RayTracePlotter plt;
-  Relationships rel = parseRelationshipsFile(n);
+  PartRelationships rel(n);
 
   std::vector<RayTracer*> rayts = getAllRayTracers();
 
@@ -86,11 +107,13 @@ int main(int argc, char **argv)
 
   // Ray mRay = getIntersectingRay(rayts);
   for(int i=0; i<10; i++){
-    Ray mRay = getBestRandomRay(rayts, plt, rel);
+    Ray mRay = getBestRandomRay(rayts, plt, rel, debug);
 
     plt.deleteAll();
     plt.plotRay(mRay);
+    ros::Duration(.1).sleep();
     plt.plotRay(mRay); //Message is sometimes lost
+    ros::Duration(.1).sleep();
     plt.plotRay(mRay); //3rd time's a charm
     simOnAllParts(mRay, rayts, srv_add, 0.001);
     ros::Duration(1).sleep();

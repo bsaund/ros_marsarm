@@ -284,23 +284,12 @@ bool RayTracer::traceRay(Ray ray, double &distToPart){
 /*
  *  Traces a ray (specified in world frame) on all particles
  *  Returns true if at least 1 ray intersected the part
- *   If "quick" then it will not set distances if ray misses all particles
  */
 bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart)
 {
-  transformRayToPartFrame(ray);
-  std::vector<tf::Transform> particles;
-  // if(quick)
-  //   particles = particleHandler.getParticleSubset();
-  // else
-  particles = particleHandler.getParticles();
-  // ROS_INFO("First Particle %f, %f, %f", particles[0].getOrigin().getX(),
-  // 	   particles[0].getOrigin().getY(),
-  // 	   particles[0].getOrigin().getZ());
 
-  // ROS_INFO("First particle for traceAll: %f, %f, %f", particles[0].getOrigin().getX(),
-  // 	   particles[0].getOrigin().getY(),
-  // 	   particles[0].getOrigin().getZ());
+  std::vector<tf::Transform> particles;
+  particles = particleHandler.getParticles();
 
 
   //TODO - WOW This is handled poorly. traceAllParticles should not be keeping track of whether the state machine has processed the particles. This is confusing
@@ -308,10 +297,17 @@ bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart)
     particleHandler.newParticles = false;
   }
   
-  // double tmp;
-  // if(quick && !traceRay(surroundingBoxAllParticles, ray, tmp))
-  //   return false;
+  return traceAllParticles(ray, distToPart, particles);
+}
 
+
+/*
+ *  Traces a ray (specified in world frame) on given particles
+ *  Returns true if at least 1 ray intersected the part
+ */
+bool RayTracer::traceAllParticles(Ray ray, std::vector<double> &distToPart, 
+				  std::vector<tf::Transform> &particles){
+  transformRayToPartFrame(ray);
   distToPart.resize(particles.size());
 
   bool hitPart = false;
@@ -374,6 +370,31 @@ bool RayTracer::traceCylinderAllParticles(Ray ray, double radius,
     vector<double> distsTmp;
     
     hitPart = traceAllParticles(cylinderRay, distsTmp) || hitPart;
+
+    for(int pNumber = 0; pNumber<distsTmp.size(); pNumber++){
+      CalcEntropy::ConfigDist cDist;
+      cDist.id = pNumber;
+      cDist.dist = distsTmp[pNumber];
+      distsToPart.push_back(cDist);
+    }
+  }
+  return hitPart;
+}
+
+
+bool RayTracer::traceCylinderAllParticles(Ray ray, double radius, 
+					  vector<CalcEntropy::ConfigDist> &distsToPart,
+					  std::vector<tf::Transform> &particles)
+{
+  std::vector<Ray> rays;
+  getCylinderRays(ray, radius, rays);
+  
+  bool hitPart = false;
+
+  for(Ray cylinderRay:rays){
+    vector<double> distsTmp;
+    
+    hitPart = traceAllParticles(cylinderRay, distsTmp, particles) || hitPart;
 
     for(int pNumber = 0; pNumber<distsTmp.size(); pNumber++){
       CalcEntropy::ConfigDist cDist;

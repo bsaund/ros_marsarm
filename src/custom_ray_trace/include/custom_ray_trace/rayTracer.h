@@ -74,10 +74,16 @@ class RayTracer
   bool traceRay(Ray ray, tf::Point &intersection);
   bool traceRay(const stl::Mesh &mesh, const Ray &ray, double &distToPart);
   bool traceAllParticles(Ray ray, std::vector<double> &distToPart);
+  bool traceAllParticles(Ray ray, std::vector<double> &distToPart, 
+			 std::vector<tf::Transform> &particles);
 
   double getIG(Ray ray, double radialErr, double distErr);
   double getIG(std::vector<Ray> rays, double radialErr, double distErr);
   bool traceCylinderAllParticles(Ray ray, double radius, vector<CalcEntropy::ConfigDist> &dists);
+  bool traceCylinderAllParticles(Ray ray, double radius, 
+				 vector<CalcEntropy::ConfigDist> &distsToPart,
+				 std::vector<tf::Transform> &particles);
+
   std::vector<tf::Vector3> getOrthogonalBasis(tf::Vector3 dir);
   void getCylinderRays(Ray ray, double radius, std::vector<Ray> &rays);
 

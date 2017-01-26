@@ -72,48 +72,88 @@ int simOnAllParts(Ray ray, std::vector<RayTracer*> &rayts, ros::ServiceClient &s
   return simulateMeasurement(ray, *firstPart, srv_add, noiseStdDev);
 }
 
+
+
+
+double getIndirectIG(Ray ray, std::shared_ptr<TransformDistribution> rel,
+		     std::vector<tf::Transform> referenceParticles,
+		     RayTracer* hitPart,
+		     double radialErr, double depthErr){
+  std::vector<CalcEntropy::ConfigDist> distsToParticles;
+  ///NEEDS WORK
+  for(int i=0; i<100; i++){
+    tf::Transform tf = rel->sampleTransform();
+    std::vector<CalcEntropy::ConfigDist> tmp;
+    hitPart->traceCylinderAllParticles(Ray(tf*ray.start, tf*ray.end), radialErr, tmp,
+				       referenceParticles);
+    distsToParticles.insert(distsToParticles.end(),
+  			    tmp.begin(), tmp.end());
+  }
+
+  return CalcEntropy::calcIG(distsToParticles, depthErr, 
+  			     hitPart->particleHandler.getNumSubsetParticles());
+}
+
+
+
+
 /*
  *  Calcs IG for a measurement Ray which hits one of the objects in rayts
  *   The object for which the IG is calculated is the namespace of the node
  */
 double getIG(Ray ray, std::vector<RayTracer*> rayts, PartRelationships &rel, 
 	     double radialErr, double depthErr, bool printDebug){
+  std::string referencePartName = ros::this_node::getNamespace();
+  referencePartName.erase(0,2);
+
   RayTracer* hitPart;
+  RayTracer* referencePart;
+
   if(!getIntersectingRayTracer(ray, rayts, hitPart))
     return 0;
-
-  
-  std::string partName = hitPart->getName();
+  std::string hitPartName = hitPart->getName();
 
 
-  std::vector<CalcEntropy::ConfigDist> distsToParticles;
-  
-  double ig = hitPart->getIG(ray, radialErr, depthErr);
-
-  if(printDebug){
-    ROS_INFO("Hit part %s with ig: %f", partName.c_str(), ig);
+  for(auto rayt : rayts){
+    if(rayt->getName() == referencePartName){
+      referencePart = rayt;
+      break;
+    }
+  }
+  if(referencePart == NULL){
+    ROS_INFO("No reference part for getting IG");
+    throw "No reference part";
   }
 
-  return ig;
+
+
   
-  // if(rel.count(partName) == 0)
-  //   return 0;
-
-
-  ///NEEDS WORK
-  // for(int i=0; i<100; i++){
-  //   tf::Transform tf = rel[partName]->sampleTransform();
-  //   std::vector<CalcEntropy::ConfigDist> tmp;
-  //   hitPart->traceCylinderAllParticles(Ray(tf*ray.start, tf*ray.end), radialErr, tmp);
-  //   distsToParticles.insert(distsToParticles.end(),
-  // 			    tmp.begin(), tmp.end());
-  // }
+  double direct_ig = hitPart->getIG(ray, radialErr, depthErr);
 
 
 
-  // return CalcEntropy::calcIG(distsToParticles, depthErr, 
-  // 			     hitPart->particleHandler.getNumSubsetParticles());
+  double coupled_ig;
+  if(rel.has(referencePartName, hitPartName)  == 0)
+    coupled_ig = 0;
+  
+  coupled_ig = getIndirectIG(ray, rel.of(referencePartName, hitPartName),
+			     referencePart->particleHandler.getParticles(), 
+			     hitPart, 
+			     radialErr, depthErr);
+
+
+  if(printDebug){
+    ROS_INFO("Hit part %s with direct ig: %f and indirect ig: %f", 
+	     referencePartName.c_str(), direct_ig, coupled_ig);
+  }
+
+
+  return direct_ig;
 }
+
+
+
+
 
 
 /*

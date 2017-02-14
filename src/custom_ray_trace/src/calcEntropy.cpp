@@ -7,6 +7,8 @@
 
 struct Bin {
   // std::vector<CalcEntropy::ConfigDist> element;
+  double binMin;
+  double binMax;
   std::vector<int> particleIds;
 };
 
@@ -43,9 +45,11 @@ static void histogram(const std::vector<CalcEntropy::ConfigDist> &measurements,
     if(m.dist >= binValue){
       binNum++;
       hist.push_back(Bin());
+      hist[binNum].binMin = binValue;
       while(m.dist >= binValue){
   	binValue += binSize;
       }
+      hist[binNum].binMax = binValue;
     }
 
     hist[binNum].particleIds.push_back(m.id);
@@ -80,6 +84,8 @@ static void processBins(const std::vector<Bin> &unproc,
   for(int bin=0; bin<unproc.size(); bin++){
     processBin(unproc[bin], proc.bin[idOf(bin)]);
     totalData += unproc[bin].particleIds.size();
+    proc.bin[idOf(bin)].binMin = unproc[bin].binMin;
+    proc.bin[idOf(bin)].binMax = unproc[bin].binMax;
   }
 
   for(int bin=0; bin<unproc.size(); bin++){
@@ -195,8 +201,8 @@ namespace CalcEntropy{
     std::vector<Bin> hist;
     histogram(p, binSize, hist);
 
-		// std::cout << "Size; " << p.size() << "\n";
-		// std::cout << "NumParticles " << numParticles << "\n";
+    // std::cout << "Size; " << p.size() << "\n";
+    // std::cout << "NumParticles " << numParticles << "\n";
 
     CalcEntropy::ProcessedHistogram procHist;
     procHist.particle.resize(numParticles);

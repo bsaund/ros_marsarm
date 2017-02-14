@@ -14,6 +14,8 @@ namespace CalcEntropy{
 
   struct BinWithParticles{
     double binProbability;
+    double binMin;
+    double binMax;
     //map from Particle ID to probability of that particle in this bin
     std::map<int, double> particles;
   };

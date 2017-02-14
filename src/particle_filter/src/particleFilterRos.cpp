@@ -389,6 +389,8 @@ PFilterRos::PFilterRos(int n_particles, cspace b_init[2]) :
   // tf_listener_.waitForTransform(name, "/my_frame", ros::Time(0), ros::Duration(10.0));
   // // ROS_INFO("Transform %s found", name.c_str());
   // tf_listener_.lookupTransform(name, "/my_frame", ros::Time(0), trans_);
+
+  //TF Listeners were causing problems. This ignores the transform and just uses the identity
   trans_.setIdentity();
   // ROS_INFO("Transform %s lookuped up", name.c_str());
 

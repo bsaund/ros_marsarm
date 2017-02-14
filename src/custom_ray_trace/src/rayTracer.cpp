@@ -33,7 +33,9 @@ void ParticleHandler::connectToParticles(std::string name){
 
   // tf_listener_.waitForTransform(name, "/my_frame", ros::Time(0), ros::Duration(10.0));
   // tf_listener_.lookupTransform(name, "/my_frame", ros::Time(0), trans_);
+  //TF Listeners were causing problems. This ignores the transform and just uses the identity
   trans_.setIdentity();
+
   particleSub = rosnode.subscribe("/" + name + "/particles_from_filter", 1000, 
 				  &ParticleHandler::setParticles, this);
   requestParticlesPub = rosnode.advertise<std_msgs::Empty>("/" + name + "/request_particles", 5);

@@ -52,8 +52,9 @@ int main(int argc, char **argv)
   // 			    tmp.begin(), tmp.end());
   // }
 
-
-  double ig = getIG(measurementRay, rayts, rel, 0.002, 0.01);
+  ParticleHandler pHand;
+  double ig = getIG(measurementRay, rayts, rel, 
+		    pHand.getParticles(), 0.002, 0.01);
 
   // ROS_INFO("MeasurementSize %d", distsToParticles.size());
 

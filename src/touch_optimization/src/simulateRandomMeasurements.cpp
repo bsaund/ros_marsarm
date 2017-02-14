@@ -46,6 +46,7 @@ Ray getIntersectingRay(std::vector<RayTracer*> &rayts){
 
 
 Ray getBestRandomRay(std::vector<RayTracer*> &rayts, RayTracePlotter &plt, PartRelationships &rel,
+		     std::vector<tf::Transform> referenceParticles,
 		     bool printDebug = false){
 
   double bestIg = 0;
@@ -59,7 +60,7 @@ Ray getBestRandomRay(std::vector<RayTracer*> &rayts, RayTracePlotter &plt, PartR
   for(int i=0; i<100; i++){
     Ray ray = getIntersectingRay(rayts);
 
-    double ig = getIG(ray, rayts, rel, 0.002, 0.01, printDebug);
+    double ig = getIG(ray, rayts, rel, referenceParticles, 0.002, 0.01, printDebug);
     std::ostringstream oss;
     ig = ig>0 ? ig : 0;
     oss << ig;
@@ -82,7 +83,7 @@ Ray getBestRandomRay(std::vector<RayTracer*> &rayts, RayTracePlotter &plt, PartR
   
   if(printDebug){
     ROS_INFO("Best Ray: ");
-    getIG(bestRay, rayts, rel, 0.002, 0.01, printDebug);
+    getIG(bestRay, rayts, rel, referenceParticles, 0.002, 0.01, printDebug);
   }
 
   return bestRay;
@@ -100,6 +101,7 @@ int main(int argc, char **argv)
   PartRelationships rel(n);
 
   std::vector<RayTracer*> rayts = getAllRayTracers();
+  ParticleHandler pHand("goal_hole");
 
   ros::ServiceClient srv_add = 
     n.serviceClient<particle_filter::AddObservation>("/observation_distributor");
@@ -107,7 +109,7 @@ int main(int argc, char **argv)
 
   // Ray mRay = getIntersectingRay(rayts);
   for(int i=0; i<10; i++){
-    Ray mRay = getBestRandomRay(rayts, plt, rel, debug);
+    Ray mRay = getBestRandomRay(rayts, plt, rel, pHand.getParticles(), debug);
 
     plt.deleteAll();
     plt.plotRay(mRay);

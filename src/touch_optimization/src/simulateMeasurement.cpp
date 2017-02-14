@@ -102,6 +102,7 @@ double getIndirectIG(Ray ray, std::shared_ptr<TransformDistribution> rel,
  *   The object for which the IG is calculated is the namespace of the node
  */
 double getIG(Ray ray, std::vector<RayTracer*> rayts, PartRelationships &rel, 
+	     std::vector<tf::Transform> referenceParticles,
 	     double radialErr, double depthErr, bool printDebug){
   std::string referencePartName = ros::this_node::getNamespace();
   referencePartName.erase(0,2);
@@ -114,41 +115,42 @@ double getIG(Ray ray, std::vector<RayTracer*> rayts, PartRelationships &rel,
   std::string hitPartName = hitPart->getName();
 
 
-  for(auto rayt : rayts){
-    if(rayt->getName() == referencePartName){
-      referencePart = rayt;
-      break;
-    }
-  }
-  if(referencePart == NULL){
-    ROS_INFO("No reference part for getting IG");
-    throw "No reference part";
-  }
+  // for(auto rayt : rayts){
+  //   ROS_INFO("Names are %s and %s", rayt->getName().c_str(), referencePartName.c_str());
+  //   if(rayt->getName() == referencePartName){
+  //     referencePart = rayt;
+  //     break;
+  //   }
+  // }
 
 
-
-  
   double direct_ig = hitPart->getIG(ray, radialErr, depthErr);
 
 
+  // if(referencePart == NULL){
+  //   ROS_INFO("No reference part for getting IG");
+  //   throw "No reference part";
+  // }
 
-  double coupled_ig;
-  if(rel.has(referencePartName, hitPartName)  == 0)
-    coupled_ig = 0;
   
-  coupled_ig = getIndirectIG(ray, rel.of(referencePartName, hitPartName),
-			     referencePart->particleHandler.getParticles(), 
-			     hitPart, 
-			     radialErr, depthErr);
+
+
+  double coupled_ig = 0;
+  if(rel.has(referencePartName, hitPartName)){
+    coupled_ig = getIndirectIG(ray, rel.of(referencePartName, hitPartName),
+			       referenceParticles, 
+			       hitPart, 
+			       radialErr, depthErr);
+  }
 
 
   if(printDebug){
     ROS_INFO("Hit part %s with direct ig: %f and indirect ig: %f", 
-	     referencePartName.c_str(), direct_ig, coupled_ig);
+	     hitPartName.c_str(), direct_ig, coupled_ig);
   }
 
 
-  return direct_ig;
+  return coupled_ig;
 }
 
 

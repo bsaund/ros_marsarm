@@ -31,8 +31,9 @@ void ParticleHandler::connectToParticles(std::string name){
   particlesInitialized = false;
   newParticles = true;
 
-  tf_listener_.waitForTransform("/my_frame", name, ros::Time(0), ros::Duration(10.0));
-  tf_listener_.lookupTransform(name, "/my_frame", ros::Time(0), trans_);
+  // tf_listener_.waitForTransform(name, "/my_frame", ros::Time(0), ros::Duration(10.0));
+  // tf_listener_.lookupTransform(name, "/my_frame", ros::Time(0), trans_);
+  trans_.setIdentity();
   particleSub = rosnode.subscribe("/" + name + "/particles_from_filter", 1000, 
 				  &ParticleHandler::setParticles, this);
   requestParticlesPub = rosnode.advertise<std_msgs::Empty>("/" + name + "/request_particles", 5);

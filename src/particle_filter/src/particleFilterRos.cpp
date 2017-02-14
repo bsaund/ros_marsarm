@@ -386,16 +386,17 @@ PFilterRos::PFilterRos(int n_particles, cspace b_init[2]) :
   }
   
   // ROS_INFO("Lookuping up transform %s", name.c_str());
-  tf_listener_.waitForTransform("/my_frame", name, ros::Time(0), ros::Duration(10.0));
-  // ROS_INFO("Transform %s found", name.c_str());
-  ros::Duration(1.0).sleep(); //Not sure why this is needed, but sometimes the transofrm isn't available without it
-  tf_listener_.lookupTransform(name, "/my_frame", ros::Time(0), trans_);
+  // tf_listener_.waitForTransform(name, "/my_frame", ros::Time(0), ros::Duration(10.0));
+  // // ROS_INFO("Transform %s found", name.c_str());
+  // tf_listener_.lookupTransform(name, "/my_frame", ros::Time(0), trans_);
+  trans_.setIdentity();
   // ROS_INFO("Transform %s lookuped up", name.c_str());
 
 #ifdef POINT_CLOUD
   initPointCloud();
 #endif
 
+  ros::Duration(1.0).sleep(); //Not sure why this is needed, but sometimes the transofrm isn't available without it
 
   pub_particles.publish(getParticlePoseArray());
 }

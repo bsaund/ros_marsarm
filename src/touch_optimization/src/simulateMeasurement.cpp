@@ -81,8 +81,8 @@ double getIndirectIG(Ray ray, std::shared_ptr<TransformDistribution> rel,
 		     double radialErr, double depthErr, bool printDebug){
   std::vector<CalcEntropy::ConfigDist> distsToParticles;
   ///NEEDS WORK
-  ROS_INFO("Name:");
-  ROS_INFO("%s", hitPart->getName().c_str());
+  // ROS_INFO("Name:");
+  // ROS_INFO("%s", hitPart->getName().c_str());
   //Indirect hits
   for(int i=0; i<100; i++){
     tf::Transform tf = rel->sampleTransform();
@@ -156,14 +156,14 @@ double getIG(Ray ray, std::vector<RayTracer*> rayts, PartRelationships &rel,
   double coupled_ig = 0;
 
   if(rel.has(referencePartName, hitPartName)){
-    ROS_INFO("Hit part name: %s", hitPartName.c_str());
+    // ROS_INFO("Hit part name: %s", hitPartName.c_str());
     coupled_ig = getIndirectIG(ray, rel.of(referencePartName, hitPartName),
 			       referenceParticles, 
 			       hitPart, 
 			       radialErr, depthErr, false);
 			       // radialErr, depthErr, printDebug);
   }
-  ROS_INFO("Passed");
+  // ROS_INFO("Passed");
 
   if(printDebug){
     ROS_INFO("Hit part %s with direct ig: %f and indirect ig: %f", 

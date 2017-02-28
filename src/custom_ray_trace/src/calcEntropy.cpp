@@ -217,7 +217,7 @@ void alterWeights(CalcEntropy::ProcessedHistogram &proc,
   double absoluteMin = proc.bin[idOf(0)].binMin;
 
 
-  std::cout << "\n numBins: " << proc.bin.size() << "\n";
+  // std::cout << "\n numBins: " << proc.bin.size() << "\n";
 
   //Dummy code to try to find bug
   // for(auto cDist : directDistances){
@@ -335,16 +335,16 @@ namespace CalcEntropy{
   double calcIndirectIG(std::vector<ConfigDist> &directDistances, 
 			std::vector<ConfigDist> &indirectDistances, 
 			double binSize, int numParticles){
-    std::cout << "Starting to process...";
+    // std::cout << "Starting to process...";
     ProcessedHistogram procIndirect = processMeasurements(indirectDistances, 
 							  binSize, numParticles);
-    std::cout << 1;
-    std::cout << 2;
+    // std::cout << 1;
+    // std::cout << 2;
     alterWeights(procIndirect, directDistances);
-    std::cout << 5;
+    // std::cout << 5;
     double H_Y_given_X = calcCondDisEntropy(procIndirect);
     double H_Y = -log2(1.0/(double)numParticles);
-    std::cout << "...Finished\n";
+    // std::cout << "...Finished\n";
     return H_Y - H_Y_given_X;
   }
 

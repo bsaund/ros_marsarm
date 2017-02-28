@@ -101,7 +101,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "simulating_measurement");
   bool debug = true;
 
-  ROS_INFO("TEST 1");
+  // ROS_INFO("TEST 1");
   ros::NodeHandle n;
   RayTracePlotter plt;
   PartRelationships rel(n);

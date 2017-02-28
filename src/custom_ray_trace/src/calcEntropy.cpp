@@ -86,6 +86,9 @@ static void processBins(const std::vector<Bin> &unproc,
     totalData += unproc[bin].particleIds.size();
     proc.bin[idOf(bin)].binMin = unproc[bin].binMin;
     proc.bin[idOf(bin)].binMax = unproc[bin].binMax;
+    // if(unproc[bin].binMax == 0){
+    //   std::cout << "\nUnproc bin is 0\n";
+    // }
   }
 
   for(int bin=0; bin<unproc.size(); bin++){
@@ -214,6 +217,34 @@ void alterWeights(CalcEntropy::ProcessedHistogram &proc,
   double absoluteMin = proc.bin[idOf(0)].binMin;
 
 
+  std::cout << "\n numBins: " << proc.bin.size() << "\n";
+
+  //Dummy code to try to find bug
+  // for(auto cDist : directDistances){
+  // for(int j=0; j<directDistances.size(); j++){
+      
+  //   // if(directDistances[j].dist < absoluteMin)
+  //   //   continue;
+    
+
+  //   // std::cout << proc.bin[idOf(binInd)].binMax << ", ";
+
+  //   if(proc.bin[idOf(binInd)].binMax == 0){
+  //     std::cout << "\n proc bin max is 0 in alter weights";
+  //   }
+
+  //   while(directDistances[j].dist > proc.bin[idOf(binInd)].binMax){
+  //     binInd++;
+  //     std::cout << "binInd: " << binInd << "\n";
+  //     if(binInd >= numBins)
+  //   	break;
+  //   }
+
+  //   binCount[binInd]++;
+  //   totalCount++;
+  // }
+
+  // return;
 
   for(auto cDist : directDistances){
     if(cDist.dist < absoluteMin)
@@ -224,21 +255,23 @@ void alterWeights(CalcEntropy::ProcessedHistogram &proc,
       if(binInd >= numBins)
 	break;
     }
+    if(binInd >= numBins)
+      break;
 
     binCount[binInd]++;
     totalCount++;
   }
 
 
-  std::cout << 3;
+  // std::cout << 3;
 
 
   for(binInd = 0; binInd < numBins; binInd++){
     double p = (double)binCount[binInd] / (double)totalCount;
     proc.bin[idOf(binInd)].binProbability = p;
   }
-  std::cout << 4;
-  std::cout << "What?";
+  // std::cout << 4;
+  // std::cout << "What?";
   // printBins(proc);
 }
 

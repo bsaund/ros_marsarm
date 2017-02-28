@@ -4,7 +4,8 @@ wood_boeing:
   localization_object: wood_boeing
   # localization_object_cad: package://custom_ray_trace/sdf/wood_boeing.stl
   # localization_object_filepath: ($find custom_ray_trace)/sdf/wood_boeing.stl 
-  particle_frame: [0, 0.0, 0, 0, 0, 0]
+  prior_offset: [0, 0.0, 0, 0, 0, 0]
+  particle_frame: [0,0,0,0,0,0]
 
 goal_hole:
   color: [0, 1, 0, 0.7]
@@ -13,7 +14,8 @@ goal_hole:
   # localization_object_cad: package://custom_ray_trace/sdf/goal_hole.stl
   # localization_object_filepath: package://custom_ray_trace/sdf/goal_hole.stl 
   true_frame: [0, 0, 0, 0, 0, 0]
-  particle_frame: [0, 0, 0, 0, 0, 0]
+  prior_offset: [0.02, 0.023, 0.025, 0, 0.04, 0.03]
+  particle_frame: [0,0,0,0,0,0]
 
 right_datum:
   color: [0, 0, 1, 0.2]
@@ -21,8 +23,9 @@ right_datum:
   localization_object: right_datum
   # localization_object_cad: package://custom_ray_trace/sdf/right_datum.stl
   # localization_object_filepath: package://custom_ray_trace/sdf/right_datum.stl # 
-  particle_frame: [0, 0, 0, 0, 0, 0]
+  prior_offset: [0.02, 0, 0, 0, 0.005, 0.01]
   true_frame: [0, 0, 0, 0, 0, 0]
+  particle_frame: [0,0,0,0,0,0]
 
 top_datum:
   color: [0.5, 0.5, 0, 0.2]
@@ -30,29 +33,33 @@ top_datum:
   localization_object: top_datum
   # localization_object_cad: package://custom_ray_trace/sdf/top_datum.stl
   # localization_object_filepath: package://custom_ray_trace/sdf/top_datum.stl 
-  particle_frame: [0, 0, 0, 0, 0, 0]
+  prior_offset: [0, 0, 0.025, 0, 0.04, 0]
   true_frame: [0, 0, 0, 0, 0, 0]
+  particle_frame: [0,0,0,0,0,0]
 
 J1_section:
   color: [ 0.5, 0.5, 0.5, 0.1]
   initial_uncertainties: [0.04, 0.04, 0.04, 0.04, 0.04, 0.04]
   localization_object: J1_section
-  particle_frame: [0, 0, 0, 0, 0, 0]
+  prior_offset: [0.01, 0.005, -0.003, 0.01, 0, -0.01]
   true_frame: [0, 0, 0, 0, 0, 0]
+  particle_frame: [0,0,0,0,0,0]
 
 bottom_section:
   color: [ 0.5, 0.5, 0.5, 0.1]
   initial_uncertainties: [0.04, 0.04, 0.04, 0.04, 0.04, 0.04]
   localization_object: bottom_section
-  particle_frame: [0, 0, 0, 0, 0, 0]
+  prior_offset: [0, 0, 0.005, -0.01, 0.01, 0]
   true_frame: [0, 0, 0, 0, 0, 0]
+  particle_frame: [0,0,0,0,0,0]
 
 back_datum:
   color: [ 0.5, 0.5, 0.5, 0.1]
   initial_uncertainties: [0.04, 0.04, 0.04, 0.04, 0.04, 0.04]
   localization_object: back_datum
-  particle_frame: [0, 0, 0, 0, 0, 0]
+  prior_offset: [0, 0.023, 0, 0, 0, 0.03]
   true_frame: [0, 0, 0, 0, 0, 0]
+  particle_frame: [0,0,0,0,0,0]
 
 
 

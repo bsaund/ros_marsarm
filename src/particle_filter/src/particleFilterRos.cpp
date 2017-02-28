@@ -84,8 +84,8 @@ void computeInitialDistribution(cspace binit[2], ros::NodeHandle n)
   }
 
   std::vector<double> pFrame;
-  if(!n.getParam("particle_frame", pFrame)){
-    ROS_INFO("Failed to get param: particle_frame");
+  if(!n.getParam("prior_offset", pFrame)){
+    ROS_INFO("Failed to get param: prior_offset");
     pFrame.resize(6);
   }
 
@@ -161,6 +161,9 @@ bool PFilterRos::addObs(particle_filter::AddObservation::Request &req,
 
     ROS_INFO("...Done adding direct observation on %s", ns.c_str());
     pub_particles.publish(getParticlePoseArray());
+
+
+
     return true;
   } 
   
@@ -179,6 +182,15 @@ bool PFilterRos::addObs(particle_filter::AddObservation::Request &req,
     // pFilter_.addObservation(obs2, hitMesh, dist_transform, tf, 0);
     ROS_INFO("Done adding implicit observation for %s", ns.c_str());
     pub_particles.publish(getParticlePoseArray());
+
+    if(ns=="goal_hole"){
+      ROS_INFO("Estimating Gaussian");
+      cspace particles_est_stat;
+      cspace particles_est;
+      pFilter_.estimateGaussian(particles_est, particles_est_stat, true);
+    }
+
+
     return true;
   }
 

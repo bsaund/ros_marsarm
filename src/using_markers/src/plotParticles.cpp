@@ -246,22 +246,23 @@ void ShapePlotter::plotParticles(){
   q.setRPY(0,0,0);
   unityTransform.setRotation(q);
 
-  tf::Transform particleTransform;
+  // tf::Transform particleTransform;
   // particleTransform.setOrigin(tf::Vector3(1,1,1));
 
-  std::vector<double> pFrame;
-  if(!n.getParam("particle_frame", pFrame)){
-    ROS_INFO("Failed to get param: particle_frame");
-    pFrame.resize(6);
-  }
+  // std::vector<double> pFrame;
+  // if(!n.getParam("particle_frame", pFrame)){
+  //   ROS_INFO("Failed to get param: particle_frame");
+  //   pFrame.resize(6);
+  // }
 
 
-  particleTransform.setOrigin(tf::Vector3(pFrame[0],pFrame[1],pFrame[2]));
-  // q.setRPY(-.7, 1.5, 0);
-  q.setRPY(pFrame[3],pFrame[4], pFrame[5]);
-  particleTransform.setRotation(q);
-  
-  tf::StampedTransform tfstmp(particleTransform, ros::Time::now(),"my_frame", name);
+  // particleTransform.setOrigin(tf::Vector3(pFrame[0],pFrame[1],pFrame[2]));
+  // // q.setRPY(-.7, 1.5, 0);
+  // q.setRPY(pFrame[3],pFrame[4], pFrame[5]);
+  // particleTransform.setRotation(q);
+    
+  // tf::StampedTransform tfstmp(particleTransform, ros::Time::now(),"my_frame", name);
+  tf::StampedTransform tfstmp(unityTransform, ros::Time::now(),"my_frame", name);
   tf::transformStampedTFToMsg(tfstmp, trans);
     br.sendTransform(trans);
 

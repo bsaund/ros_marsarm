@@ -38,6 +38,9 @@ namespace CalcEntropy{
   double calcCondDisEntropy(const ProcessedHistogram &procHist);
   double calcIG(const std::vector<ConfigDist> &distances, double binSize, int numParticles);
   double calcIG(const ProcessedHistogram &procHist, int numParticles);
+  double calcIndirectIG(std::vector<ConfigDist> &directDistances, 
+			std::vector<ConfigDist> &indirectDistances, 
+			double binSize, int numParticles);
 
 }
 

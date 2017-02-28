@@ -1,0 +1,13 @@
+<launch>
+  <group ns="bottom_section">
+    <rosparam param="measurement1">
+      [0.8, -0.02, -0.1, 0.8, -0.02, 0.1]
+    </rosparam>
+
+
+    <node pkg="touch_optimization" type="simulate_measurement_exec" 
+	  name="simulating_measurement" output="screen"/>
+
+  </group>
+
+</launch>

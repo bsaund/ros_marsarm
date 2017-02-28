@@ -139,7 +139,9 @@ static void printBins(const CalcEntropy::ProcessedHistogram &proc){
     for(int binNum : b.first){
       std::cout << binNum << ", ";
     }
-    std::cout << "\b\b>: p=" << b.second.binProbability << "  " << std::endl;
+    std::cout << "\b\b>: p=" << b.second.binProbability << 
+      "\t min= " << b.second.binMin << 
+      "\t max= " << b.second.binMax << std::endl;
     std::cout << "    ";
     totalBinP += b.second.binProbability;
     double pProb = 0;
@@ -186,6 +188,7 @@ static void processHistogram(std::vector<Bin> &unproc,
 }
 
 
+
 /**
  * Ordering function for ConfigDist sort.
  *  
@@ -193,6 +196,54 @@ static void processHistogram(std::vector<Bin> &unproc,
 bool distOrdering(const CalcEntropy::ConfigDist &left, const CalcEntropy::ConfigDist &right) {
   return left.dist < right.dist;
 }
+
+/*
+ *  ALters the bin probabilities based on the number of direct hits that land in each bin
+ */
+void alterWeights(CalcEntropy::ProcessedHistogram &proc,
+		  std::vector<CalcEntropy::ConfigDist> &directDistances){
+
+  std::sort(directDistances.begin(), directDistances.end(), &distOrdering);
+  
+  int binInd = 0;
+  int directInd = 0;
+  double binMax = 0;
+  int numBins = proc.bin.size();
+  std::vector<int> binCount(numBins,0);
+  int totalCount = 0;
+  double absoluteMin = proc.bin[idOf(0)].binMin;
+
+
+
+  for(auto cDist : directDistances){
+    if(cDist.dist < absoluteMin)
+      continue;
+
+    while(cDist.dist > proc.bin[idOf(binInd)].binMax){
+      binInd++;
+      if(binInd >= numBins)
+	break;
+    }
+
+    binCount[binInd]++;
+    totalCount++;
+  }
+
+
+  std::cout << 3;
+
+
+  for(binInd = 0; binInd < numBins; binInd++){
+    double p = (double)binCount[binInd] / (double)totalCount;
+    proc.bin[idOf(binInd)].binProbability = p;
+  }
+  std::cout << 4;
+  std::cout << "What?";
+  // printBins(proc);
+}
+
+
+
 namespace CalcEntropy{
   ProcessedHistogram 
   processMeasurements(std::vector<ConfigDist> p, double binSize, int numParticles){
@@ -238,6 +289,29 @@ namespace CalcEntropy{
     double H_Y = -log2(1.0/(double)numParticles);
     // std::cout << "H_Y: " << H_Y << "    H_Y_given_X: " << H_Y_given_X << std::endl;
     // printBins(procHist);
+    return H_Y - H_Y_given_X;
+  }
+
+
+  /*
+   * Experimental indirect infomation gain
+   *  Like usual, bins are weighted by bin probability.
+   *  However, rather than computing bin probability based on number of particles in bin,
+   *  bin probability is taken from the direct measurement
+   */
+  double calcIndirectIG(std::vector<ConfigDist> &directDistances, 
+			std::vector<ConfigDist> &indirectDistances, 
+			double binSize, int numParticles){
+    std::cout << "Starting to process...";
+    ProcessedHistogram procIndirect = processMeasurements(indirectDistances, 
+							  binSize, numParticles);
+    std::cout << 1;
+    std::cout << 2;
+    alterWeights(procIndirect, directDistances);
+    std::cout << 5;
+    double H_Y_given_X = calcCondDisEntropy(procIndirect);
+    double H_Y = -log2(1.0/(double)numParticles);
+    std::cout << "...Finished\n";
     return H_Y - H_Y_given_X;
   }
 

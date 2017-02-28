@@ -78,9 +78,12 @@ int simOnAllParts(Ray ray, std::vector<RayTracer*> &rayts, ros::ServiceClient &s
 double getIndirectIG(Ray ray, std::shared_ptr<TransformDistribution> rel,
 		     std::vector<tf::Transform> referenceParticles,
 		     RayTracer* hitPart,
-		     double radialErr, double depthErr){
+		     double radialErr, double depthErr, bool printDebug){
   std::vector<CalcEntropy::ConfigDist> distsToParticles;
   ///NEEDS WORK
+  ROS_INFO("Name:");
+  ROS_INFO("%s", hitPart->getName().c_str());
+  //Indirect hits
   for(int i=0; i<100; i++){
     tf::Transform tf = rel->sampleTransform();
     std::vector<CalcEntropy::ConfigDist> tmp;
@@ -90,8 +93,21 @@ double getIndirectIG(Ray ray, std::shared_ptr<TransformDistribution> rel,
   			    tmp.begin(), tmp.end());
   }
 
-  return CalcEntropy::calcIG(distsToParticles, depthErr, 
-  			     hitPart->particleHandler.getNumSubsetParticles());
+  //Direct hits to get bin probability
+  std::vector<CalcEntropy::ConfigDist> distToDirect;
+  hitPart->traceCylinderAllParticles(ray, radialErr, distToDirect); 
+
+  if(printDebug){
+    double oldIG= CalcEntropy::calcIG(distsToParticles, depthErr, 
+				      hitPart->particleHandler.getNumSubsetParticles());
+    ROS_INFO("Old method of indirect IG was: %f", oldIG);
+  }
+
+  // ROS_INFO("Size of dist: %d", distsToParticles.size());
+  // ROS_INFO("Size of dist: %d", distToDirect.size());
+  return CalcEntropy::calcIndirectIG(distToDirect, distsToParticles,
+				     depthErr, 
+				     hitPart->particleHandler.getNumSubsetParticles());
 }
 
 
@@ -124,7 +140,9 @@ double getIG(Ray ray, std::vector<RayTracer*> rayts, PartRelationships &rel,
   // }
 
 
+
   double direct_ig = hitPart->getIG(ray, radialErr, depthErr);
+
 
 
   // if(referencePart == NULL){
@@ -136,13 +154,16 @@ double getIG(Ray ray, std::vector<RayTracer*> rayts, PartRelationships &rel,
 
 
   double coupled_ig = 0;
+
   if(rel.has(referencePartName, hitPartName)){
+    ROS_INFO("Hit part name: %s", hitPartName.c_str());
     coupled_ig = getIndirectIG(ray, rel.of(referencePartName, hitPartName),
 			       referenceParticles, 
 			       hitPart, 
-			       radialErr, depthErr);
+			       radialErr, depthErr, false);
+			       // radialErr, depthErr, printDebug);
   }
-
+  ROS_INFO("Passed");
 
   if(printDebug){
     ROS_INFO("Hit part %s with direct ig: %f and indirect ig: %f", 
@@ -174,6 +195,7 @@ bool getIntersectingRayTracer(Ray ray, std::vector<RayTracer*> &rayts, RayTracer
     minD = d;
     hitPart = rayt;
   }
+  // ROS_INFO("minD: %f", minD);
   return minD < std::numeric_limits<double>::max();
 }
 

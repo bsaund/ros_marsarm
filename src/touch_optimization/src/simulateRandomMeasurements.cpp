@@ -57,6 +57,11 @@ Ray getBestRandomRay(std::vector<RayTracer*> &rayts, RayTracePlotter &plt, PartR
     ROS_INFO("Working in namespace %s", ns.c_str());
   }
 
+  // for(int i=0; i<rayts.size(); i++){
+  //   std::cout << rayts[i]->getName();
+  // }
+  // std::cout << "\n";
+
   for(int i=0; i<100; i++){
     Ray ray = getIntersectingRay(rayts);
 
@@ -66,7 +71,8 @@ Ray getBestRandomRay(std::vector<RayTracer*> &rayts, RayTracePlotter &plt, PartR
     oss << ig;
 
 
-    if(printDebug){
+    if(false){
+    // if(printDebug){
       plt.deleteAll();
       plt.plotRay(ray, 1);
       plt.labelRay(ray.start, oss.str(), 1);
@@ -101,6 +107,7 @@ int main(int argc, char **argv)
   PartRelationships rel(n);
 
   std::vector<RayTracer*> rayts = getAllRayTracers();
+  
   ParticleHandler pHand("goal_hole");
 
   ros::ServiceClient srv_add = 
@@ -117,7 +124,9 @@ int main(int argc, char **argv)
     plt.plotRay(mRay); //Message is sometimes lost
     ros::Duration(.1).sleep();
     plt.plotRay(mRay); //3rd time's a charm
+    ROS_INFO("Simulating...");
     simOnAllParts(mRay, rayts, srv_add, 0.001);
+    ROS_INFO("finished simulating");
     ros::Duration(1).sleep();
   }
 }

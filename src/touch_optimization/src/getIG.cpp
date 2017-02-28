@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 
   ParticleHandler pHand;
   double ig = getIG(measurementRay, rayts, rel, 
-		    pHand.getParticles(), 0.002, 0.01);
+		    pHand.getParticles(), 0.002, 0.01, true);
 
   // ROS_INFO("MeasurementSize %d", distsToParticles.size());
 

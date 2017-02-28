@@ -100,7 +100,8 @@ Visualization Manager:
       Marker Topic: /goal_hole/visualization_marker
       Name: Marker
       Namespaces:
-        {}
+        particles: true
+        true_part: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -201,5 +202,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1855
-  X: 65
+  X: 1985
   Y: 24

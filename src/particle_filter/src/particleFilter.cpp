@@ -194,7 +194,6 @@ void particleFilter::addObservation(double obs[2][3], vector<vec4x3> &mesh, dist
  *   optionally writes these values to a file
  */
 void particleFilter::estimateGaussian(cspace &x_mean, cspace &x_est_stat, bool record) const {
-xmean
   ofstream outputData;
   if(record){
     cout << "Saving data to file\n";

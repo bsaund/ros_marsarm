@@ -21,7 +21,7 @@ plot(d(:,1), ang_err)
 % mean_trans_err
 % mean_ang_err
 
-for i=0:10
+for i=0:20
     
     
     trial = i;
@@ -39,20 +39,20 @@ end
 figure('Name','Mean_Trans_err')
 
 linespec = {'Color','black', 'LineWidth',2};
-plot(0:10, mean_trans_err,linespec{:})
+plot(0:20, mean_trans_err,linespec{:})
 hold on
-errorbar(1:10, mean_trans_err(2:end), var_trans_err(2:end), ...
+errorbar(1:20, mean_trans_err(2:end), var_trans_err(2:end), ...
          linespec{:})
-xlim([0,10.2]);
+xlim([0,20.2]);
 saveas(gcf, 'On_Robot_Trans.png')
 
 
 
 figure('Name','Mean_Ang_err')
-plot(0:10, mean_ang_err,linespec{:})
+plot(0:20, mean_ang_err,linespec{:})
 hold on
-errorbar(1:10, mean_ang_err(2:end), var_ang_err(2:end), linespec{:})
-xlim([0,10.2]);
+errorbar(1:20, mean_ang_err(2:end), var_ang_err(2:end), linespec{:})
+xlim([0,20.2]);
 ylim([0, .1]);
 saveas(gcf, 'On_Robot_Ang.png')
 

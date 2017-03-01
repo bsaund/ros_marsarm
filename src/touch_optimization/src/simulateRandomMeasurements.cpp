@@ -24,18 +24,39 @@ Ray getIntersectingRay(std::vector<RayTracer*> &rayts){
   double minD=std::numeric_limits<double>::max();
 
   while(!hit){
-      std::uniform_real_distribution<> dis(-1,1.5);
-      tf::Point start(dis(gen), dis(gen), dis(gen));
-      tf::Point dir(dis(gen), dis(gen), dis(gen));
-      measurementRay = Ray(start, dir.normalize() + start);
+    std::uniform_real_distribution<> dis(0,1);
+
+    tf::Point start, dir;
+
+    double mode = dis(gen)*3;
+    if(mode < 1){
+      start = tf::Point(1.5, dis(gen)*.5 - .5, dis(gen)*1 -.5);
+      dir = tf::Point(-1, 0,0);
+    }
+    else if(mode < 2){
+      start = tf::Point(dis(gen)*2, -0.5, dis(gen)*1 -.5);
+      dir = tf::Point(0,1,0);
+    }
+    else{
+      start = tf::Point(dis(gen)*2, dis(gen)*.5 - .5, 1);
+      dir = tf::Point(0, 0, -1);
+    }
+    dir.normalize();
+    measurementRay = Ray(start, dir + start);
+
+
+    //Reject rays at angles
+    if(max(max(abs(dir[0]), abs(dir[1])), abs(dir[2])) < .9){
+      continue;
+    }
       
-      int i=0;
-      for(auto &rayt : rayts){
-	hit = hit || rayt->traceRay(measurementRay, d);
-	minD = std::min(minD, d);
-	i++;
-      }
-      count++;
+    int i=0;
+    for(auto &rayt : rayts){
+      hit = hit || rayt->traceRay(measurementRay, d);
+      minD = std::min(minD, d);
+      i++;
+    }
+    count++;
   }
   // ROS_INFO("");
   // ROS_INFO("Took %f seconds", (ros::Time::now() - start).toSec());
@@ -62,7 +83,7 @@ Ray getBestRandomRay(std::vector<RayTracer*> &rayts, RayTracePlotter &plt, PartR
   // }
   // std::cout << "\n";
 
-  for(int i=0; i<100; i++){
+  for(int i=0; i<300; i++){
     Ray ray = getIntersectingRay(rayts);
 
     double ig = getIG(ray, rayts, rel, referenceParticles, 0.002, 0.01, printDebug);
@@ -115,7 +136,7 @@ int main(int argc, char **argv)
 
 
   // Ray mRay = getIntersectingRay(rayts);
-  for(int i=0; i<10; i++){
+  for(int i=0; i<20; i++){
     Ray mRay = getBestRandomRay(rayts, plt, rel, pHand.getParticles(), debug);
 
     plt.deleteAll();
@@ -125,7 +146,7 @@ int main(int argc, char **argv)
     ros::Duration(.1).sleep();
     plt.plotRay(mRay); //3rd time's a charm
     ROS_INFO("Simulating...");
-    simOnAllParts(mRay, rayts, srv_add, 0.001);
+    simOnAllParts(mRay, rayts, srv_add, 0.0002);
     ROS_INFO("finished simulating");
     ros::Duration(1).sleep();
   }

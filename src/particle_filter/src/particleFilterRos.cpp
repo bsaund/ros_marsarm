@@ -155,7 +155,7 @@ bool PFilterRos::addObs(particle_filter::AddObservation::Request &req,
 
   if(ns == observedObject){
     pFilter_.addObservation(obs2, mesh, dist_transform, 0);
-    ROS_INFO("Adding Observation...") ;
+    ROS_INFO("Adding Direct Observation...") ;
     ROS_INFO("point: %f, %f, %f", obs.x, obs.y, obs.z);
     ROS_INFO("dir: %f, %f, %f", dir.x, dir.y, dir.z);
 
@@ -178,9 +178,10 @@ bool PFilterRos::addObs(particle_filter::AddObservation::Request &req,
     // ROS_INFO("Assigned transform");
     // ROS_INFO("First val: %f", rel[observedObject]->getMean()[0]);
     // ROS_INFO("First val: %f", tf->getMean()[0]);
+    ROS_INFO("Adding implicit observation for %s", ns.c_str());
     pFilter_.addObservation(obs2, hitMesh, dist_transform, *rel.of(ns, observedObject), 0);
     // pFilter_.addObservation(obs2, hitMesh, dist_transform, tf, 0);
-    ROS_INFO("Done adding implicit observation for %s", ns.c_str());
+
     pub_particles.publish(getParticlePoseArray());
 
     if(ns=="goal_hole"){

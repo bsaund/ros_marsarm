@@ -1,6 +1,6 @@
 close all
 
-d = csvread('MeanCov_Sept1_2016.txt');
+d = csvread('MeanCov_March1_2017.txt');
 
 lastPoints = d(:,1) == 10;
 
@@ -25,11 +25,6 @@ for i=0:10
     
     
     trial = i;
-    if(trial == 5)
-        trial = 6;
-    elseif(trial==6)
-        trial = 5;
-    end
     ind = d(:,1) == trial;
     
     
@@ -52,6 +47,7 @@ xlim([0,10.2]);
 saveas(gcf, 'On_Robot_Trans.png')
 
 
+
 figure('Name','Mean_Ang_err')
 plot(0:10, mean_ang_err,linespec{:})
 hold on
@@ -59,4 +55,6 @@ errorbar(1:10, mean_ang_err(2:end), var_ang_err(2:end), linespec{:})
 xlim([0,10.2]);
 ylim([0, .1]);
 saveas(gcf, 'On_Robot_Ang.png')
+
+save('mean_err', 'mean_trans_err', 'var_trans_err', 'mean_ang_err', 'var_ang_err')
 % plot(0:10, mean_ang_err)

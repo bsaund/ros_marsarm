@@ -197,7 +197,7 @@ void particleFilter::estimateGaussian(cspace &x_mean, cspace &x_est_stat, bool r
   ofstream outputData;
   if(record){
     cout << "Saving data to file\n";
-    outputData.open("/home/bsaund/MeanCov.txt", std::ios_base::app);
+    outputData.open("/home/bsaund/MeanCov_prior.txt", std::ios_base::app);
     outputData << numObs << "\t";
   }
 

@@ -1,13 +1,13 @@
 close all
-
-d = csvread('MeanCov_March1_2017.txt');
+clear all
+d = csvread('MeanCov_prior.txt');
 
 lastPoints = d(:,1) == 10;
 
 truth = [0,0,0,0,0,0];
 
-ang_terms = [5,6]
 
+ang_terms = [5:6];
 
 err = d(:,2:7) - repmat(truth, size(d,1),1);
 plot(d(:,1), err(:,3));
@@ -23,7 +23,7 @@ plot(d(:,1), ang_err)
 % mean_trans_err
 % mean_ang_err
 
-for i=0:20
+for i=0
     
     
     trial = i;
@@ -37,6 +37,13 @@ for i=0:20
     mean_ang_err(i+1) = mean(sqrt(sum(err(:,ang_terms).^2,2)));
     var_ang_err(i+1) = std(sqrt(sum(err(:,ang_terms).^2,2)));
 end
+
+
+mean_trans_err
+var_trans_err
+mean_ang_err
+var_ang_err
+
 
 figure('Name','Mean_Trans_err')
 

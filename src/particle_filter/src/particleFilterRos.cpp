@@ -178,11 +178,6 @@ bool PFilterRos::addObs(particle_filter::AddObservation::Request &req,
     // ROS_INFO("Assigned transform");
     // ROS_INFO("First val: %f", rel[observedObject]->getMean()[0]);
     // ROS_INFO("First val: %f", tf->getMean()[0]);
-    ROS_INFO("Adding implicit observation for %s", ns.c_str());
-    pFilter_.addObservation(obs2, hitMesh, dist_transform, *rel.of(ns, observedObject), 0);
-    // pFilter_.addObservation(obs2, hitMesh, dist_transform, tf, 0);
-
-    pub_particles.publish(getParticlePoseArray());
 
     if(ns=="goal_hole"){
       ROS_INFO("Estimating Gaussian");
@@ -190,6 +185,13 @@ bool PFilterRos::addObs(particle_filter::AddObservation::Request &req,
       cspace particles_est;
       pFilter_.estimateGaussian(particles_est, particles_est_stat, true);
     }
+
+    ROS_INFO("Adding implicit observation for %s", ns.c_str());
+    pFilter_.addObservation(obs2, hitMesh, dist_transform, *rel.of(ns, observedObject), 0);
+    // pFilter_.addObservation(obs2, hitMesh, dist_transform, tf, 0);
+
+    pub_particles.publish(getParticlePoseArray());
+
 
 
     return true;
